@@ -1,0 +1,6 @@
+# 검색엔진에 다 열어둡니다. 막을 건 CMS 뿐입니다.
+User-agent: *
+Allow: /
+Disallow: /admin/
+
+Sitemap: https://lim-it.vercel.app/sitemap-index.xml

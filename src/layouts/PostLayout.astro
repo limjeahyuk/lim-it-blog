@@ -5,11 +5,16 @@ import BaseLayout from '../components/BaseLayout.astro'
 import FormattedDate from '../components/FormattedDate.astro'
 import { AUTHOR_LABEL, SITE_DESCRIPTION, getProject } from '../consts'
 
-type Props = CollectionEntry<'posts'>['data']
+/**
+ * `excerpt` 는 본문에서 뽑은 요약입니다. `<head>` 의 meta description 에만
+ * 쓰고 화면에는 안 띄웁니다 — 소개문이 없는 글은 없는 채로 둡니다.
+ */
+type Props = CollectionEntry<'posts'>['data'] & { excerpt?: string }
 
 const {
   title,
   description,
+  excerpt,
   pubDate,
   updatedDate,
   heroImage,
@@ -23,10 +28,11 @@ const proj = project ? getProject(project) : undefined
 
 <BaseLayout
   title={title}
-  description={description ?? SITE_DESCRIPTION}
+  description={description || excerpt || SITE_DESCRIPTION}
   image={heroImage}
   type="article"
   pubDate={pubDate}
+  updatedDate={updatedDate}
 >
   <div class="shell">
     <article class="card">

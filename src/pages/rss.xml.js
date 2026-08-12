@@ -1,5 +1,6 @@
 import rss from '@astrojs/rss'
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts'
+import { excerpt } from '../lib/excerpt'
 import { getPublishedPosts } from '../lib/posts'
 
 export async function GET(context) {
@@ -15,7 +16,7 @@ export async function GET(context) {
     site: context.site,
     items: posts.map((post) => ({
       title: post.data.title,
-      description: post.data.description ?? '',
+      description: post.data.description || excerpt(post.body),
       pubDate: post.data.pubDate,
       categories: post.data.tags,
       link: `/posts/${post.id}/`,

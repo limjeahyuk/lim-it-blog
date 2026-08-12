@@ -2,6 +2,7 @@
 import { type CollectionEntry, render } from 'astro:content'
 import SecretGate from '../../components/SecretGate.astro'
 import PostLayout from '../../layouts/PostLayout.astro'
+import { excerpt } from '../../lib/excerpt'
 import { getPublishedPosts } from '../../lib/posts'
 import { requireSecretPassword, sealHtml } from '../../lib/secret'
 
@@ -31,6 +32,10 @@ const sealed = post.data.secret
 const { Content } = await render(post)
 ---
 
-<PostLayout {...post.data}>
+{/* 비밀글은 본문에서 요약을 뽑지 않습니다 — meta description 으로 새어 나갑니다. */}
+<PostLayout
+  {...post.data}
+  excerpt={post.data.secret ? undefined : excerpt(post.body)}
+>
   {sealed ? <SecretGate sealed={sealed} /> : <Content />}
 </PostLayout>
