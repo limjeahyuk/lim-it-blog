@@ -1,15 +1,17 @@
 ---
 import type { CollectionEntry } from 'astro:content'
 import FormattedDate from './FormattedDate.astro'
-import { AUTHOR_LABEL, getProject } from '../consts'
+import { AUTHOR_LABEL, getCategory, getProject } from '../consts'
 
 interface Props {
   post: CollectionEntry<'posts'>
 }
 
 const { post } = Astro.props as Props
-const { title, description, pubDate, project, author, tags } = post.data
+const { title, description, pubDate, category, project, author, tags } =
+  post.data
 const proj = project ? getProject(project) : undefined
+const cat = category ? getCategory(category) : undefined
 ---
 
 <a class="wrap" href={`/posts/${post.id}/`}>
@@ -26,11 +28,19 @@ const proj = project ? getProject(project) : undefined
     <div class="content" data-category={!!proj}>
       <h2>{title}</h2>
       <div class="date">
+        {
+          cat && (
+            <>
+              <span class="cat">{cat.label}</span>
+              <span class="sep">·</span>
+            </>
+          )
+        }
         <FormattedDate date={pubDate} />
         <span class="sep">·</span>
         <span>{AUTHOR_LABEL[author]}</span>
       </div>
-      <p class="summary">{description}</p>
+      {description && <p class="summary">{description}</p>}
       <div class="tags">
         {tags.map((tag) => <span class="pill">{tag}</span>)}
       </div>
@@ -98,6 +108,10 @@ const proj = project ? getProject(project) : undefined
 
   .sep {
     opacity: 0.6;
+  }
+
+  .cat {
+    color: var(--text-dim);
   }
 
   .summary {

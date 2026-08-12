@@ -3,7 +3,7 @@ import { Image } from 'astro:assets'
 import type { CollectionEntry } from 'astro:content'
 import BaseLayout from '../components/BaseLayout.astro'
 import FormattedDate from '../components/FormattedDate.astro'
-import { AUTHOR_LABEL, getProject } from '../consts'
+import { AUTHOR_LABEL, SITE_DESCRIPTION, getProject } from '../consts'
 
 type Props = CollectionEntry<'posts'>['data']
 
@@ -23,7 +23,7 @@ const proj = project ? getProject(project) : undefined
 
 <BaseLayout
   title={title}
-  description={description}
+  description={description ?? SITE_DESCRIPTION}
   image={heroImage}
   type="article"
   pubDate={pubDate}
@@ -50,7 +50,7 @@ const proj = project ? getProject(project) : undefined
             )
           }
           <h1>{title}</h1>
-          <p class="desc">{description}</p>
+          {description && <p class="desc">{description}</p>}
           <div class="meta">
             <FormattedDate date={pubDate} />
             <span class="sep">·</span>

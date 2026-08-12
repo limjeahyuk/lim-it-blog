@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../../components/BaseLayout.astro'
 import FeedLayout from '../../components/FeedLayout.astro'
+import FormattedDate from '../../components/FormattedDate.astro'
 import Icon from '../../components/Icon.astro'
-import PostCard from '../../components/PostCard.astro'
+import { getCategory } from '../../consts'
 import { getPublishedPosts } from '../../lib/posts'
 
 const posts = await getPublishedPosts()
@@ -15,6 +16,7 @@ for (const post of posts) {
 const years = [...byYear.keys()].sort((a, b) => b - a)
 ---
 
+{/* 여기는 목록이 아니라 서고입니다 — 100개가 넘으므로 카드가 아니라 한 줄씩 놓습니다. */}
 <BaseLayout title="Posts" description="전체 글 목록">
   <FeedLayout>
     <div class="feed-header">
@@ -28,10 +30,25 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
       ) : (
         years.map((year) => (
           <section>
-            <div class="year">{year}</div>
-            {byYear.get(year)!.map((post) => (
-              <PostCard post={post} />
-            ))}
+            <div class="year">
+              <span>{year}</span>
+              <span class="year-count">{byYear.get(year)!.length}</span>
+            </div>
+            <div class="card rows">
+              {byYear.get(year)!.map((post) => (
+                <a class="row" href={`/posts/${post.id}/`}>
+                  <span class="title">{post.data.title}</span>
+                  {post.data.category && (
+                    <span class="cat">
+                      {getCategory(post.data.category)?.label}
+                    </span>
+                  )}
+                  <span class="date">
+                    <FormattedDate date={post.data.pubDate} short />
+                  </span>
+                </a>
+              ))}
+            </div>
           </section>
         ))
       )
@@ -55,12 +72,76 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
   }
 
   .year {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     padding: 0.25rem;
-    margin-bottom: 0.75rem;
+    margin: 1.75rem 0 0.6rem;
     font-size: 0.8125rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     color: var(--text-faint);
+  }
+
+  section:first-of-type .year {
+    margin-top: 0;
+  }
+
+  .year-count {
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .rows {
+    padding: 0.5rem;
+  }
+
+  .row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+  }
+
+  .row:hover {
+    background-color: var(--surface);
+    color: var(--text);
+  }
+
+  .title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cat {
+    flex-shrink: 0;
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+
+  .date {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 카테고리는 좁은 화면에서 빼고 날짜만 남깁니다. */
+  @media (max-width: 640px) {
+    .cat {
+      display: none;
+    }
+
+    .date {
+      margin-left: auto;
+    }
   }
 
   .empty {

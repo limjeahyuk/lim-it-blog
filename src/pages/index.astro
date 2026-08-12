@@ -7,12 +7,16 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts'
 import { getPublishedPosts } from '../lib/posts'
 
 const posts = await getPublishedPosts()
+
+/** 첫 화면은 최근 것만 보여줍니다. 100개가 넘어가면 전부 그리는 게 의미가 없습니다. */
+const RECENT = 20
+const recent = posts.slice(0, RECENT)
 ---
 
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
   <FeedLayout>
     <div class="feed-header">
-      <span class="title-ico"><Icon name="notebook" size={17} /> All Posts</span>
+      <span class="title-ico"><Icon name="notebook" size={17} /> Recent Posts</span>
       <span class="count">{posts.length}</span>
     </div>
 
@@ -20,7 +24,16 @@ const posts = await getPublishedPosts()
       posts.length === 0 ? (
         <p class="empty">아직 글이 없습니다.</p>
       ) : (
-        posts.map((post) => <PostCard post={post} />)
+        recent.map((post) => <PostCard post={post} />)
+      )
+    }
+
+    {
+      posts.length > RECENT && (
+        <a class="more" href="/posts">
+          <span>글 {posts.length}개 전부 보기</span>
+          <Icon name="chevron-right" size={16} />
+        </a>
       )
     }
   </FeedLayout>
@@ -45,5 +58,24 @@ const posts = await getPublishedPosts()
     padding: 1rem 0.25rem;
     color: var(--text-faint);
     font-size: 0.9375rem;
+  }
+
+  .more {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-card);
+    background-color: var(--card);
+    font-size: 0.9375rem;
+    color: var(--text-dim);
+  }
+
+  .more:hover {
+    color: var(--text);
+  }
+
+  .more span {
+    margin-right: auto;
   }
 </style>

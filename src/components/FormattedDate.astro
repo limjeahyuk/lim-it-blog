@@ -1,17 +1,21 @@
 ---
 interface Props {
   date: Date
+  /** 서고처럼 줄이 촘촘한 곳에서는 짧게 (08.07) */
+  short?: boolean
 }
 
-const { date } = Astro.props
+const { date, short } = Astro.props
 ---
 
 <time datetime={date.toISOString()}>
   {
-    date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
+    short
+      ? date.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+      : date.toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
   }
 </time>

@@ -14,6 +14,65 @@ export const AUTHOR = {
   email: 'lim0202jh@gmail.com',
 }
 
+/**
+ * 카테고리 — 글의 1차 분류입니다.
+ *
+ * 이 블로그는 게임 devlog 전용이 아닙니다. 공부한 것, 일기, 게임 개발이
+ * 다 들어옵니다. 그걸 나누는 게 카테고리이고, 태그는 그 위에 얹는
+ * 가로 분류입니다 (카테고리 하나 = 글의 자리, 태그 = 여러 개 붙는 꼬리표).
+ *
+ * id 의 슬래시가 곧 트리입니다. 'study/react' 는 'study' 아래 'react'.
+ * 부모를 따로 안 적습니다 — 경로에서 뽑습니다.
+ *
+ * 순서가 그대로 화면 순서입니다. 부모 바로 뒤에 자식을 두세요.
+ * 글이 0개인 카테고리는 사이드바에서 숨습니다 (자리는 미리 잡아둡니다).
+ */
+export const CATEGORIES = [
+  { id: 'game', label: '게임 개발' },
+
+  { id: 'ios', label: 'iOS' },
+  { id: 'ios/swiftui', label: 'SwiftUI' },
+  { id: 'ios/storyboard', label: 'Storyboard' },
+  { id: 'ios/sdk', label: 'SDK' },
+  { id: 'ios/beeptimer', label: 'BeepTimer' },
+  { id: 'ios/study-diary', label: '학습 일지' },
+
+  { id: 'study', label: '공부' },
+  { id: 'study/react', label: 'React' },
+  { id: 'study/react-school', label: 'React 수업' },
+  { id: 'study/react-notes', label: 'React 간단 정리' },
+  { id: 'study/javascript', label: 'JavaScript' },
+  { id: 'study/flutter', label: 'Flutter' },
+  { id: 'study/android-school', label: 'Android 수업' },
+
+  { id: 'diary', label: '일기' },
+] as const
+
+export type Category = (typeof CATEGORIES)[number]
+export type CategoryId = Category['id']
+
+export const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as [
+  CategoryId,
+  ...CategoryId[],
+]
+
+export function getCategory(id: string) {
+  return CATEGORIES.find((c) => c.id === id)
+}
+
+/** 'study/react' → [공부, React]. 빵부스러기에 씁니다. */
+export function categoryTrail(id: string): Category[] {
+  const parts = id.split('/')
+  return parts
+    .map((_, i) => getCategory(parts.slice(0, i + 1).join('/')))
+    .filter((c): c is Category => c !== undefined)
+}
+
+/** 자기 글 + 자식 카테고리 글까지 (부모를 눌러도 아래가 다 보이게) */
+export function categoryDepth(id: string) {
+  return id.split('/').length - 1
+}
+
 /** 글쓴이 구분. AI 초안과 직접 쓴 글을 나눠서 표시합니다. */
 export const AUTHOR_KINDS = ['me', 'ai', 'both'] as const
 export type AuthorKind = (typeof AUTHOR_KINDS)[number]

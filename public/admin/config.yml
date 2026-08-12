@@ -44,17 +44,40 @@ collections:
       - name: description
         label: 한 줄 요약
         widget: string
-        hint: 목록에서 제목 아래에 보이는 문장입니다.
+        required: false
+        hint: 목록에서 제목 아래에 보이는 문장입니다. 안 써도 됩니다.
 
       - name: body
         label: 본문
         widget: markdown
 
+      - name: category
+        label: 카테고리
+        widget: select
+        required: false
+        hint: 글의 1차 분류입니다. src/consts.ts 의 CATEGORIES 와 같아야 합니다.
+        options:
+          - { label: 게임 개발, value: game }
+          - { label: iOS, value: ios }
+          - { label: 'iOS / SwiftUI', value: ios/swiftui }
+          - { label: 'iOS / Storyboard', value: ios/storyboard }
+          - { label: 'iOS / SDK', value: ios/sdk }
+          - { label: 'iOS / BeepTimer', value: ios/beeptimer }
+          - { label: 'iOS / 학습 일지', value: ios/study-diary }
+          - { label: 공부, value: study }
+          - { label: '공부 / React', value: study/react }
+          - { label: '공부 / React 수업', value: study/react-school }
+          - { label: '공부 / React 간단 정리', value: study/react-notes }
+          - { label: '공부 / JavaScript', value: study/javascript }
+          - { label: '공부 / Flutter', value: study/flutter }
+          - { label: '공부 / Android 수업', value: study/android-school }
+          - { label: 일기, value: diary }
+
       - name: project
         label: 프로젝트
         widget: select
         required: false
-        hint: 게임 devlog 가 아니면 비워두세요.
+        hint: 어느 프로젝트의 글인지. 카테고리와 별개입니다. 아니면 비워두세요.
         options:
           - { label: GridBrawl, value: gridbrawl }
           - { label: MineApp, value: mineapp }

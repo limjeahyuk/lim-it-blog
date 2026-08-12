@@ -1,15 +1,22 @@
-# lim-it — devlog 블로그
+# lim-it — 개발 블로그
 
-게임을 만들면서 **왜 그렇게 고쳤는지, 그래서 뭐가 터졌는지**를 남기는 블로그입니다.
-Astro + MDX. 글 하나가 파일 하나이고, 커밋하면 Vercel이 배포합니다.
+**게임 devlog 전용이 아닙니다.** 공부한 것, 만든 것, 그냥 일기까지 다 들어오는
+개발 블로그입니다. 지금은 게임 개발에 관심이 쏠려 있어서 그쪽 글이 늘고 있을 뿐입니다.
+
+글의 기본은 **왜 그렇게 했는지**를 남기는 것입니다. Astro + MDX,
+글 하나가 파일 하나이고, 커밋하면 Vercel이 배포합니다.
 
 > `CLAUDE.md` 는 이 파일을 가리키는 심볼릭 링크입니다. 규약은 여기 한 곳에만 씁니다.
+
+⚠ **"이 블로그는 게임 devlog다" 라고 전제하지 마세요.** 2026-08-12 에
+티스토리(`hyuk-todayfeelsogood.tistory.com`)의 글 116개를 옮겨왔고, 지금
+전체 글 117개 중 게임 글은 1개입니다. 나머지는 React·Flutter·iOS 학습 정리입니다.
 
 ---
 
 ## 1. 말투 — 제일 자주 틀리는 부분
 
-**참고 기준:** https://hyuk-todayfeelsogood.tistory.com/
+**참고 기준:** 티스토리에서 옮겨온 글들 (`src/content/posts/` 의 `# 티스토리에서 옮겨왔습니다:` 주석이 붙은 것들). 원본은 https://hyuk-todayfeelsogood.tistory.com/
 
 글은 전부 **-습니다체 존댓말**로 씁니다. 기술 학습 일지 같은 톤입니다.
 
@@ -63,19 +70,50 @@ Astro + MDX. 글 하나가 파일 하나이고, 커밋하면 Vercel이 배포합
 ```yaml
 ---
 title: 제목 (존댓말)
-description: 목록에 보이는 한 줄 요약 (존댓말)
+description: 목록에 보이는 한 줄 요약 (존댓말)   # 선택
 pubDate: 2026-08-07
-project: gridbrawl     # 선택. 개인 개발 글이면 생략
+category: game         # 선택. CATEGORIES 와 일치
+project: gridbrawl     # 선택. 게임 글에만
 author: ai             # me | ai | both  (기본값 me)
 tags: [게임설계, 리팩터링]
 draft: false
 ---
 ```
 
-- `project` 는 `src/consts.ts` 의 `PROJECTS[].id` 와 **반드시** 일치해야 합니다. 안 맞으면 빌드가 깨집니다 (의도한 것 — 오타를 배포 전에 잡습니다).
+- **`description` 은 선택입니다.** 없으면 목록 카드에서 그 줄이 통째로 빠집니다. 티스토리에서 옮겨온 116개에는 거의 없습니다 — 억지로 채우지 마세요.
+- `category` 는 `src/consts.ts` 의 `CATEGORIES[].id` 와 **반드시** 일치해야 합니다. 안 맞으면 빌드가 깨집니다 (의도한 것 — 오타를 배포 전에 잡습니다).
+- `project` 는 `PROJECTS[].id` 와 일치해야 합니다. **카테고리와 별개입니다** — 게임 devlog 글은 보통 `category: game` + `project: gridbrawl` 둘 다 붙습니다.
 - `author` 는 정직하게 적습니다. AI가 초안을 쓰면 `ai`, 사람이 손보면 `both`, 사람이 처음부터 쓰면 `me`.
 - 태그에 슬래시(`/`)를 쓰지 않습니다. URL이 깨집니다.
 - 파일명이 그대로 URL이 됩니다 (`status-effects-redefined.md` → `/posts/status-effects-redefined`). 영문 소문자 + 하이픈.
+
+### 카테고리 vs 태그
+
+**카테고리는 자리, 태그는 꼬리표입니다.**
+
+| | 카테고리 | 태그 |
+|---|---|---|
+| 개수 | 글마다 **하나** | 여러 개 |
+| 구조 | **트리** (`study/react`) | 평평함 |
+| 용도 | 이 글이 어디 사는가 | 가로지르는 주제 |
+| 화면 | 왼쪽 사이드바 트리, `/categories/<경로>` | `/tags/<태그>` |
+
+트리는 `id` 의 슬래시로 만듭니다 — 따로 `parent` 를 적지 않습니다. **부모를 누르면 자식 글까지 다 나옵니다** (`study` 를 누르면 `study/react` 글도 보입니다). `countByCategory`·`postsInCategory` 가 그렇게 동작합니다.
+
+지금 있는 카테고리 (`src/consts.ts`):
+
+```
+game                게임 개발
+ios                 iOS
+  ios/swiftui       ios/storyboard   ios/sdk
+  ios/beeptimer     ios/study-diary
+study               공부
+  study/react       study/react-school   study/react-notes
+  study/javascript  study/flutter        study/android-school
+diary               일기        ← 아직 글 0개 (글이 0개면 사이드바에서 숨습니다)
+```
+
+카테고리를 추가할 때 고칠 곳은 **두 군데**입니다 — `src/consts.ts` 의 `CATEGORIES` 와 `public/admin/config.yml` 의 `category` select. 순서가 곧 화면 순서이고, **부모 바로 뒤에 자식을 둬야** 트리가 제대로 보입니다.
 
 ---
 
@@ -201,13 +239,26 @@ radius 도 마찬가지입니다. `--radius-sm/md/lg/full` 은 limSystem 원본�
 morethan-log 를 참고한 3열 구조입니다. 이 구조를 유지하세요.
 
 ```
-[ Tags ]   [ 글 목록 ]   [ Profile / Works / Contact ]
-  span 2      span 7               span 3
+[ Categories ]   [ 글 목록 ]   [ Profile / Works / Contact ]
+[ Tags      ]
+    span 2         span 7               span 3
 ```
 
 - 12열 그리드, `gap: 1.5rem`, 컨테이너 `max-width: 1120px`
-- 1024px 미만에서는 사이드바가 숨고 태그만 가로 스크롤로 남습니다
+- 1024px 미만에서는 사이드바가 숨고 **카테고리·태그만 가로 스크롤 한 줄**로 본문 위에 남습니다 (`.tags-mobile`)
 - 헤더는 `height: 3rem` sticky
+
+### 글이 많아서 생긴 규칙
+
+글이 117개라 목록을 그냥 다 그리면 페이지가 감당이 안 됩니다.
+
+| 화면 | 무엇을 |
+|---|---|
+| `/` | **최근 20개**만 카드로. 끝에 「전부 보기」 |
+| `/posts` | **서고.** 카드가 아니라 한 줄씩, 연도로 묶어서 |
+| `/categories/<경로>` | 그 카테고리(+아래) 글 전부, 카드로 |
+
+`/` 의 `RECENT` 상수를 건드릴 때는 서고가 있다는 걸 잊지 마세요 — 첫 화면을 늘리는 것보다 카테고리로 좁히는 쪽이 낫습니다.
 
 ### 폰트
 
@@ -217,7 +268,7 @@ morethan-log 를 참고한 3열 구조입니다. 이 구조를 유지하세요.
 
 ---
 
-## 5. 게임 저장소에서 devlog 뽑기
+## 5. 게임 저장소에서 devlog 뽑기 (게임 글을 쓸 때만)
 
 게임 소스는 이 저장소에 없습니다. 전부 별도 비공개 저장소이고, 로컬에서는 형제 디렉토리에 있습니다.
 
@@ -249,8 +300,26 @@ morethan-log 를 참고한 3열 구조입니다. 이 구조를 유지하세요.
    ```
 2. **글감이 되는 커밋을 하나 고릅니다.** 여러 커밋을 한 글에 욱여넣지 않습니다. "왜"가 있는 커밋 하나가 글 하나입니다.
 3. **코드를 실제로 읽습니다.** 스니펫을 넣을 거면 파일을 열어서 확인합니다. **절대 지어내지 않습니다.**
-4. `src/content/posts/<slug>.md` 로 씁니다. `author: ai`.
+4. `src/content/posts/<slug>.md` 로 씁니다. `category: game` · `project: <id>` · `author: ai`.
 5. 사람이 읽고 고친 뒤 `author: both` 로 바꿉니다.
+
+---
+
+## 5-2. 티스토리에서 옮겨온 글
+
+2026-08-12 에 `hyuk-todayfeelsogood.tistory.com` 의 글 **116개**를 옮겨왔습니다
+(2022-03 ~ 2026-01). 파일 맨 위에 원본 주소가 주석으로 붙어 있습니다.
+
+```
+# 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/122
+```
+
+- 옮긴 도구는 [`scripts/import-tistory.mjs`](scripts/import-tistory.mjs) 입니다. 한 번 쓰고 끝이지만, 다시 긁어야 할 때를 위해 남겨뒀습니다.
+- 파일명은 **`<카테고리 잎>-<티스토리 글번호>`** 입니다 (`flutter-122`, `swiftui-68`, `sdk-90`).
+- 이미지 404장은 `public/images/<slug>/` 에 **받아서** 넣었습니다 (48MB).
+  ⚠ **티스토리 CDN 주소를 그대로 쓰면 안 됩니다.** 서명된 URL 이라 `expires` 가 지나면 전부 404 가 되고, 서명을 뗀 주소도 404 입니다. 그래서 받아온 것입니다.
+- `description` 과 `tags` 는 대부분 비어 있습니다. 원본에 없었기 때문입니다 — 지어내지 말고, 손볼 때 채우세요.
+- 티스토리에서 카테고리가 안 달려 있던 글 5개는 제목을 보고 정했습니다. 근거가 약한 곳이라 `import-tistory.mjs` 의 `UNCATEGORIZED` 표에 모아뒀습니다.
 
 ---
 
@@ -298,6 +367,8 @@ npm run post -- "넉백 버그 수정"    # 커밋 메시지 지정
 npm run cms       # Decap 로컬 서버 (GitHub 없이 /admin 테스트)
 
 npm run icons     # limSystem 아이콘 다시 긁어오기
+
+node scripts/import-tistory.mjs --dry    # 티스토리 이관 (한 번 쓰고 끝났습니다)
 ```
 
 `npm run icons` 는 `~/Develop/React/limSystem/src/assets/icons` 를 `src/assets/icons` 로 통째로 덮어쓰고 `src/lib/icon-names.ts` 를 다시 만듭니다. `src/assets/icons-extra/` 는 건드리지 않습니다. 경로가 다르면 인자로 넘기세요 — `node scripts/sync-icons.mjs <경로>`.
