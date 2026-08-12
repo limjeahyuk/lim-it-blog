@@ -3,7 +3,11 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts'
 import { getPublishedPosts } from '../lib/posts'
 
 export async function GET(context) {
-  const posts = await getPublishedPosts()
+  /*
+    비밀글은 피드에서 뺍니다. 피드 리더는 자물쇠를 물어봐 주지 않으므로
+    제목만 흘리고 본문은 못 읽는 항목이 남습니다. 그럴 바엔 안 내보냅니다.
+  */
+  const posts = (await getPublishedPosts()).filter((post) => !post.data.secret)
 
   return rss({
     title: SITE_TITLE,

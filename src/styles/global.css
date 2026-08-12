@@ -355,6 +355,39 @@ a.pill:hover {
   margin: 2.5em 0;
 }
 
+/*
+  폰에서의 본문 리듬.
+
+  티스토리에서 옮겨온 글은 **한 줄이 곧 한 문단**입니다 (원본이 줄바꿈으로
+  쓰여 있었습니다). 데스크톱 기준의 line-height 1.9 + 문단 간격 1.25em 을
+  좁은 화면에 그대로 쓰면, 한 화면에 열 줄쯤밖에 안 들어가면서 문단 구분도
+  안 보이는 성긴 벽이 됩니다. 폰에서만 조금 좁힙니다.
+*/
+@media (max-width: 640px) {
+  .prose {
+    line-height: 1.8;
+  }
+
+  .prose > * + * {
+    margin-top: 1em;
+  }
+
+  .prose h2 {
+    margin-top: 2em;
+    font-size: 1.25rem;
+  }
+
+  .prose h3 {
+    margin-top: 1.6em;
+    font-size: 1.08rem;
+  }
+
+  .prose pre {
+    padding: 0.85rem 0.9rem;
+    font-size: 0.75rem;
+  }
+}
+
 /* ---------------------------------------------------------------
    Shiki 듀얼 테마 (astro.config 의 defaultColor:false 와 짝)
 --------------------------------------------------------------- */

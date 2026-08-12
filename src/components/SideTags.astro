@@ -26,9 +26,14 @@ const tags = countByTag(await getPublishedPosts())
 </div>
 
 <style>
+  /* 좁은 화면에서는 가로 스크롤 한 줄.
+     화면 양끝까지 흘려 보내서 「옆으로 더 있다」가 보이게 합니다 —
+     안쪽에서 딱 끊기면 그게 끝인 줄 압니다. */
   .list {
     display: flex;
     margin-bottom: 1.5rem;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
     gap: 0.25rem;
     overflow-x: auto;
     scrollbar-width: none;
@@ -42,7 +47,7 @@ const tags = countByTag(await getPublishedPosts())
 
   .list a {
     display: block;
-    padding: 0.25rem 1rem;
+    padding: 0.45rem 1rem;
     margin: 0.25rem 0;
     border-radius: var(--radius-lg);
     font-size: 0.875rem;
@@ -64,6 +69,12 @@ const tags = countByTag(await getPublishedPosts())
     .list {
       display: block;
       overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+
+    .list a {
+      padding-block: 0.25rem;
     }
   }
 </style>

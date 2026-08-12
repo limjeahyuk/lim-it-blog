@@ -1,7 +1,9 @@
 ---
 import { type CollectionEntry, render } from 'astro:content'
+import SecretGate from '../../components/SecretGate.astro'
 import PostLayout from '../../layouts/PostLayout.astro'
 import { getPublishedPosts } from '../../lib/posts'
+import { requireSecretPassword, sealHtml } from '../../lib/secret'
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts()
@@ -14,9 +16,21 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<'posts'>
 
 const post = Astro.props
+
+/*
+  비밀글은 <Content /> 를 아예 그리지 않습니다. 그리는 순간 HTML 에
+  평문이 들어가니까요. 대신 렌더된 HTML 을 잠가서 암호문만 내보냅니다.
+
+  post.rendered.html 은 Astro 가 마크다운을 렌더해 엔트리에 담아둔 것입니다
+  (코드 하이라이팅까지 끝난 상태). 컨테이너 API 로 다시 그릴 필요가 없습니다.
+*/
+const sealed = post.data.secret
+  ? await sealHtml(post.rendered?.html ?? '', requireSecretPassword(post.id))
+  : undefined
+
 const { Content } = await render(post)
 ---
 
 <PostLayout {...post.data}>
-  <Content />
+  {sealed ? <SecretGate sealed={sealed} /> : <Content />}
 </PostLayout>

@@ -18,11 +18,186 @@
       ?v= 는 캐시 무효화용입니다. config.yml 은 주소가 늘 같아서 브라우저가
       오래 물고 있습니다. 폼을 고쳤는데 폰에서 안 바뀌면 이 숫자를 올리세요.
     -->
-    <link href="/admin/config.yml?v=2" type="text/yaml" rel="cms-config-url" />
+    <link href="/admin/config.yml?v=3" type="text/yaml" rel="cms-config-url" />
 
     <style>
-      /*
-        Decap CMS 모바일 대응.
+      /* ===============================================================
+         1. 블로그와 같은 옷 입히기
+
+         Decap 은 파란 강조색에 각진 흰 화면입니다. 블로그는 청록 강조색에
+         둥근 카드고, 라이트/다크가 다릅니다. 글 쓰다 목록 보러 나오면
+         전혀 다른 사이트처럼 보여서 값만 맞춰 둡니다.
+
+         ⚠ 색은 src/styles/tokens.css 에서 손으로 옮긴 것입니다. limSystem
+           원본이 바뀌면 tokens.css 와 여기 둘 다 고쳐야 합니다.
+         ⚠ 블로그는 테마를 직접 고를 수 있지만(html[data-theme]) 여기는
+           Decap 이 만드는 DOM 이라 토글을 붙일 자리가 없습니다. OS 설정
+           (prefers-color-scheme)만 따릅니다.
+         =============================================================== */
+
+      :root {
+        --a-bg: #f1f2f4; /* gray-50   */
+        --a-card: #ffffff; /* white     */
+        --a-surface: #e6e8ea; /* gray-100  */
+        --a-border: #dde0e3; /* gray-200  */
+        --a-text: #181a1b; /* gray-990  */
+        --a-dim: #6d7178; /* gray-700  */
+        --a-accent: #00838a; /* teal-700 — 흰 배경에서 4.6:1 */
+        --a-accent-fg: #ffffff;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --a-bg: #181a1b; /* gray-990 */
+          --a-card: #292b2d; /* gray-980 */
+          --a-surface: #333538; /* gray-950 */
+          --a-border: #3c3e44; /* gray-900 */
+          --a-text: #f1f2f4; /* gray-50  */
+          --a-dim: #b3b7bd; /* gray-400 */
+          --a-accent: #23c7cd; /* teal-500 */
+          --a-accent-fg: #181a1b; /* 밝은 청록 위에는 어두운 글자 */
+        }
+      }
+
+      /* 블로그와 같은 폰트.
+         src/assets/fonts/ 의 것은 Astro 가 해시 붙은 주소로 내보내서
+         정적 파일인 여기서는 못 가져옵니다. public/fonts/ 로 한 벌 복사해
+         뒀습니다 — 폰트를 갈아끼우면 두 곳 다 바꿔야 합니다.
+         라이선스(SIL OFL 1.1) 사본도 같이 뒀습니다. 지우지 마세요. */
+      @font-face {
+        font-family: 'Pretendard';
+        src: url('/fonts/PretendardVariable.woff2') format('woff2-variations');
+        font-weight: 100 900;
+        font-display: swap;
+      }
+
+      body,
+      input,
+      textarea,
+      select,
+      button {
+        font-family:
+          'Pretendard', -apple-system, BlinkMacSystemFont, system-ui,
+          sans-serif !important;
+      }
+
+      /* 바탕과 카드 */
+      body,
+      [class*='AppMainContainer'],
+      [class*='CollectionContainer'],
+      [class*='CollectionMain'],
+      [class*='EditorContainer'],
+      [class*='ControlPaneContainer'] {
+        background-color: var(--a-bg) !important;
+        color: var(--a-text);
+      }
+
+      [class*='AppHeader'],
+      [class*='EditorToolbar'],
+      [class*='ToolbarContainer'] {
+        background-color: var(--a-card) !important;
+        border-color: var(--a-border) !important;
+        color: var(--a-text) !important;
+      }
+
+      [class*='SidebarContainer'],
+      [class*='ListCard'],
+      [class*='CardsGrid'] > li,
+      [class*='CollectionTopContainer'] {
+        background-color: var(--a-card) !important;
+        border-radius: 16px !important; /* --radius-card */
+        color: var(--a-text) !important;
+      }
+
+      /* 입력칸 — 카드 위에 얹히므로 배경은 카드색, 테두리만 구분선 */
+      [class*='ControlPaneContainer'] input,
+      [class*='ControlPaneContainer'] textarea,
+      [class*='-control'],
+      [class*='RawEditorContainer'],
+      .cms-editor-raw [contenteditable='true'],
+      [class*='SearchInput'],
+      [class*='InputContainer'] {
+        background-color: var(--a-card) !important;
+        border-color: var(--a-border) !important;
+        color: var(--a-text) !important;
+        border-radius: 8px !important; /* --radius-lg */
+      }
+
+      [class*='FieldLabel'] {
+        background-color: var(--a-surface) !important;
+        color: var(--a-dim) !important;
+      }
+      /* 라벨 알약과 입력칸을 잇는 4px 짜리 이음매. 흰색이 박혀 있어서
+         다크에서 라벨 옆에 흰 조각으로 남습니다. */
+      [class*='FieldLabel']::before,
+      [class*='FieldLabel']::after {
+        background-color: var(--a-surface) !important;
+      }
+
+      [class*='BackArrow'] {
+        color: var(--a-text) !important;
+      }
+
+      [class*='ControlHint'],
+      [class*='-placeholder'] {
+        color: var(--a-dim) !important;
+      }
+
+      /* Decap 이 글자색을 직접 박아 둔 자리들 — 다크에서 배경과 같이 어두워
+         안 보이게 됩니다. */
+      [class*='CollectionTopHeading'],
+      [class*='SidebarHeading'],
+      [class*='BackCollection'],
+      [class*='EntryListing'] h2,
+      [class*='ListCard'] a {
+        color: var(--a-text) !important;
+      }
+
+      [class*='-singleValue'],
+      [class*='-input'] input {
+        color: var(--a-text) !important;
+      }
+
+      /* 강조 — 게시·새 글 같은 주 버튼 */
+      [class*='ToolbarSectionMain'] [class*='StyledDropdownButton'],
+      [class*='AppHeaderQuickNewButton'],
+      [class*='CollectionTopNewButton'] {
+        background-color: var(--a-accent) !important;
+        color: var(--a-accent-fg) !important;
+        border-radius: 999px !important; /* --radius-full */
+      }
+
+      /* Decap 의 파랑(#3a69c7)이 남는 자리 — 글자만 청록으로 */
+      [class*='AppHeaderNavLink'],
+      [class*='CollectionControlsContainer'] [class*='StyledDropdownButton'],
+      [class*='ViewControls'] button {
+        color: var(--a-accent) !important;
+      }
+
+      /* 떠 있는 메뉴 */
+      [class*='DropdownList'],
+      [class*='-menu'] {
+        background-color: var(--a-card) !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        color: var(--a-text) !important;
+      }
+
+      [class*='StyledMenuItem'],
+      [class*='-option'] {
+        background-color: transparent !important;
+        color: var(--a-text) !important;
+      }
+
+      [class*='StyledMenuItem']:hover,
+      [class*='-option']:hover,
+      [class*='-option'][class*='focused'] {
+        background-color: var(--a-surface) !important;
+      }
+
+      /* ===============================================================
+         2. Decap CMS 모바일 대응.
 
         Decap 은 데스크톱 기준으로 만들어져 있어서 주요 컨테이너에
         min-width: 800px 이 박혀 있습니다. 폰에서 열면 화면 밖으로 넘쳐
@@ -31,7 +206,29 @@
         클래스 이름은 emotion 이 만든 것이라 해시가 붙지만
         (css-1fehwpo-AppMainContainer) 뒤의 컴포넌트 이름은 유지되므로
         부분 일치로 잡습니다. Decap 을 올릴 때 이름이 바뀌면 여기도 확인이 필요합니다.
+         =============================================================== */
+
+      /*
+        raw 모드에서 죽어 있는 툴바를 숨깁니다 — 화면 폭과 무관한 문제라
+        미디어쿼리 밖입니다.
+
+        본문을 마크다운 원문(raw)만 쓰도록 바꾼 뒤로 툴바 버튼 열 개가 전부
+        비활성입니다. 자리만 차지하면서 눌리지도 않습니다.
+        `.cms-editor-raw` 안으로 좁혔으므로, config.yml 에 rich_text 를
+        도로 넣으면 (컨테이너 클래스가 바뀌어) 툴바가 알아서 돌아옵니다.
       */
+      .cms-editor-raw [class*='EditorControlBar'] {
+        display: none !important;
+      }
+      /*
+        raw 편집기는 margin-top: -100px 으로 툴바 밑에 끼워 넣어져 있습니다.
+        툴바만 지우면 그 -100px 이 남아서 편집기가 위로 올라붙고 바로 위
+        필드의 힌트와 「본문」 라벨을 덮어버립니다. 둘은 항상 같이 갑니다.
+      */
+      .cms-editor-raw [contenteditable='true'] {
+        margin-top: 0 !important;
+      }
+
       @media (max-width: 799px) {
         [class*='AppHeaderContent'],
         [class*='AppMainContainer'],
@@ -39,14 +236,6 @@
         [class*='ToolbarContainer'] {
           min-width: 0 !important;
           width: 100% !important;
-        }
-
-        /* 컬렉션이 「글」 하나뿐이라 사이드바가 자리만 차지합니다. */
-        [class*='SidebarContainer'] {
-          display: none !important;
-        }
-        [class*='CollectionMain'] {
-          padding-left: 0 !important;
         }
 
         [class*='ToolbarSectionMain'],
@@ -60,32 +249,126 @@
           padding-right: 10px !important;
         }
 
-        /*
-          마크다운 툴바가 flex-wrap: nowrap 이라 좁은 화면에서 버튼이
-          세로 두 줄로 눌립니다. 가로로 흐르게 풀어줍니다.
-          앱 상단 툴바에도 같은 이름이 쓰이므로 편집기 안으로 범위를 좁힙니다.
-        */
-        [class*='EditorControlBar'] [class*='ToolbarContainer'] {
-          flex-wrap: wrap !important;
-          row-gap: 4px !important;
-        }
-        [class*='EditorControlBar'] [class*='ToolbarContainer'] > div {
-          width: 100% !important;
-        }
-
-        /* 본문 편집기가 화면 대부분을 쓰도록 */
-        [class*='ControlContainer'] textarea {
-          min-height: 120px;
-        }
-
         /* 아이폰 노치·홈바 영역 확보 */
         [class*='EditorContainer'] {
           padding-bottom: env(safe-area-inset-bottom) !important;
+        }
+
+        /* ── 1. 사파리가 입력칸을 확대하지 않게 ───────────────────────
+           iOS 사파리는 글자가 16px 미만인 입력칸을 탭하면 화면을 당깁니다.
+           Decap 기본값이 15px 이라, 필드를 하나 건드릴 때마다 확대됐다가
+           손으로 다시 줄여야 했습니다. 딱 1px 이 원인입니다. */
+        input,
+        textarea,
+        select,
+        [class*='ControlPaneContainer'] [contenteditable='true'] {
+          font-size: 16px !important;
+        }
+
+        /* ── 2. 글 목록에서 검색을 살립니다 ──────────────────────────
+           검색창이 사이드바 안에 들어 있어서, 사이드바를 통째로 숨기던
+           예전 규칙이 검색까지 같이 지우고 있었습니다. 글이 117개라
+           검색 없이는 고칠 글을 찾을 수가 없습니다.
+           컬렉션 목록(「글」 하나뿐)만 숨기고 검색창은 위에 남깁니다. */
+        [class*='SidebarContainer'] {
+          position: static !important;
+          width: auto !important;
+          max-width: none !important;
+          margin: 0 0 12px !important;
+          padding: 12px !important;
+        }
+        [class*='SidebarHeading'],
+        [class*='SidebarNavList'] {
+          display: none !important;
+        }
+        [class*='CollectionMain'] {
+          padding-left: 0 !important;
+        }
+
+        /* ── 3. 폼을 짧게 ────────────────────────────────────────────
+           필드 간격이 36px 이라 열 개 늘어놓으면 스크롤이 한참입니다. */
+        [class*='ControlContainer'] {
+          margin-top: 18px !important;
+        }
+        [class*='ControlHint'] {
+          margin-top: 2px !important;
+          line-height: 1.4 !important;
+        }
+
+        /* ── 4. 본문이 화면을 차지하게 ───────────────────────────────
+           기본 높이가 300px 이라 폰에서는 대여섯 줄 쓰면 끝까지 차고,
+           그때부터 작은 창 안에서 스크롤하며 쓰게 됩니다. */
+        .cms-editor-raw [contenteditable='true'] {
+          min-height: 60vh !important;
+          line-height: 1.7 !important;
+        }
+
+        /* ── 5. 상단 메뉴·날짜 버튼 글자가 반으로 접히던 것 ───────────
+           「콘텐 츠」「미디 어」「빠른 추 가」「현재시 각」처럼 두 줄로
+           꺾여서 읽히지 않았습니다. */
+        [class*='AppHeader'] a,
+        [class*='AppHeader'] button,
+        [class*='DateControl'] button,
+        [class*='ControlContainer'] button {
+          white-space: nowrap !important;
+        }
+        [class*='AppHeaderNavLink'],
+        [class*='AppHeaderButton'] {
+          padding-left: 8px !important;
+          padding-right: 8px !important;
+        }
+
+        /* ── 6. 드롭다운이 화면을 덮던 것 ────────────────────────────
+           카테고리 select 는 항목 하나가 78px 이라, 열면 300px 짜리
+           메뉴가 아래를 통째로 가렸습니다. 키보드까지 올라오면 화면이
+           덮입니다. 줄 높이를 반으로 줄이고 높이를 화면의 40%로 묶습니다. */
+        [class*='-menu'] {
+          max-height: min(40vh, 264px) !important;
+        }
+        [class*='-menu'] > div {
+          max-height: min(40vh, 264px) !important;
+        }
+        [class*='-option'] {
+          padding-top: 10px !important;
+          padding-bottom: 10px !important;
+          line-height: 1.4 !important;
+        }
+
+        /* 「게시」 메뉴는 버튼 왼쪽에 붙어서 열리는데 폭이 176px 이라
+           오른쪽 끝 버튼에서 열면 화면 밖으로 나가 잘렸습니다.
+           오른쪽 정렬로 바꾸고 화면 안쪽으로 묶습니다. */
+        [class*='DropdownList'] {
+          left: auto !important;
+          right: 0 !important;
+          max-width: calc(100vw - 16px) !important;
         }
       }
     </style>
   </head>
   <body>
+    <script>
+      /*
+        목록을 최신 글부터 보여줍니다.
+
+        Decap 3.9 는 config.yml 에서 기본 정렬을 못 정합니다 — sortable_fields
+        에 default 를 넣으면 「must be an array」로 설정이 통째로 안 읽힙니다.
+        대신 Decap 이 정렬 상태를 담아두는 localStorage 키를 처음 한 번만
+        채워 둡니다. 목록에서 정렬을 바꾸면 Decap 이 이 값을 덮어쓰고,
+        그다음부터 여기는 손대지 않습니다.
+      */
+      ;(function () {
+        var KEY = 'decap-cms.entries.sort'
+        if (localStorage.getItem(KEY)) return
+        localStorage.setItem(
+          KEY,
+          JSON.stringify({
+            posts: {
+              pubDate: { key: 'pubDate', direction: 'Descending', index: 0 },
+            },
+          })
+        )
+      })()
+    </script>
     <script src="https://unpkg.com/decap-cms@3.9.0/dist/decap-cms.js"></script>
   </body>
 </html>

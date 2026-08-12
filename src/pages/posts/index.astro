@@ -37,6 +37,11 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
             <div class="card rows">
               {byYear.get(year)!.map((post) => (
                 <a class="row" href={`/posts/${post.id}/`}>
+                  {post.data.secret && (
+                    <span class="lock" title="비밀글">
+                      <Icon name="lock" size={13} />
+                    </span>
+                  )}
                   <span class="title">{post.data.title}</span>
                   {post.data.category && (
                     <span class="cat">
@@ -110,6 +115,13 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
   .row:hover {
     background-color: var(--surface);
     color: var(--text);
+  }
+
+  .lock {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-self: center;
+    color: var(--text-faint);
   }
 
   .title {

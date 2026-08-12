@@ -73,12 +73,15 @@ const { currentCategory, currentTag } = Astro.props as Props
     min-width: 0;
   }
 
+  /*
+    오른쪽 열(프로필·Works·Contact)은 폰에서 글 목록 **아래**로 갑니다.
+    예전에는 1024px 미만에서 통째로 숨겼는데, 그러면 폰으로 들어온 사람은
+    이 블로그가 누구 것인지·뭘 만들었는지를 볼 방법이 아예 없었습니다.
+    글이 끝나고 나서 나오면 되는 내용이라 자리를 옮기는 걸로 충분합니다.
+  */
   .rt {
-    display: none;
-    overflow-y: auto;
-    position: sticky;
-    top: 63px;
-    max-height: calc(100vh - 73px);
+    display: block;
+    margin-top: 2.5rem;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -103,6 +106,11 @@ const { currentCategory, currentTag } = Astro.props as Props
 
     .rt {
       grid-column: span 3 / span 3;
+      margin-top: 0;
+      position: sticky;
+      top: 63px;
+      max-height: calc(100vh - 73px);
+      overflow-y: auto;
     }
 
     .tags-mobile {

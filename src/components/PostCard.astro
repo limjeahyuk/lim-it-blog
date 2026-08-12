@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content'
 import FormattedDate from './FormattedDate.astro'
+import Icon from './Icon.astro'
 import { AUTHOR_LABEL, getCategory, getProject } from '../consts'
 
 interface Props {
@@ -8,7 +9,7 @@ interface Props {
 }
 
 const { post } = Astro.props as Props
-const { title, description, pubDate, category, project, author, tags } =
+const { title, description, pubDate, category, project, author, tags, secret } =
   post.data
 const proj = project ? getProject(project) : undefined
 const cat = category ? getCategory(category) : undefined
@@ -26,7 +27,10 @@ const cat = category ? getCategory(category) : undefined
       )
     }
     <div class="content" data-category={!!proj}>
-      <h2>{title}</h2>
+      <h2>
+        {secret && <span class="lock" title="비밀글"><Icon name="lock" size={15} /></span>}
+        {title}
+      </h2>
       <div class="date">
         {
           cat && (
@@ -94,6 +98,14 @@ const cat = category ? getCategory(category) : undefined
     h2 {
       font-size: 1.25rem;
     }
+  }
+
+  /* 비밀글 자물쇠. 제목과 같은 줄에 붙되 크기는 글자를 따라갑니다. */
+  .lock {
+    display: inline-flex;
+    vertical-align: -0.15em;
+    margin-right: 0.15em;
+    color: var(--text-faint);
   }
 
   .date {

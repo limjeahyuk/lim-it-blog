@@ -23,9 +23,16 @@ import { AUTHOR } from '../consts'
     padding: 1rem;
   }
 
+  /*
+    데스크톱에서는 폭 3열짜리 사이드바 안이라 100% 가 알아서 작습니다.
+    폰에서는 이 카드가 화면 전체 폭이라 그대로 두면 얼굴만 한 화면을
+    차지합니다. 위쪽 한계를 둡니다.
+  */
   .avatar {
     position: relative;
     width: 100%;
+    max-width: 11rem;
+    margin: 0 auto;
     aspect-ratio: 1 / 1;
   }
 
