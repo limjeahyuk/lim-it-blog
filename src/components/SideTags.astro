@@ -1,6 +1,5 @@
 ---
 import Icon from './Icon.astro'
-import { countByTag, getPublishedPosts } from '../lib/posts'
 
 interface Props {
   /** 지금 보고 있는 태그 (있으면 강조) */
@@ -8,20 +7,15 @@ interface Props {
 }
 
 const { current } = Astro.props as Props
-const tags = countByTag(await getPublishedPosts())
 ---
 
+<!-- 태그 목록은 접어뒀습니다. 옮겨온 글 대부분이 태그가 없어서
+     사이드바가 몇 개 안 되는 태그로만 길어졌습니다.
+     `/tags/<태그>` 페이지는 그대로 살아 있습니다. -->
 <div class="wrap">
   <div class="side-title"><Icon name="label" size={17} /> Tags</div>
   <div class="list">
     <a href="/" data-active={current === undefined}>All</a>
-    {
-      tags.map(([tag]) => (
-        <a href={`/tags/${tag}`} data-active={tag === current}>
-          {tag}
-        </a>
-      ))
-    }
   </div>
 </div>
 
