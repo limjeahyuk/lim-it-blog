@@ -1,0 +1,83 @@
+---
+/**
+ * limSystem 아이콘 하나를 인라인 SVG 로 그립니다.
+ *
+ *   <Icon name="label" />
+ *   <Icon name="folder-code" size={18} />
+ *
+ * 원본 SVG 는 색이 #3C3E44 로 박혀 있어서 currentColor 로 바꿉니다.
+ * 그래서 부모의 `color` 를 그대로 따라갑니다 — 의미 토큰을 쓰세요.
+ *
+ * 아이콘 파일은 두 곳에 있습니다.
+ *   src/assets/icons/        limSystem 사본 — `npm run icons` 가 갈아엎습니다
+ *   src/assets/icons-extra/  limSystem 에 없어서 손으로 넣은 것 — 안 지워집니다
+ *
+ * 이름 목록(자동 생성): src/lib/icon-names.ts
+ */
+import type { IconName } from '../lib/icon-names'
+
+interface Props {
+  name: IconName
+  /** 한 변의 px. 기본 20 */
+  size?: number
+  class?: string
+  /** 장식이 아니라 뜻이 있는 아이콘이면 넣으세요 */
+  label?: string
+}
+
+const lim = import.meta.glob<string>('../assets/icons/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+})
+
+const extra = import.meta.glob<string>('../assets/icons-extra/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+})
+
+const { name, size = 20, class: className, label } = Astro.props
+
+const raw =
+  lim[`../assets/icons/${name}.svg`] ??
+  extra[`../assets/icons-extra/${name}.svg`]
+
+if (!raw) {
+  // 빌드를 세웁니다. 오타난 아이콘 이름이 배포되는 것보다 낫습니다.
+  throw new Error(
+    `아이콘이 없습니다: "${name}" — src/assets/icons/${name}.svg 나 ` +
+      `src/assets/icons-extra/${name}.svg 가 필요합니다.`,
+  )
+}
+
+/** 대부분 0 0 24 24 지만 몇 개는 다릅니다. 원본에서 그대로 읽습니다. */
+const viewBox = raw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 24 24'
+
+const inner = raw
+  .replace(/^[\s\S]*?<svg[^>]*>/, '')
+  .replace(/<\/svg>\s*$/, '')
+  .replace(/#3C3E44/gi, 'currentColor')
+  .replace(/#292929/gi, 'currentColor')
+  .replace(/"inherit"/g, '"currentColor"')
+---
+
+<svg
+  class:list={['icon', className]}
+  width={size}
+  height={size}
+  viewBox={viewBox}
+  fill="none"
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  set:html={inner}
+/>
+
+<style>
+  .icon {
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: -0.15em;
+  }
+</style>

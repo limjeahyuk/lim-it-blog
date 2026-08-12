@@ -1,0 +1,268 @@
+---
+import BaseLayout from '../../../components/BaseLayout.astro'
+import FeedLayout from '../../../components/FeedLayout.astro'
+import Icon from '../../../components/Icon.astro'
+import { PROJECTS, type Project } from '../../../consts'
+import { countByProject, getPublishedPosts } from '../../../lib/posts'
+import type { IconName } from '../../../lib/icon-names'
+
+export async function getStaticPaths() {
+  const counts = countByProject(await getPublishedPosts())
+  return PROJECTS.map((project) => ({
+    params: { project: project.id },
+    props: { project, postCount: counts.get(project.id) ?? 0 },
+  }))
+}
+
+type Props = { project: Project; postCount: number }
+
+const { project, postCount } = Astro.props as Props
+
+/** 링크 종류별 아이콘. consts.ts 의 links[].kind 와 짝입니다. */
+const LINK_ICON: Record<string, IconName> = {
+  web: 'play-circle',
+  appstore: 'download',
+  support: 'circle-question',
+}
+
+const storeName = 'storeName' in project ? project.storeName : null
+---
+
+<BaseLayout
+  title={`${project.name} — 소개`}
+  description={project.summary}
+>
+  <FeedLayout>
+    <div class="crumb">
+      <a href="/projects"><Icon name="book-open" size={17} /> Works</a>
+      <span class="sep">/</span>
+      <a href={`/projects/${project.id}`}>{project.name}</a>
+      <span class="sep">/</span>
+      <span>소개</span>
+    </div>
+
+    <div class="card head">
+      <span class="bar" style={`background-color:${project.color}`}></span>
+      <div class="content">
+        <div class="top">
+          <span
+            class="pill-category"
+            style={`background-color:${project.color}`}
+          >
+            {project.name}
+          </span>
+          {project.active && <span class="live">LIVE</span>}
+        </div>
+        <h1>{project.tagline}</h1>
+        {
+          storeName && (
+            <p class="storename">App Store 에는 「{storeName}」로 올라가 있습니다.</p>
+          )
+        }
+        <p class="summary">{project.summary}</p>
+
+        <div class="cta">
+          {
+            project.links.map((link) => (
+              <a
+                class="btn"
+                href={link.href}
+                target="_blank"
+                rel="noopener"
+                style={`background-color:${project.color}`}
+              >
+                <Icon name={LINK_ICON[link.kind] ?? 'link-external'} size={18} />
+                {link.label}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section">
+      <Icon name="check-double" size={18} /> 이런 걸 할 수 있습니다
+    </h2>
+    <ul class="features">
+      {project.features.map((feature) => <li>{feature}</li>)}
+    </ul>
+
+    <h2 class="section">
+      <Icon name="file-code" size={18} /> 무엇으로 만들었나
+    </h2>
+    <div class="stack">
+      <span class="pill">{project.platform}</span>
+      {project.stack.map((tech) => <span class="pill">{tech}</span>)}
+    </div>
+
+    <a class="devlog" href={`/projects/${project.id}`}>
+      <Icon name="notebook" size={18} />
+      <span>
+        {
+          postCount > 0
+            ? `만들면서 남긴 글 ${postCount}개 보기`
+            : '아직 남긴 글은 없습니다'
+        }
+      </span>
+      <Icon name="chevron-right" size={16} />
+    </a>
+  </FeedLayout>
+</BaseLayout>
+
+<style>
+  .crumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9375rem;
+  }
+
+  .crumb a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-dim);
+  }
+
+  .crumb a:hover {
+    color: var(--text);
+  }
+
+  .sep {
+    color: var(--text-faint);
+  }
+
+  .head {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+
+  .bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+  }
+
+  .content {
+    padding: 1.5rem 1.5rem 1.75rem;
+  }
+
+  .top {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .live {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.1rem 0.3rem;
+    border-radius: var(--radius-sm);
+    color: var(--card);
+    background-color: var(--text-dim);
+  }
+
+  h1 {
+    font-size: 1.375rem;
+    line-height: 1.55;
+    font-weight: 600;
+  }
+
+  .storename {
+    margin: 0.35rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+  }
+
+  .summary {
+    margin: 0.9rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.85;
+    color: var(--text-dim);
+  }
+
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--pill-fg);
+    transition: opacity 200ms ease;
+  }
+
+  .btn:hover {
+    opacity: 0.85;
+  }
+
+  .section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .features {
+    margin: 0 0 2.5rem;
+    padding: 1.15rem 1.5rem 1.15rem 2.6rem;
+    border-radius: var(--radius-card);
+    background-color: var(--card);
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+
+  .features li + li {
+    margin-top: 0.6rem;
+  }
+
+  .features li::marker {
+    color: var(--text-faint);
+  }
+
+  .stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 2.5rem;
+    padding: 0.25rem;
+  }
+
+  .devlog {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-card);
+    background-color: var(--card);
+    font-size: 0.9375rem;
+    color: var(--text-dim);
+  }
+
+  .devlog:hover {
+    color: var(--text);
+  }
+
+  .devlog span {
+    margin-right: auto;
+  }
+</style>

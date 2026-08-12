@@ -57,11 +57,8 @@ collections:
         hint: 게임 devlog 가 아니면 비워두세요.
         options:
           - { label: GridBrawl, value: gridbrawl }
-          - { label: BeepTimer, value: beeptimer }
           - { label: MineApp, value: mineapp }
-          - { label: CoupleApp, value: coupleapp }
-          - { label: MiniGame Speeder, value: speeder }
-          - { label: TossTreasureHunt, value: tosstreasure }
+          - { label: BeepTimer, value: beeptimer }
 
       - name: tags
         label: 태그

@@ -167,9 +167,19 @@ main {
 --------------------------------------------------------------- */
 
 .side-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.25rem;
   margin-bottom: 0.75rem;
   font-size: 0.9375rem;
+}
+
+/* 아이콘 + 글자를 한 줄로. 목록 머리글에 씁니다. */
+.title-ico {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .card {

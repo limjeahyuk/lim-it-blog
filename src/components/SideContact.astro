@@ -1,21 +1,28 @@
 ---
+import Icon from './Icon.astro'
 import { AUTHOR } from '../consts'
+import type { IconName } from '../lib/icon-names'
 
-const links = [
-  { label: 'github', href: `https://github.com/${AUTHOR.github}` },
-  { label: 'email', href: `mailto:${AUTHOR.email}` },
-  { label: 'rss', href: '/rss.xml' },
+const links: { label: string; href: string; icon: IconName }[] = [
+  {
+    label: 'github',
+    href: `https://github.com/${AUTHOR.github}`,
+    icon: 'folder-code',
+  },
+  { label: 'email', href: `mailto:${AUTHOR.email}`, icon: 'at' },
+  { label: 'rss', href: '/rss.xml', icon: 'news' },
 ]
 
 const year = new Date().getFullYear()
 ---
 
 <div class="wrap">
-  <div class="side-title">💬 Contact</div>
+  <div class="side-title"><Icon name="chat-circle-dots" size={17} /> Contact</div>
   <div class="card content">
     {
       links.map((link) => (
         <a class="row" href={link.href} target="_blank" rel="noopener">
+          <Icon name={link.icon} size={16} />
           {link.label}
         </a>
       ))
@@ -30,7 +37,9 @@ const year = new Date().getFullYear()
   }
 
   .row {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     border-radius: var(--radius-lg);
     font-size: 0.875rem;

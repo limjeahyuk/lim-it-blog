@@ -1,9 +1,10 @@
 ---
-import BaseLayout from '../../components/BaseLayout.astro'
-import FeedLayout from '../../components/FeedLayout.astro'
-import PostCard from '../../components/PostCard.astro'
-import { PROJECTS } from '../../consts'
-import { getPublishedPosts, type Post } from '../../lib/posts'
+import BaseLayout from '../../../components/BaseLayout.astro'
+import FeedLayout from '../../../components/FeedLayout.astro'
+import Icon from '../../../components/Icon.astro'
+import PostCard from '../../../components/PostCard.astro'
+import { PROJECTS, type Project } from '../../../consts'
+import { getPublishedPosts, type Post } from '../../../lib/posts'
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts()
@@ -16,10 +17,7 @@ export async function getStaticPaths() {
   }))
 }
 
-type Props = {
-  project: (typeof PROJECTS)[number]
-  posts: Post[]
-}
+type Props = { project: Project; posts: Post[] }
 
 const { project, posts } = Astro.props as Props
 ---
@@ -30,30 +28,37 @@ const { project, posts } = Astro.props as Props
 >
   <FeedLayout>
     <div class="feed-header">
-      <span>🎮 Works</span>
+      <a href="/projects"><Icon name="book-open" size={17} /> Works</a>
       <span class="sep">/</span>
       <span>{project.name}</span>
     </div>
 
-    <div class="card head">
-      <span class="bar" style={`background-color:${project.color}`}></span>
-      <div class="content">
-        <div class="top">
-          <span
-            class="pill-category"
-            style={`background-color:${project.color}`}
-          >
-            {project.name}
-          </span>
-          {project.active && <span class="live">LIVE</span>}
+    {/* 카드를 통째로 눌러 소개 페이지로 갑니다 — 받는 곳·플레이하는 곳이 거기 있습니다. */}
+    <a class="head-link" href={`/projects/${project.id}/about`}>
+      <div class="card head">
+        <span class="bar" style={`background-color:${project.color}`}></span>
+        <div class="content">
+          <div class="top">
+            <span
+              class="pill-category"
+              style={`background-color:${project.color}`}
+            >
+              {project.name}
+            </span>
+            {project.active && <span class="live">LIVE</span>}
+            <span class="more">
+              소개 보기
+              <Icon name="chevron-right" size={15} />
+            </span>
+          </div>
+          <h1>{project.tagline}</h1>
+          <p class="stack">{project.platform} · {project.stack.join(', ')}</p>
         </div>
-        <h1>{project.tagline}</h1>
-        <p class="stack">{project.platform} · {project.stack.join(', ')}</p>
       </div>
-    </div>
+    </a>
 
     <div class="list-title">
-      <span>📚 Devlog</span>
+      <span><Icon name="notebook" size={17} /> Devlog</span>
       <span class="count">{posts.length}</span>
     </div>
 
@@ -77,6 +82,17 @@ const { project, posts } = Astro.props as Props
     font-size: 0.9375rem;
   }
 
+  .feed-header a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-dim);
+  }
+
+  .feed-header a:hover {
+    color: var(--text);
+  }
+
   .sep {
     color: var(--text-faint);
   }
@@ -85,6 +101,13 @@ const { project, posts } = Astro.props as Props
     position: relative;
     overflow: hidden;
     margin-bottom: 2rem;
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .head-link:hover .head {
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 
   .bar {
@@ -116,6 +139,19 @@ const { project, posts } = Astro.props as Props
     background-color: var(--text-dim);
   }
 
+  .more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin-left: auto;
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+  }
+
+  .head-link:hover .more {
+    color: var(--text-dim);
+  }
+
   h1 {
     font-size: 1.25rem;
     line-height: 1.6;
@@ -136,6 +172,12 @@ const { project, posts } = Astro.props as Props
     padding: 0.25rem;
     margin-bottom: 0.75rem;
     font-size: 0.9375rem;
+  }
+
+  .list-title span:first-child {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .count {

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../components/BaseLayout.astro'
 import FeedLayout from '../components/FeedLayout.astro'
+import Icon from '../components/Icon.astro'
 import PostCard from '../components/PostCard.astro'
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts'
 import { getPublishedPosts } from '../lib/posts'
@@ -11,7 +12,7 @@ const posts = await getPublishedPosts()
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
   <FeedLayout>
     <div class="feed-header">
-      <span>📚 All Posts</span>
+      <span class="title-ico"><Icon name="notebook" size={17} /> All Posts</span>
       <span class="count">{posts.length}</span>
     </div>
 

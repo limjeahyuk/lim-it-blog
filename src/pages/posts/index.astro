@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../components/BaseLayout.astro'
 import FeedLayout from '../../components/FeedLayout.astro'
+import Icon from '../../components/Icon.astro'
 import PostCard from '../../components/PostCard.astro'
 import { getPublishedPosts } from '../../lib/posts'
 
@@ -17,7 +18,7 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
 <BaseLayout title="Posts" description="전체 글 목록">
   <FeedLayout>
     <div class="feed-header">
-      <span>📚 All Posts</span>
+      <span class="title-ico"><Icon name="notebook" size={17} /> All Posts</span>
       <span class="count">{posts.length}</span>
     </div>
 

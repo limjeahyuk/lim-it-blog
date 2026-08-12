@@ -83,14 +83,59 @@ draft: false
 
 ### 출처
 
-색과 radius 는 **limSystem** 에서 가져왔습니다.
+색·radius·아이콘 전부 **limSystem** 에서 가져왔습니다.
 
 ```
-원본: ~/Develop/React/limSystem/src/util/theme.ts
-사본: src/styles/tokens.css
+색/radius   원본: ~/Develop/React/limSystem/src/util/theme.ts
+            사본: src/styles/tokens.css           ← 손으로 옮김
+아이콘      원본: ~/Develop/React/limSystem/src/assets/icons/*.svg
+            사본: src/assets/icons/*.svg           ← npm run icons
+            추가: src/assets/icons-extra/*.svg     ← limSystem 에 없어서 손으로 넣음
 ```
 
-limSystem 은 별도 Next.js 앱(`private: true`)이라 패키지로 못 가져옵니다. 값을 옮겨온 것이라 **원본이 바뀌면 `tokens.css` 도 같이 고쳐야 합니다.**
+limSystem 은 별도 Next.js 앱(`private: true`)이라 패키지로 못 가져옵니다. **컴포넌트(React)는 Astro 에서 못 씁니다** — 가져올 수 있는 건 값과 SVG 뿐입니다.
+
+**색은 손으로 옮긴 것이라 원본이 바뀌면 `tokens.css` 도 같이 고쳐야 합니다.** 아이콘은 `npm run icons` 로 다시 긁어오면 됩니다.
+
+### 아이콘 — 이모지 대신 씁니다
+
+목록 머리글·사이드바 제목·버튼에는 **limSystem SVG** 를 씁니다. 이모지는 OS마다 그림이 달라서 다크 테마에서 혼자 튀거든요.
+
+```astro
+---
+import Icon from '../components/Icon.astro'
+---
+<span class="title-ico"><Icon name="notebook" size={17} /> All Posts</span>
+```
+
+- 이름은 파일명 그대로입니다. 목록은 `src/lib/icon-names.ts` (자동 생성).
+- 없는 이름을 쓰면 **빌드가 깨집니다.** 의도한 것입니다 — 오타를 배포 전에 잡습니다.
+- 원본 SVG 는 색이 `#3C3E44` 로 박혀 있는데 `Icon.astro` 가 `currentColor` 로 바꿔 줍니다. 그래서 **부모의 `color` 를 따라갑니다** — 아이콘에 색을 직접 주지 말고 부모에 의미 토큰을 주세요.
+- 아이콘 + 글자를 한 줄로 놓을 때는 `.title-ico`(global.css)나 `.side-title` 을 씁니다.
+
+지금 쓰는 것들:
+
+| 자리 | 아이콘 | 어디서 |
+|---|---|---|
+| Tags | `label` | limSystem |
+| Works | `book-open` | icons-extra |
+| Posts / Devlog | `notebook` | limSystem |
+| Profile | `smile` | icons-extra |
+| Contact | `chat-circle-dots` | icons-extra |
+| 테마 토글 | `moon` / `sun` | icons-extra |
+| 웹에서 플레이 | `play-circle` | limSystem |
+| App Store 에서 받기 | `download` | limSystem |
+
+### 아이콘이 limSystem 에 없을 때
+
+limSystem 에는 **해·달·말풍선·펼친 책·웃는 얼굴·게임패드·메일·GitHub** 이 없습니다. 두 가지 방법이 있습니다.
+
+1. **뜻이 통하는 다른 아이콘을 고른다** — 있는 걸로 되면 이쪽이 낫습니다.
+2. **`src/assets/icons-extra/` 에 넣는다** — 같은 팩(24×24 · `fill="#3C3E44"`)에서 가져온 SVG만 넣으세요. 선 굵기가 다르면 나란히 놨을 때 바로 티가 납니다.
+
+⚠ **`npm run icons` 는 `src/assets/icons/` 를 통째로 지웠다 다시 씁니다.** 손으로 넣은 아이콘을 거기 두면 다음 sync 때 사라집니다. 반드시 `icons-extra/` 에 두세요. 이름이 양쪽에 겹치면 sync 스크립트가 오류로 멈춥니다.
+
+⚠ **파일명은 kebab-case 로 바꿔서 넣습니다.** limSystem 규약이라 `Book_Open.svg` → `book-open.svg` 처럼 맞춥니다.
 
 ### 토큰 사용 규칙
 
@@ -118,12 +163,14 @@ radius 도 마찬가지입니다. `--radius-sm/md/lg/full` 은 limSystem 원본�
 
 | hue | 토큰 | limSystem | 프로젝트 | 다크 대비 |
 |---|---|---|---|---|
-| 0° | `--nj-red` | RED_400 | CoupleApp | 6.3:1 |
-| 33° | `--nj-amber` | ORANGE_300 | TossTreasureHunt | 10.1:1 |
-| 34° | `--nj-orange` | ORANGE_400 | BeepTimer | 7.7:1 |
-| 121° | `--nj-green` | GREEN_400 | MineApp | 7.8:1 |
-| 181° | `--nj-teal` | TEAL_400 | GridBrawl | 10.7:1 |
-| 209° | `--nj-blue` | BLUE_400 | MiniGame Speeder | 6.2:1 |
+| 0° | `--nj-red` | RED_400 | — (비어 있음) | 6.3:1 |
+| 33° | `--nj-amber` | ORANGE_300 | — (비어 있음) | 10.1:1 |
+| 34° | `--nj-orange` | ORANGE_400 | **BeepTimer** | 7.7:1 |
+| 121° | `--nj-green` | GREEN_400 | **MineApp** | 7.8:1 |
+| 181° | `--nj-teal` | TEAL_400 | **GridBrawl** | 10.7:1 |
+| 209° | `--nj-blue` | BLUE_400 | — (비어 있음) | 6.2:1 |
+
+토큰 여섯은 그대로 두되 **지금 쓰는 건 셋뿐입니다.** 프로젝트를 늘리면 빈 칸에서 골라 쓰세요.
 
 **강조색은 청록입니다.**
 
@@ -135,7 +182,7 @@ radius 도 마찬가지입니다. `--radius-sm/md/lg/full` 은 limSystem 원본�
 
 **청록은 강조색 계열이라 프로젝트에는 GridBrawl 하나만 씁니다.** 대표 프로젝트가 브랜드 색을 공유하는 건 의도한 것이고, 여기에 하나 더 넣으면 어느 게 강조인지 안 읽힙니다.
 
-⚠ **`--nj-orange`(34°)와 `--nj-amber`(33°)는 색상이 1° 차이입니다.** limSystem 에 보라·분홍 계열이 없어서 6개를 전부 다른 계열로 못 뽑았습니다. 명도로 갈리니(7.7:1 vs 10.1:1) **목록에서 나란히 두지 마세요.**
+⚠ **`--nj-orange`(34°)와 `--nj-amber`(33°)는 색상이 1° 차이입니다.** limSystem 에 보라·분홍 계열이 없어서 6개를 전부 다른 계열로 못 뽑았습니다. 명도로 갈리니(7.7:1 vs 10.1:1) **둘을 목록에서 나란히 두지 마세요.** (지금은 amber 를 안 쓰고 있어서 문제가 없습니다.)
 
 프로젝트가 더 늘면 limSystem 의 300/500 단계에서 뽑되, **기존 색과 hue 가 30° 이상 떨어지거나 명도가 확실히 다른 것**을 고르세요.
 
@@ -154,8 +201,8 @@ radius 도 마찬가지입니다. `--radius-sm/md/lg/full` 은 limSystem 원본�
 morethan-log 를 참고한 3열 구조입니다. 이 구조를 유지하세요.
 
 ```
-[ 🏷️ Tags ]  [ 📚 글 목록 ]  [ 💻 Profile / 🎮 Works / 💬 Contact ]
-   span 2         span 7                  span 3
+[ Tags ]   [ 글 목록 ]   [ Profile / Works / Contact ]
+  span 2      span 7               span 3
 ```
 
 - 12열 그리드, `gap: 1.5rem`, 컨테이너 `max-width: 1120px`
@@ -175,15 +222,17 @@ morethan-log 를 참고한 3열 구조입니다. 이 구조를 유지하세요.
 게임 소스는 이 저장소에 없습니다. 전부 별도 비공개 저장소이고, 로컬에서는 형제 디렉토리에 있습니다.
 
 ```
-~/Develop/claude/
+~/Develop/Claude/
   ├── blog/            ← 여기
-  ├── GridBrawl/       ← 커밋 79개, 진행 중
-  ├── BeepTimer/       ← 커밋 67개
-  ├── MineApp/         ← 커밋 50개
-  ├── CoupleApp/       ← git 저장소 아님
-  ├── MiniGame_Speeder/
-  └── TossTreasureHunt/
+  ├── GridBrawl/       ← 사이트에 올라가 있음 (진행 중)
+  ├── MineApp/         ← 사이트에 올라가 있음 (App Store 출시)
+  ├── BeepTimer/       ← 사이트에 올라가 있음 (App Store 출시)
+  ├── CoupleApp/       ← 안 올림. git 저장소도 아님
+  ├── MiniGame_Speeder/  ← 안 올림
+  └── TossTreasureHunt/  ← 안 올림
 ```
+
+⚠ **만든 걸 전부 사이트에 올리지 않습니다.** 지금 보여줄 수 있는 셋(GridBrawl · MineApp · BeepTimer)만 `PROJECTS` 에 있습니다. 나머지 저장소의 글을 쓰려면 먼저 프로젝트를 추가해야 합니다 (§6).
 
 글을 쓸 때는 해당 게임 저장소를 세션에 추가합니다.
 
@@ -207,9 +256,32 @@ morethan-log 를 참고한 3열 구조입니다. 이 구조를 유지하세요.
 
 ## 6. 프로젝트 추가
 
-`src/consts.ts` 의 `PROJECTS` 배열에 한 줄 추가하고, `public/admin/config.yml` 의 `project` select 에도 같은 값을 추가합니다. **두 군데입니다.**
+**고칠 곳은 두 군데입니다.**
 
-`color` 는 카드의 카테고리 알약과 Works 목록의 점 색으로 쓰입니다.
+1. `src/consts.ts` 의 `PROJECTS` 배열
+2. `public/admin/config.yml` 의 `project` select — 같은 `id` 를 넣습니다
+
+`PROJECTS` 항목 하나가 페이지 두 개를 만듭니다.
+
+| 경로 | 무엇 | 쓰는 필드 |
+|---|---|---|
+| `/projects/<id>` | 그 프로젝트의 devlog 목록 | `name` `tagline` `platform` `stack` `color` `active` |
+| `/projects/<id>/about` | **소개 페이지** — 받는 곳·플레이하는 곳 | 위 + `summary` `features` `links` |
+
+devlog 페이지 **상단 카드를 누르면 소개 페이지로 갑니다.** 그래서 `summary`·`features`·`links` 를 비워두면 소개 페이지가 껍데기가 됩니다 — 새 프로젝트를 넣을 때 같이 채우세요.
+
+- `summary` — 두세 문장. 뭘 하는 물건인지 + 왜 그렇게 만들었는지.
+- `features` — 4~5줄. **구체적으로** 씁니다. 「멀티플레이 지원」이 아니라 「방 코드 6자리로 친구를 부르거나, 봇과 연습할 수 있습니다」.
+- `links` — `kind` 는 `web` | `appstore` | `support`. 버튼 아이콘이 여기서 갈립니다.
+- `storeName` — App Store 이름이 저장소 이름과 다를 때만 (예: MineApp → 「지뢰찾기 아레나」).
+- `active` — "지금 받아서 해볼 수 있는가". LIVE 배지가 붙습니다.
+- `color` — 카드의 카테고리 알약, Works 목록의 점, 소개 페이지 버튼 배경.
+
+**소개 문구는 지어내지 마세요.** 해당 저장소의 `README.md` 나 App Store 설명을 읽고 씁니다. 출시된 앱이면 번들 ID로 스토어 메타데이터를 그대로 확인할 수 있습니다.
+
+```bash
+curl -s "https://itunes.apple.com/lookup?bundleId=com.LimJH.BeepTimer&country=kr"
+```
 
 ---
 
@@ -224,7 +296,11 @@ npm run post                     # 빌드 검증 → 커밋 → push
 npm run post -- "넉백 버그 수정"    # 커밋 메시지 지정
 
 npm run cms       # Decap 로컬 서버 (GitHub 없이 /admin 테스트)
+
+npm run icons     # limSystem 아이콘 다시 긁어오기
 ```
+
+`npm run icons` 는 `~/Develop/React/limSystem/src/assets/icons` 를 `src/assets/icons` 로 통째로 덮어쓰고 `src/lib/icon-names.ts` 를 다시 만듭니다. `src/assets/icons-extra/` 는 건드리지 않습니다. 경로가 다르면 인자로 넘기세요 — `node scripts/sync-icons.mjs <경로>`.
 
 `draft: true` 인 글은 `dev` 에서는 보이고 `build` 에서는 빠집니다.
 

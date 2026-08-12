@@ -1,9 +1,12 @@
 ---
+import Icon from './Icon.astro'
 ---
 
+{/* 해·달은 limSystem 에 없어서 icons-extra 에 따로 넣었습니다.
+    지금 테마에 해당하는 쪽만 CSS 로 보여줍니다. */}
 <button id="theme-toggle" type="button" aria-label="테마 전환">
-  <span class="dark-only">🌙</span>
-  <span class="light-only">☀️</span>
+  <span class="dark-only"><Icon name="moon" size={18} /></span>
+  <span class="light-only"><Icon name="sun" size={18} /></span>
 </button>
 
 <style>
@@ -15,8 +18,16 @@
     border: 0;
     background: transparent;
     cursor: pointer;
-    font-size: 1rem;
+    color: var(--text-dim);
     line-height: 1;
+  }
+
+  button:hover {
+    color: var(--text);
+  }
+
+  button span {
+    display: inline-flex;
   }
 
   :global(html[data-theme='dark']) .light-only {
