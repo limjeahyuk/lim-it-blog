@@ -32,7 +32,7 @@ function rehypeWrapTables() {
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://lim-it.vercel.app',
+  site: 'https://lim-it-blog.vercel.app',
   integrations: [mdx(), sitemap()],
 
   markdown: {

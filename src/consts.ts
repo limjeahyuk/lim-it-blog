@@ -3,7 +3,7 @@
 export const SITE_TITLE = 'lim-it'
 export const SITE_DESCRIPTION =
   '만들면서 부딪힌 것들을 적어둡니다. 왜 그렇게 고쳤는지, 그래서 뭐가 터졌는지.'
-export const SITE_URL = 'https://lim-it.vercel.app'
+export const SITE_URL = 'https://lim-it-blog.vercel.app'
 
 export const AUTHOR = {
   name: 'Lim Jeahyuk',
