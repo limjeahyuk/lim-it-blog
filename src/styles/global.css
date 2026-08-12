@@ -44,21 +44,21 @@ html[data-theme='light'] {
 /* ---------------------------------------------------------------
    ⬇ 강조색 (ACCENT) — 여기만 바꾸면 사이트 전체 인상이 바뀝니다.
    링크, 인용문 왼쪽 선에 쓰입니다.
-   현재: Retro calm 의 티파니(174°)
+   현재: Neon Jungle 의 청록 (limSystem TEAL)
 
-   다크와 라이트가 값이 다릅니다. 밝은 파스텔은 흰 배경에서
-   대비가 안 나와서(3.4:1) 라이트 테마에서는 진한 쪽을 씁니다.
+   다크와 라이트가 값이 다릅니다. 밝은 청록은 흰 배경에서
+   대비가 2.1:1 밖에 안 나와서, 라이트 테마는 진한 쪽을 씁니다.
 --------------------------------------------------------------- */
 
 :root,
 html[data-theme='dark'] {
-  --accent: var(--rc-tiffany);
-  --accent-text: var(--rc-tiffany);
+  --accent: var(--nj-accent);
+  --accent-text: var(--nj-accent-text);
 }
 
 html[data-theme='light'] {
-  --accent: var(--rc-tiffany-deep);
-  --accent-text: var(--rc-tiffany-deep);
+  --accent: var(--nj-accent-deep);
+  --accent-text: var(--nj-accent-deep);
 }
 
 /* ---------------------------------------------------------------

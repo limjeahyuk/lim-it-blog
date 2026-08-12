@@ -29,10 +29,9 @@ export const AUTHOR_LABEL: Record<AuthorKind, string> = {
  * id는 글 frontmatter의 `project` 값과 일치해야 합니다.
  * 새 프로젝트를 시작하면 여기에 한 줄 추가하세요.
  *
- * color 는 src/styles/tokens.css 의 Retro calm 토큰을 가리킵니다.
- * 전부 채도 40% · 명도 85% 로 맞춰져 있어서 어느 프로젝트도 튀지 않습니다.
- * 새 색이 필요하면 tokens.css 에 같은 S/V 로 hue 만 다르게 추가하세요.
- * (174° 티파니는 강조색 전용이라 쓰면 안 됩니다.)
+ * color 는 src/styles/tokens.css 의 Neon Jungle 토큰을 가리킵니다.
+ * 전부 limSystem 400 단계라 무게가 비슷합니다.
+ * 청록(teal)은 강조색 계열이라 GridBrawl 하나만 씁니다.
  */
 export const PROJECTS = [
   {
@@ -41,7 +40,7 @@ export const PROJECTS = [
     tagline: '그리드 턴제 전투 로그라이크',
     platform: 'Web / iOS / Android',
     stack: ['TypeScript', 'Vite', 'Capacitor', 'Firebase'],
-    color: 'var(--rc-lavender)', // hue 270°
+    color: 'var(--nj-teal)', // hue 181° · 대표 프로젝트라 강조색 계열 공유
     active: true,
   },
   {
@@ -50,7 +49,7 @@ export const PROJECTS = [
     tagline: '인터벌 타이머',
     platform: 'iOS / watchOS',
     stack: ['Swift', 'SwiftUI', 'WidgetKit'],
-    color: 'var(--rc-terracotta)', // hue  19°
+    color: 'var(--nj-orange)', // hue  34°
     active: false,
   },
   {
@@ -59,7 +58,7 @@ export const PROJECTS = [
     tagline: '멀티플레이 실시간 지뢰찾기',
     platform: 'iOS',
     stack: ['Swift', 'Firebase'],
-    color: 'var(--rc-green)', // hue 117°
+    color: 'var(--nj-green)', // hue 121°
     active: false,
   },
   {
@@ -68,7 +67,7 @@ export const PROJECTS = [
     tagline: '커플 앱',
     platform: 'iOS',
     stack: ['Swift', 'XcodeGen'],
-    color: 'var(--rc-pink)', // hue 324°
+    color: 'var(--nj-red)', // hue   0°
     active: false,
   },
   {
@@ -77,7 +76,7 @@ export const PROJECTS = [
     tagline: '속도 미니게임',
     platform: 'Web',
     stack: ['TypeScript', 'Vite'],
-    color: 'var(--rc-blue)', // hue 225°
+    color: 'var(--nj-blue)', // hue 209°
     active: false,
   },
   {
@@ -86,7 +85,7 @@ export const PROJECTS = [
     tagline: '토스 미니앱 보물찾기',
     platform: 'Toss Mini App',
     stack: ['TypeScript', 'Granite'],
-    color: 'var(--rc-lime)', // hue  61°
+    color: 'var(--nj-amber)', // hue  33° · orange 와 명도로 구분
     active: false,
   },
 ] as const

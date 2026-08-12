@@ -112,26 +112,32 @@ limSystem 은 별도 Next.js 앱(`private: true`)이라 패키지로 못 가져�
 
 radius 도 마찬가지입니다. `--radius-sm/md/lg/full` 은 limSystem 원본이고, `--radius-card`(16px)는 morethan-log 풍 카드를 위해 **블로그에서 추가한 확장값**입니다.
 
-### 강조색과 프로젝트 색 — Retro calm
+### 강조색과 프로젝트 색 — Neon Jungle
 
-출처: Figma color combinations 「조합 78: 차분한 레트로」
+**전부 limSystem 400 단계에서 골랐습니다.** 별도 팔레트가 아니라 limSystem 안의 조합이라, 원본이 바뀌면 같이 따라갑니다.
 
-**프로젝트 색은 채도 40% · 명도 85% 로 고정하고 색상(hue)만 다르게 합니다.**
+| hue | 토큰 | limSystem | 프로젝트 | 다크 대비 |
+|---|---|---|---|---|
+| 0° | `--nj-red` | RED_400 | CoupleApp | 6.3:1 |
+| 33° | `--nj-amber` | ORANGE_300 | TossTreasureHunt | 10.1:1 |
+| 34° | `--nj-orange` | ORANGE_400 | BeepTimer | 7.7:1 |
+| 121° | `--nj-green` | GREEN_400 | MineApp | 7.8:1 |
+| 181° | `--nj-teal` | TEAL_400 | GridBrawl | 10.7:1 |
+| 209° | `--nj-blue` | BLUE_400 | MiniGame Speeder | 6.2:1 |
 
-명도가 제각각이면 어떤 프로젝트는 눈에 확 띄고 어떤 건 묻혀서, 색이 의도하지 않은 우선순위를 만듭니다. 카테고리를 구분하는 색은 무게가 같아야 합니다.
+**강조색은 청록입니다.**
 
-| hue | 토큰 | 프로젝트 |
-|---|---|---|
-| 19° | `--rc-terracotta` | BeepTimer |
-| 61° | `--rc-lime` | TossTreasureHunt |
-| 117° | `--rc-green` | MineApp |
-| 225° | `--rc-blue` | MiniGame Speeder |
-| 270° | `--rc-lavender` | GridBrawl |
-| 324° | `--rc-pink` | CoupleApp |
+| 토큰 | 값 | 쓰임 | 대비 |
+|---|---|---|---|
+| `--nj-accent` | TEAL_500 | 다크 인용문 선 | 8.4:1 |
+| `--nj-accent-text` | TEAL_300 | 다크 링크 | 12.6:1 |
+| `--nj-accent-deep` | TEAL_700 | 라이트 공용 | 4.6:1 (흰 배경) |
 
-**174° 티파니(`--rc-tiffany`)는 강조색 전용입니다.** 프로젝트 색으로 쓰지 마세요. 겹치면 그 프로젝트만 "강조된 것처럼" 보입니다.
+**청록은 강조색 계열이라 프로젝트에는 GridBrawl 하나만 씁니다.** 대표 프로젝트가 브랜드 색을 공유하는 건 의도한 것이고, 여기에 하나 더 넣으면 어느 게 강조인지 안 읽힙니다.
 
-새 프로젝트 색이 필요하면 위 표에서 비어 있는 hue 를 골라 **같은 S 40% / V 85%** 로 뽑아서 `tokens.css` 에 추가하세요.
+⚠ **`--nj-orange`(34°)와 `--nj-amber`(33°)는 색상이 1° 차이입니다.** limSystem 에 보라·분홍 계열이 없어서 6개를 전부 다른 계열로 못 뽑았습니다. 명도로 갈리니(7.7:1 vs 10.1:1) **목록에서 나란히 두지 마세요.**
+
+프로젝트가 더 늘면 limSystem 의 300/500 단계에서 뽑되, **기존 색과 hue 가 30° 이상 떨어지거나 명도가 확실히 다른 것**을 고르세요.
 
 ### 색을 바꿀 때 반드시 확인할 것
 
