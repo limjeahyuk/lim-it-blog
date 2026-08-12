@@ -1,0 +1,68 @@
+---
+import { countByTag, getPublishedPosts } from '../lib/posts'
+
+interface Props {
+  /** 지금 보고 있는 태그 (있으면 강조) */
+  current?: string
+}
+
+const { current } = Astro.props as Props
+const tags = countByTag(await getPublishedPosts())
+---
+
+<div class="wrap">
+  <div class="side-title">🏷️ Tags</div>
+  <div class="list">
+    <a href="/" data-active={current === undefined}>All</a>
+    {
+      tags.map(([tag]) => (
+        <a href={`/tags/${tag}`} data-active={tag === current}>
+          {tag}
+        </a>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .list {
+    display: flex;
+    margin-bottom: 1.5rem;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .list a {
+    display: block;
+    padding: 0.25rem 1rem;
+    margin: 0.25rem 0;
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--text-faint);
+    flex-shrink: 0;
+  }
+
+  .list a:hover {
+    background-color: var(--card);
+  }
+
+  .list a[data-active='true'] {
+    color: var(--text);
+    background-color: var(--card);
+  }
+
+  @media (min-width: 1024px) {
+    .list {
+      display: block;
+      overflow: visible;
+    }
+  }
+</style>

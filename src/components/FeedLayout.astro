@@ -1,0 +1,107 @@
+---
+import SideTags from './SideTags.astro'
+import SideProfile from './SideProfile.astro'
+import SideWorks from './SideWorks.astro'
+import SideContact from './SideContact.astro'
+
+interface Props {
+  /** 지금 보고 있는 태그 (사이드바 강조용) */
+  currentTag?: string
+}
+
+const { currentTag } = Astro.props as Props
+---
+
+<div class="container feed">
+  <aside class="lt">
+    <SideTags current={currentTag} />
+  </aside>
+
+  <div class="mid">
+    <div class="tags-mobile">
+      <SideTags current={currentTag} />
+    </div>
+    <slot />
+  </div>
+
+  <aside class="rt">
+    <SideProfile />
+    <SideWorks />
+    <SideContact />
+  </aside>
+</div>
+
+<style>
+  .feed {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1.5rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .feed {
+      display: block;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+  }
+
+  .lt {
+    display: none;
+    overflow-y: auto;
+    position: sticky;
+    top: 63px;
+    max-height: calc(100vh - 73px);
+    grid-column: span 2 / span 2;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .lt::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mid {
+    grid-column: span 12 / span 12;
+    min-width: 0;
+  }
+
+  .rt {
+    display: none;
+    overflow-y: auto;
+    position: sticky;
+    top: 63px;
+    max-height: calc(100vh - 73px);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .rt::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tags-mobile {
+    display: block;
+  }
+
+  @media (min-width: 1024px) {
+    .lt,
+    .rt {
+      display: block;
+    }
+
+    .mid {
+      grid-column: span 7 / span 7;
+    }
+
+    .rt {
+      grid-column: span 3 / span 3;
+    }
+
+    .tags-mobile {
+      display: none;
+    }
+  }
+</style>

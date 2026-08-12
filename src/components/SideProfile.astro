@@ -1,0 +1,64 @@
+---
+import { AUTHOR } from '../consts'
+---
+
+<div class="wrap">
+  <div class="side-title">💻 Profile</div>
+  <div class="card content">
+    <div class="avatar">
+      <img src="/avatar.svg" alt="" width="160" height="160" />
+    </div>
+    <div class="mid">
+      <div class="name">{AUTHOR.name}</div>
+      <div class="role">{AUTHOR.role}</div>
+      <div class="bio">{AUTHOR.bio}</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .content {
+    margin-bottom: 2.25rem;
+    padding: 1rem;
+  }
+
+  .avatar {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .mid {
+    display: flex;
+    padding: 0.5rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .name {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-style: italic;
+    font-weight: 700;
+  }
+
+  .role {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--text-dim);
+  }
+
+  .bio {
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+    color: var(--text-dim);
+  }
+</style>

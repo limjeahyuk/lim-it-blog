@@ -1,0 +1,76 @@
+---
+import { PROJECTS } from '../consts'
+import { countByProject, getPublishedPosts } from '../lib/posts'
+
+const counts = countByProject(await getPublishedPosts())
+---
+
+<div class="wrap">
+  <div class="side-title">🎮 Works</div>
+  <div class="card content">
+    {
+      PROJECTS.map((project) => (
+        <a class="row" href={`/projects/${project.id}`}>
+          <span class="dot" style={`background-color:${project.color}`} />
+          <span class="name">{project.name}</span>
+          {project.active && <span class="live">LIVE</span>}
+          <span class="count">{counts.get(project.id) ?? 0}</span>
+        </a>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .content {
+    margin-bottom: 2.25rem;
+    padding: 0.5rem;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--text-dim);
+  }
+
+  .row:hover {
+    background-color: var(--surface);
+    color: var(--text);
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .live {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.1rem 0.3rem;
+    border-radius: var(--radius-sm);
+    color: var(--pill-fg);
+    background-color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+    flex-shrink: 0;
+  }
+</style>

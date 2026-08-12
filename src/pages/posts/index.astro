@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../components/BaseLayout.astro'
+import FeedLayout from '../../components/FeedLayout.astro'
+import PostCard from '../../components/PostCard.astro'
+import { getPublishedPosts } from '../../lib/posts'
+
+const posts = await getPublishedPosts()
+
+const byYear = new Map<number, typeof posts>()
+for (const post of posts) {
+  const year = post.data.pubDate.getFullYear()
+  byYear.set(year, [...(byYear.get(year) ?? []), post])
+}
+const years = [...byYear.keys()].sort((a, b) => b - a)
+---
+
+<BaseLayout title="Posts" description="전체 글 목록">
+  <FeedLayout>
+    <div class="feed-header">
+      <span>📚 All Posts</span>
+      <span class="count">{posts.length}</span>
+    </div>
+
+    {
+      posts.length === 0 ? (
+        <p class="empty">아직 글이 없습니다.</p>
+      ) : (
+        years.map((year) => (
+          <section>
+            <div class="year">{year}</div>
+            {byYear.get(year)!.map((post) => (
+              <PostCard post={post} />
+            ))}
+          </section>
+        ))
+      )
+    }
+  </FeedLayout>
+</BaseLayout>
+
+<style>
+  .feed-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9375rem;
+  }
+
+  .count {
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+  }
+
+  .year {
+    padding: 0.25rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+  }
+
+  .empty {
+    padding: 1rem 0.25rem;
+    color: var(--text-faint);
+    font-size: 0.9375rem;
+  }
+</style>

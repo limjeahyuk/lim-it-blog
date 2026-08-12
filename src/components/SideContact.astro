@@ -1,0 +1,51 @@
+---
+import { AUTHOR } from '../consts'
+
+const links = [
+  { label: 'github', href: `https://github.com/${AUTHOR.github}` },
+  { label: 'email', href: `mailto:${AUTHOR.email}` },
+  { label: 'rss', href: '/rss.xml' },
+]
+
+const year = new Date().getFullYear()
+---
+
+<div class="wrap">
+  <div class="side-title">💬 Contact</div>
+  <div class="card content">
+    {
+      links.map((link) => (
+        <a class="row" href={link.href} target="_blank" rel="noopener">
+          {link.label}
+        </a>
+      ))
+    }
+  </div>
+  <div class="copy">© {AUTHOR.name} {year}</div>
+</div>
+
+<style>
+  .content {
+    padding: 0.5rem;
+  }
+
+  .row {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--text-dim);
+  }
+
+  .row:hover {
+    background-color: var(--surface);
+    color: var(--text);
+  }
+
+  .copy {
+    padding: 0.75rem 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+</style>

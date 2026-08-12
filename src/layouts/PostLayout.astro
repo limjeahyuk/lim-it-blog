@@ -1,0 +1,187 @@
+---
+import { Image } from 'astro:assets'
+import type { CollectionEntry } from 'astro:content'
+import BaseLayout from '../components/BaseLayout.astro'
+import FormattedDate from '../components/FormattedDate.astro'
+import { AUTHOR_LABEL, getProject } from '../consts'
+
+type Props = CollectionEntry<'posts'>['data']
+
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  heroImage,
+  project,
+  author,
+  tags,
+} = Astro.props
+
+const proj = project ? getProject(project) : undefined
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={heroImage}
+  type="article"
+  pubDate={pubDate}
+>
+  <div class="shell">
+    <article class="card">
+      {
+        heroImage && (
+          <Image class="hero" src={heroImage} alt="" widths={[720, 1440]} />
+        )
+      }
+
+      <div class="body">
+        <header class="head">
+          {
+            proj && (
+              <a
+                class="pill-category"
+                style={`background-color:${proj.color}`}
+                href={`/projects/${proj.id}`}
+              >
+                {proj.name}
+              </a>
+            )
+          }
+          <h1>{title}</h1>
+          <p class="desc">{description}</p>
+          <div class="meta">
+            <FormattedDate date={pubDate} />
+            <span class="sep">·</span>
+            <span>{AUTHOR_LABEL[author]}</span>
+            {
+              updatedDate && (
+                <>
+                  <span class="sep">·</span>
+                  <span>
+                    수정 <FormattedDate date={updatedDate} />
+                  </span>
+                </>
+              )
+            }
+          </div>
+          {
+            tags.length > 0 && (
+              <div class="tags">
+                {tags.map((tag) => (
+                  <a class="pill" href={`/tags/${tag}`}>
+                    {tag}
+                  </a>
+                ))}
+              </div>
+            )
+          }
+        </header>
+
+        <hr />
+
+        <div class="prose">
+          <slot />
+        </div>
+      </div>
+    </article>
+
+    <a class="back" href="/">← 목록으로</a>
+  </div>
+</BaseLayout>
+
+<style>
+  .shell {
+    width: 100%;
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  @media (max-width: 768px) {
+    .shell {
+      padding: 0.5rem 1rem 3rem;
+    }
+  }
+
+  .card {
+    overflow: hidden;
+    display: block;
+  }
+
+  .hero {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .body {
+    padding: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .body {
+      padding: 1.25rem;
+    }
+  }
+
+  .head .pill-category {
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    line-height: 1.4;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.6rem;
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 1.45rem;
+    }
+  }
+
+  .desc {
+    margin: 0 0 1rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    color: var(--text-faint);
+  }
+
+  .sep {
+    opacity: 0.6;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  hr {
+    margin: 1.75rem 0;
+  }
+
+  .back {
+    display: inline-block;
+    margin-top: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-faint);
+  }
+
+  .back:hover {
+    color: var(--text);
+  }
+</style>

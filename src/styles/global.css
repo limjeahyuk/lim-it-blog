@@ -1,0 +1,363 @@
+@import './tokens.css';
+
+/* ===============================================================
+   의미 토큰 — 컴포넌트는 항상 이 이름만 씁니다.
+   원시 값(--lim-*)을 컴포넌트에서 직접 쓰지 마세요.
+   =============================================================== */
+
+:root,
+html[data-theme='dark'] {
+  --bg: var(--lim-gray-990);
+  --card: var(--lim-gray-980);
+  --surface: var(--lim-gray-950);
+  --surface-2: var(--lim-gray-950);
+  --border: var(--lim-gray-900);
+
+  --text: var(--lim-gray-50);
+  --text-dim: var(--lim-gray-400);
+  --text-faint: var(--lim-gray-600);
+
+  /* 색이 들어간 알약 위의 글자색 */
+  --pill-fg: var(--lim-gray-990);
+
+  color-scheme: dark;
+}
+
+html[data-theme='light'] {
+  --bg: var(--lim-gray-50);
+  --card: var(--lim-white);
+  --surface: var(--lim-gray-100);
+  --surface-2: var(--lim-gray-100);
+  --border: var(--lim-gray-200);
+
+  --text: var(--lim-gray-990);
+  --text-dim: var(--lim-gray-700);
+  --text-faint: var(--lim-gray-600);
+
+  --pill-fg: var(--lim-white);
+
+  color-scheme: light;
+}
+
+/* ---------------------------------------------------------------
+   ⬇ 강조색 (ACCENT) — 여기만 바꾸면 사이트 전체 인상이 바뀝니다.
+   링크, 인용문 왼쪽 선, 포커스에 쓰입니다.
+   현재: limSystem BLUE (임시값 — 팔레트 확정되면 교체)
+--------------------------------------------------------------- */
+
+:root,
+html[data-theme='dark'] {
+  --accent: var(--lim-blue-500);
+  --accent-text: var(--lim-blue-300);
+}
+
+html[data-theme='light'] {
+  --accent: var(--lim-blue-500);
+  --accent-text: var(--lim-blue-600);
+}
+
+/* ---------------------------------------------------------------
+   기본
+--------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family:
+    var(--font-pretendard), 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Noto Color Emoji', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.7;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: inherit;
+}
+
+ul {
+  padding: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+hr {
+  width: 100%;
+  border: none;
+  margin: 0;
+  border-top: 1px solid var(--border);
+}
+
+code,
+pre,
+kbd {
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, 'JetBrains Mono', Menlo,
+    Consolas, monospace;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------
+   레이아웃
+--------------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+main {
+  flex: 1;
+  width: 100%;
+}
+
+/* ---------------------------------------------------------------
+   공용 조각
+--------------------------------------------------------------- */
+
+.side-title {
+  padding: 0.25rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.card {
+  border-radius: var(--radius-card);
+  background-color: var(--card);
+  width: 100%;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 400;
+  color: var(--text-faint);
+  background-color: var(--surface);
+  white-space: nowrap;
+}
+
+a.pill:hover {
+  color: var(--text);
+}
+
+.pill-category {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  opacity: 0.9;
+  color: var(--pill-fg);
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--text-faint);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+/* ---------------------------------------------------------------
+   본문 (마크다운 렌더 결과)
+--------------------------------------------------------------- */
+
+.prose {
+  font-size: 1rem;
+  line-height: 1.9;
+  color: var(--text);
+}
+
+.prose > * + * {
+  margin-top: 1.25em;
+}
+
+.prose h2 {
+  margin-top: 2.5em;
+  margin-bottom: 0.7em;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.4;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid var(--border);
+}
+
+.prose h3 {
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.prose h4 {
+  margin-top: 1.7em;
+  margin-bottom: 0.4em;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.prose p {
+  margin: 0;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.35em;
+  margin: 0;
+}
+
+.prose li + li {
+  margin-top: 0.4em;
+}
+
+.prose blockquote {
+  margin: 0;
+  padding: 0.6em 1.1em;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--accent);
+  background-color: var(--surface-2);
+  color: var(--text-dim);
+}
+
+.prose blockquote > * + * {
+  margin-top: 0.7em;
+}
+
+.prose a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose strong {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.prose :not(pre) > code {
+  background-color: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 0.15em 0.4em;
+  font-size: 0.875em;
+}
+
+.prose pre {
+  padding: 1rem 1.15rem;
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.prose .table-wrap {
+  overflow-x: auto;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.prose th {
+  background-color: var(--surface-2);
+  font-weight: 600;
+}
+
+.prose img {
+  border-radius: var(--radius-lg);
+}
+
+.prose hr {
+  margin: 2.5em 0;
+}
+
+/* ---------------------------------------------------------------
+   Shiki 듀얼 테마 (astro.config 의 defaultColor:false 와 짝)
+--------------------------------------------------------------- */
+
+html[data-theme='light'] .astro-code,
+html[data-theme='light'] .astro-code span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+  font-style: var(--shiki-light-font-style) !important;
+  font-weight: var(--shiki-light-font-weight) !important;
+  text-decoration: var(--shiki-light-text-decoration) !important;
+}
+
+html[data-theme='dark'] .astro-code,
+html[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}

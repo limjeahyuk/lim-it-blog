@@ -1,0 +1,86 @@
+backend:
+  name: github
+  # ↓ GitHub 저장소를 만든 뒤 여기를 실제 이름으로 바꾸세요 (owner/repo)
+  repo: limjeahyuk/blog
+  branch: main
+  # /api/auth 는 이 저장소의 Vercel 서버리스 함수입니다 (api/auth.js, api/callback.js)
+  base_url: https://lim-it.vercel.app
+  auth_endpoint: api/auth
+
+# 로컬에서 `npx decap-server` 를 띄우면 GitHub 없이 테스트할 수 있습니다.
+local_backend: true
+
+publish_mode: simple
+
+media_folder: public/uploads
+public_folder: /uploads
+
+locale: ko
+
+collections:
+  - name: posts
+    label: 글
+    label_singular: 글
+    folder: src/content/posts
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    editor:
+      preview: false
+    summary: '{{title}}'
+    sortable_fields: ['pubDate', 'title']
+    view_groups:
+      - label: 프로젝트
+        field: project
+    fields:
+      - { name: title, label: 제목, widget: string }
+
+      - name: description
+        label: 한 줄 요약
+        widget: text
+        hint: 목록과 검색 결과에 보이는 문장입니다.
+
+      - name: pubDate
+        label: 작성일
+        widget: datetime
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        picker_utc: false
+
+      - name: project
+        label: 프로젝트
+        widget: select
+        required: false
+        hint: 개인 개발 글이면 비워두세요.
+        options:
+          - { label: GridBrawl, value: gridbrawl }
+          - { label: BeepTimer, value: beeptimer }
+          - { label: MineApp, value: mineapp }
+          - { label: CoupleApp, value: coupleapp }
+          - { label: MiniGame Speeder, value: speeder }
+          - { label: TossTreasureHunt, value: tosstreasure }
+
+      - name: author
+        label: 글쓴이
+        widget: select
+        default: me
+        options:
+          - { label: 직접 씀, value: me }
+          - { label: AI 초안, value: ai }
+          - { label: AI 초안 + 직접 손봄, value: both }
+
+      - name: tags
+        label: 태그
+        widget: list
+        required: false
+        default: []
+        hint: 슬래시(/)는 쓰지 마세요. URL이 깨집니다.
+
+      - name: draft
+        label: 초안
+        widget: boolean
+        default: false
+        hint: 켜두면 배포된 사이트에 나오지 않습니다.
+
+      - { name: body, label: 본문, widget: markdown }
