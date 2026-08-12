@@ -28,6 +28,11 @@ export const AUTHOR_LABEL: Record<AuthorKind, string> = {
  * 프로젝트 목록.
  * id는 글 frontmatter의 `project` 값과 일치해야 합니다.
  * 새 프로젝트를 시작하면 여기에 한 줄 추가하세요.
+ *
+ * color 는 src/styles/tokens.css 의 Retro calm 토큰을 가리킵니다.
+ * 전부 채도 40% · 명도 85% 로 맞춰져 있어서 어느 프로젝트도 튀지 않습니다.
+ * 새 색이 필요하면 tokens.css 에 같은 S/V 로 hue 만 다르게 추가하세요.
+ * (174° 티파니는 강조색 전용이라 쓰면 안 됩니다.)
  */
 export const PROJECTS = [
   {
@@ -36,7 +41,7 @@ export const PROJECTS = [
     tagline: '그리드 턴제 전투 로그라이크',
     platform: 'Web / iOS / Android',
     stack: ['TypeScript', 'Vite', 'Capacitor', 'Firebase'],
-    color: '#8b5cf6',
+    color: 'var(--rc-lavender)', // hue 270°
     active: true,
   },
   {
@@ -45,7 +50,7 @@ export const PROJECTS = [
     tagline: '인터벌 타이머',
     platform: 'iOS / watchOS',
     stack: ['Swift', 'SwiftUI', 'WidgetKit'],
-    color: '#f59e0b',
+    color: 'var(--rc-terracotta)', // hue  19°
     active: false,
   },
   {
@@ -54,7 +59,7 @@ export const PROJECTS = [
     tagline: '멀티플레이 실시간 지뢰찾기',
     platform: 'iOS',
     stack: ['Swift', 'Firebase'],
-    color: '#10b981',
+    color: 'var(--rc-green)', // hue 117°
     active: false,
   },
   {
@@ -63,7 +68,7 @@ export const PROJECTS = [
     tagline: '커플 앱',
     platform: 'iOS',
     stack: ['Swift', 'XcodeGen'],
-    color: '#ec4899',
+    color: 'var(--rc-pink)', // hue 324°
     active: false,
   },
   {
@@ -72,7 +77,7 @@ export const PROJECTS = [
     tagline: '속도 미니게임',
     platform: 'Web',
     stack: ['TypeScript', 'Vite'],
-    color: '#3b82f6',
+    color: 'var(--rc-blue)', // hue 225°
     active: false,
   },
   {
@@ -81,7 +86,7 @@ export const PROJECTS = [
     tagline: '토스 미니앱 보물찾기',
     platform: 'Toss Mini App',
     stack: ['TypeScript', 'Granite'],
-    color: '#06b6d4',
+    color: 'var(--rc-lime)', // hue  61°
     active: false,
   },
 ] as const

@@ -34,26 +34,31 @@ html[data-theme='light'] {
   --text-dim: var(--lim-gray-700);
   --text-faint: var(--lim-gray-600);
 
-  --pill-fg: var(--lim-white);
+  /* 라이트에서도 어두운 글자입니다. 알약 배경이 양쪽 테마 모두
+     밝은 파스텔이라, 흰 글자면 대비가 1.5~3.0:1 로 떨어집니다. */
+  --pill-fg: var(--lim-gray-990);
 
   color-scheme: light;
 }
 
 /* ---------------------------------------------------------------
    ⬇ 강조색 (ACCENT) — 여기만 바꾸면 사이트 전체 인상이 바뀝니다.
-   링크, 인용문 왼쪽 선, 포커스에 쓰입니다.
-   현재: limSystem BLUE (임시값 — 팔레트 확정되면 교체)
+   링크, 인용문 왼쪽 선에 쓰입니다.
+   현재: Retro calm 의 티파니(174°)
+
+   다크와 라이트가 값이 다릅니다. 밝은 파스텔은 흰 배경에서
+   대비가 안 나와서(3.4:1) 라이트 테마에서는 진한 쪽을 씁니다.
 --------------------------------------------------------------- */
 
 :root,
 html[data-theme='dark'] {
-  --accent: var(--lim-blue-500);
-  --accent-text: var(--lim-blue-300);
+  --accent: var(--rc-tiffany);
+  --accent-text: var(--rc-tiffany);
 }
 
 html[data-theme='light'] {
-  --accent: var(--lim-blue-500);
-  --accent-text: var(--lim-blue-600);
+  --accent: var(--rc-tiffany-deep);
+  --accent-text: var(--rc-tiffany-deep);
 }
 
 /* ---------------------------------------------------------------
