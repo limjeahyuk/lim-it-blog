@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
     <title>글쓰기 — lim-it</title>
+
+    <!--
+      설정 파일 위치를 절대경로로 못박습니다.
+      이게 없으면 Decap 이 현재 주소 기준 상대경로로 config.yml 을 찾는데,
+      /admin (슬래시 없이) 로 들어오면 /config.yml 을 찾다가 404 가 납니다.
+    -->
+    <link href="/admin/config.yml" type="text/yaml" rel="cms-config-url" />
   </head>
   <body>
     <script src="https://unpkg.com/decap-cms@3.9.0/dist/decap-cms.js"></script>
