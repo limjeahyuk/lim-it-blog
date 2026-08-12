@@ -4,7 +4,7 @@ backend:
   repo: limjeahyuk/lim-it-blog
   branch: main
   # /api/auth 는 이 저장소의 Vercel 서버리스 함수입니다 (api/auth.js, api/callback.js)
-  base_url: https://lim-it-blog.vercel.app
+  base_url: https://lim-it.vercel.app
   auth_endpoint: api/auth
 
 # 로컬에서 `npx decap-server` 를 띄우면 GitHub 없이 테스트할 수 있습니다.
