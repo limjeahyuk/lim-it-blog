@@ -2,7 +2,10 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta name="robots" content="noindex" />
     <title>글쓰기 — lim-it</title>
 
@@ -11,7 +14,76 @@
       이게 없으면 Decap 이 현재 주소 기준 상대경로로 config.yml 을 찾는데,
       /admin (슬래시 없이) 로 들어오면 /config.yml 을 찾다가 404 가 납니다.
     -->
-    <link href="/admin/config.yml" type="text/yaml" rel="cms-config-url" />
+    <!--
+      ?v= 는 캐시 무효화용입니다. config.yml 은 주소가 늘 같아서 브라우저가
+      오래 물고 있습니다. 폼을 고쳤는데 폰에서 안 바뀌면 이 숫자를 올리세요.
+    -->
+    <link href="/admin/config.yml?v=2" type="text/yaml" rel="cms-config-url" />
+
+    <style>
+      /*
+        Decap CMS 모바일 대응.
+
+        Decap 은 데스크톱 기준으로 만들어져 있어서 주요 컨테이너에
+        min-width: 800px 이 박혀 있습니다. 폰에서 열면 화면 밖으로 넘쳐
+        오른쪽이 잘립니다.
+
+        클래스 이름은 emotion 이 만든 것이라 해시가 붙지만
+        (css-1fehwpo-AppMainContainer) 뒤의 컴포넌트 이름은 유지되므로
+        부분 일치로 잡습니다. Decap 을 올릴 때 이름이 바뀌면 여기도 확인이 필요합니다.
+      */
+      @media (max-width: 799px) {
+        [class*='AppHeaderContent'],
+        [class*='AppMainContainer'],
+        [class*='EditorContainer'],
+        [class*='ToolbarContainer'] {
+          min-width: 0 !important;
+          width: 100% !important;
+        }
+
+        /* 컬렉션이 「글」 하나뿐이라 사이드바가 자리만 차지합니다. */
+        [class*='SidebarContainer'] {
+          display: none !important;
+        }
+        [class*='CollectionMain'] {
+          padding-left: 0 !important;
+        }
+
+        [class*='ToolbarSectionMain'],
+        [class*='ToolbarSectionBackLink'] {
+          min-width: 0 !important;
+        }
+
+        [class*='PreviewPaneContainer'],
+        [class*='ControlPaneContainer'] {
+          padding-left: 10px !important;
+          padding-right: 10px !important;
+        }
+
+        /*
+          마크다운 툴바가 flex-wrap: nowrap 이라 좁은 화면에서 버튼이
+          세로 두 줄로 눌립니다. 가로로 흐르게 풀어줍니다.
+          앱 상단 툴바에도 같은 이름이 쓰이므로 편집기 안으로 범위를 좁힙니다.
+        */
+        [class*='EditorControlBar'] [class*='ToolbarContainer'] {
+          flex-wrap: wrap !important;
+          row-gap: 4px !important;
+        }
+        [class*='EditorControlBar'] [class*='ToolbarContainer'] > div {
+          width: 100% !important;
+        }
+
+        /* 본문 편집기가 화면 대부분을 쓰도록 */
+        [class*='ControlContainer'] textarea {
+          min-height: 120px;
+        }
+
+        /* 아이폰 노치·홈바 영역 확보 */
+        [class*='EditorContainer'] {
+          padding-bottom: env(safe-area-inset-bottom) !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <script src="https://unpkg.com/decap-cms@3.9.0/dist/decap-cms.js"></script>
