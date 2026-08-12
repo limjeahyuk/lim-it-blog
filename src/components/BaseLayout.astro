@@ -1,6 +1,8 @@
 ---
 import BaseHead from './BaseHead.astro'
 import Header from './Header.astro'
+import Analytics from '@vercel/analytics/astro'
+import SpeedInsights from '@vercel/speed-insights/astro'
 import type { ImageMetadata } from 'astro'
 
 interface Props {
@@ -24,5 +26,15 @@ const head = Astro.props as Props
     <main>
       <slot />
     </main>
+
+    {/* 배포된 사이트에서만 붙입니다. 로컬 개발 중에는 아무것도 안 나갑니다. */}
+    {
+      import.meta.env.PROD && (
+        <>
+          <Analytics />
+          <SpeedInsights />
+        </>
+      )
+    }
   </body>
 </html>
