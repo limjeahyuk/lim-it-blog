@@ -41,9 +41,7 @@ const { author, posts } = Astro.props as Props
       posts.length === 0 ? (
         <p class="empty">아직 이 이름으로 쓴 글이 없습니다.</p>
       ) : (
-        posts.map((post, i) => (
-          <PostCard post={post} lead={i === 0} hideAuthor />
-        ))
+        posts.map((post) => <PostCard post={post} hideAuthor />)
       )
     }
   </FeedLayout>

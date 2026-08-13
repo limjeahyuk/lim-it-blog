@@ -35,9 +35,9 @@ export const OWNER = {
 export const AUTHORS = [
   {
     id: 'student',
-    name: '임 Student',
+    name: 'study Lim',
     tagline: '배우는 사람',
-    bio: '수업에서 받아적고, 공부하다 막힌 것을 정리합니다. React·JavaScript·Flutter·iOS 를 처음 익히던 기록이 대부분입니다.',
+    bio: '코딩 공부 기록 합니다.',
     color: 'var(--who-student)', // 파랑 — 다크 400 / 라이트 700
     /**
      * AI 에게 주는 말투 지시문. 화면에는 안 나옵니다.
@@ -53,9 +53,9 @@ export const AUTHORS = [
   },
   {
     id: 'developer',
-    name: '임 Developer',
+    name: '임데브',
     tagline: '만드는 사람',
-    bio: '만든 것을 두고 왜 그렇게 했는지 적습니다. 틀렸다가 고친 것, 안 하기로 한 것, 되돌린 것까지 남깁니다.',
+    bio: '개발을 하면서 생기는 것들 기록.',
     color: 'var(--who-developer)', // 빨강 — 다크 400 / 라이트 700
     voice: [
       '문제부터 씁니다. 뭐가 불편했고 왜 손대야 했는지가 첫 문단에 옵니다.',

@@ -12,9 +12,11 @@ const { currentAuthor } = Astro.props as Props
 ---
 
 <div class="container feed">
-  <aside class="lt">
-    <SideAuthors current={currentAuthor} />
-  </aside>
+  {/*
+    왼쪽 열은 **일부러 비워 둔 것**입니다. Editors 를 오른쪽으로 옮기면서
+    비었는데, 지우면 지면이 화면 왼쪽으로 붙습니다. 자리만 잡아 둡니다.
+  */}
+  <aside class="lt" aria-hidden="true"></aside>
 
   <div class="mid">
     <div class="tags-mobile">
@@ -24,6 +26,13 @@ const { currentAuthor } = Astro.props as Props
   </div>
 
   <aside class="rt">
+    {/*
+      폰에서는 이 자리가 글 목록 **아래**라 저자 목록이 있어봐야 안 눌립니다.
+      위쪽 `.tags-mobile` 이 그 역할을 하므로 여기서는 넓은 화면에서만 켭니다.
+    */}
+    <div class="rt-authors">
+      <SideAuthors current={currentAuthor} />
+    </div>
     <SideProjects />
     <SideContact />
   </aside>
@@ -46,19 +55,10 @@ const { currentAuthor } = Astro.props as Props
     }
   }
 
+  /* 비어 있는 왼쪽 여백 열. 지면을 가운데로 밀어두는 역할만 합니다. */
   .lt {
     display: none;
-    overflow-y: auto;
-    position: sticky;
-    top: 63px;
-    max-height: calc(100vh - 73px);
     grid-column: span 2 / span 2;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .lt::-webkit-scrollbar {
-    display: none;
   }
 
   .mid {
@@ -67,9 +67,9 @@ const { currentAuthor } = Astro.props as Props
   }
 
   /*
-    오른쪽 열(프로필·Works·Contact)은 폰에서 글 목록 **아래**로 갑니다.
+    오른쪽 열(Editors·Live Service·Contact)은 폰에서 글 목록 **아래**로 갑니다.
     예전에는 1024px 미만에서 통째로 숨겼는데, 그러면 폰으로 들어온 사람은
-    이 블로그가 누구 것인지·뭘 만들었는지를 볼 방법이 아예 없었습니다.
+    만든 것과 연락처를 볼 방법이 아예 없었습니다.
     글이 끝나고 나서 나오면 되는 내용이라 자리를 옮기는 걸로 충분합니다.
   */
   .rt {
@@ -83,13 +83,18 @@ const { currentAuthor } = Astro.props as Props
     display: none;
   }
 
+  .rt-authors {
+    display: none;
+  }
+
   .tags-mobile {
     display: block;
   }
 
   @media (min-width: 1024px) {
     .lt,
-    .rt {
+    .rt,
+    .rt-authors {
       display: block;
     }
 

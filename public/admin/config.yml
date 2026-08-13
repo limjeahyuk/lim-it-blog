@@ -90,8 +90,8 @@ collections:
         widget: select
         required: false
         options:
-          - { label: 임 Student — 배운 것, value: student }
-          - { label: 임 Developer — 만든 것, value: developer }
+          - { label: study Lim — 배운 것, value: student }
+          - { label: 임데브 — 만든 것, value: developer }
 
       - name: project
         label: 프로젝트

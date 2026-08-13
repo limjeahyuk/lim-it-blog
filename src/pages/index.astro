@@ -24,7 +24,7 @@ const recent = posts.slice(0, RECENT)
       posts.length === 0 ? (
         <p class="empty">아직 글이 없습니다.</p>
       ) : (
-        recent.map((post, i) => <PostCard post={post} lead={i === 0} />)
+        recent.map((post) => <PostCard post={post} />)
       )
     }
 
