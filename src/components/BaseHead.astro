@@ -79,6 +79,16 @@ const schema =
 />
 <meta name="generator" content={Astro.generator} />
 
+{/*
+  Google Search Console 소유권 확인. 확인이 끝난 뒤에도 지우면 안 됩니다 —
+  구글이 주기적으로 다시 확인하고, 사라져 있으면 속성이 해제됩니다.
+  vercel.app 서브도메인이라 DNS 방식을 못 써서 이 태그로 잡았습니다.
+*/}
+<meta
+  name="google-site-verification"
+  content="Ffob80AWXLpXej-uyeBIuTQ0gZaRF8ifUQQuxlJBjhM"
+/>
+
 <Font cssVariable="--font-pretendard" preload />
 
 <link rel="canonical" href={canonicalURL} />
