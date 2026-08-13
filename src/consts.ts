@@ -6,14 +6,13 @@ export const SITE_DESCRIPTION =
 export const SITE_URL = 'https://lim-it.vercel.app'
 
 /**
- * 사이트 주인. 글의 저자(AUTHORS)와는 다른 것입니다 —
- * 이쪽은 오른쪽 Profile 카드와 저작권 표시에 쓰입니다.
+ * 사이트 주인. 글의 저자(AUTHORS)와는 다른 것입니다.
+ *
+ * 화면에 남은 건 Contact 의 링크 두 개와 맨 아래 저작권 줄뿐입니다 —
+ * 얼굴과 소개를 띄우던 Profile 카드는 뺐습니다 (§4).
  */
 export const OWNER = {
   name: 'Lim Jeahyuk',
-  role: 'Developer',
-  /** Profile 카드에 보이는 한 줄 소개 */
-  bio: 'I develop everything using node.',
   github: 'limjeahyuk',
   email: 'lim0202jh@gmail.com',
 }
