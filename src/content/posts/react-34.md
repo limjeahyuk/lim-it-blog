@@ -2,7 +2,6 @@
 title: '[ E ] Props 함수'
 pubDate: 2022-04-20
 category: study/react
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/34

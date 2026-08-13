@@ -2,7 +2,6 @@
 title: 'Flutter 공부 중 마구잡이 정리 3'
 pubDate: 2026-01-18
 category: study/flutter
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/122

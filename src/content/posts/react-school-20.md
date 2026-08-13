@@ -2,7 +2,6 @@
 title: '[React] Dark mode & PageNation'
 pubDate: 2022-03-25
 category: study/react-school
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/20

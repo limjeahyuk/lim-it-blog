@@ -2,7 +2,6 @@
 title: 'SD. Xcode git 연동 및 branch 관리'
 pubDate: 2023-06-20
 category: ios/study-diary
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/83

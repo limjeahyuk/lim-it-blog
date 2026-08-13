@@ -73,16 +73,6 @@ export function categoryDepth(id: string) {
   return id.split('/').length - 1
 }
 
-/** 글쓴이 구분. AI 초안과 직접 쓴 글을 나눠서 표시합니다. */
-export const AUTHOR_KINDS = ['me', 'ai', 'both'] as const
-export type AuthorKind = (typeof AUTHOR_KINDS)[number]
-
-export const AUTHOR_LABEL: Record<AuthorKind, string> = {
-  me: '직접 씀',
-  ai: 'AI 초안',
-  both: 'AI 초안 + 직접 손봄',
-}
-
 /**
  * 프로젝트 목록.
  * id는 글 frontmatter의 `project` 값과 일치해야 합니다.

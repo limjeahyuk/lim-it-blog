@@ -2,7 +2,6 @@
 title: 'Dart 언어란'
 pubDate: 2026-01-06
 category: study/flutter
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/113

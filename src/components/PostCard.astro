@@ -2,14 +2,14 @@
 import type { CollectionEntry } from 'astro:content'
 import FormattedDate from './FormattedDate.astro'
 import Icon from './Icon.astro'
-import { AUTHOR_LABEL, getCategory, getProject } from '../consts'
+import { getCategory, getProject } from '../consts'
 
 interface Props {
   post: CollectionEntry<'posts'>
 }
 
 const { post } = Astro.props as Props
-const { title, description, pubDate, category, project, author, tags, secret } =
+const { title, description, pubDate, category, project, tags, secret } =
   post.data
 const proj = project ? getProject(project) : undefined
 const cat = category ? getCategory(category) : undefined
@@ -41,8 +41,6 @@ const cat = category ? getCategory(category) : undefined
           )
         }
         <FormattedDate date={pubDate} />
-        <span class="sep">·</span>
-        <span>{AUTHOR_LABEL[author]}</span>
       </div>
       {description && <p class="summary">{description}</p>}
       <div class="tags">

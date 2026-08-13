@@ -2,7 +2,6 @@
 title: '[ C.5 ] Array function'
 pubDate: 2022-04-18
 category: study/react
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/32

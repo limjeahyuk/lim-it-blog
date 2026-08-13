@@ -2,7 +2,6 @@
 title: '[swiftUI] @State 와 @Binding'
 pubDate: 2022-12-29
 category: ios/swiftui
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/66

@@ -2,7 +2,6 @@
 title: '[ J ] css 모듈'
 pubDate: 2022-06-08
 category: study/react
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/39

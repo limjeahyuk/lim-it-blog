@@ -2,7 +2,6 @@
 title: 'React 간단 정리 3'
 pubDate: 2022-07-01
 category: study/react-notes
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/45

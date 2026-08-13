@@ -2,7 +2,6 @@
 title: '[ I ] Css 스타일링'
 pubDate: 2022-06-03
 category: study/react
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/38

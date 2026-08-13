@@ -2,7 +2,6 @@
 title: '@State 함수 / onTapGesture'
 pubDate: 2023-05-14
 category: ios/swiftui
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/80

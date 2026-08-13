@@ -2,7 +2,6 @@
 title: '[swift] WKWebview Js 연동 / Bridge'
 pubDate: 2023-01-21
 category: ios/storyboard
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/69

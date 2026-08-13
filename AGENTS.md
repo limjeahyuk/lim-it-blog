@@ -107,7 +107,6 @@ description: 목록에 보이는 한 줄 요약 (존댓말)   # 선택
 pubDate: 2026-08-07
 category: game         # 선택. CATEGORIES 와 일치
 project: gridbrawl     # 선택. 게임 글에만
-author: ai             # me | ai | both  (기본값 me)
 tags: [게임설계, 리팩터링]
 draft: false
 ---
@@ -116,7 +115,6 @@ draft: false
 - **`description` 은 선택입니다.** 없으면 목록 카드에서 그 줄이 통째로 빠집니다. 티스토리에서 옮겨온 116개에는 거의 없습니다 — 억지로 채우지 마세요. 검색엔진에 나갈 meta description 은 없을 때 [`src/lib/excerpt.ts`](src/lib/excerpt.ts) 가 본문 앞부분에서 알아서 뽑습니다 (화면에는 안 보입니다). **SEO 때문에 description 을 채울 필요는 없습니다.**
 - `category` 는 `src/consts.ts` 의 `CATEGORIES[].id` 와 **반드시** 일치해야 합니다. 안 맞으면 빌드가 깨집니다 (의도한 것 — 오타를 배포 전에 잡습니다).
 - `project` 는 `PROJECTS[].id` 와 일치해야 합니다. **카테고리와 별개입니다** — 게임 devlog 글은 보통 `category: game` + `project: gridbrawl` 둘 다 붙습니다.
-- `author` 는 정직하게 적습니다. AI가 초안을 쓰면 `ai`, 사람이 손보면 `both`, 사람이 처음부터 쓰면 `me`.
 - 태그에 슬래시(`/`)를 쓰지 않습니다. URL이 깨집니다.
 - 파일명이 그대로 URL이 됩니다 (`status-effects-redefined.md` → `/posts/status-effects-redefined`). 영문 소문자 + 하이픈.
 - `secret: true` 면 **비밀글**입니다 (§6-3).
@@ -336,8 +334,8 @@ morethan-log 를 참고한 3열 구조입니다. 이 구조를 유지하세요.
    ```
 2. **글감이 되는 커밋을 하나 고릅니다.** 여러 커밋을 한 글에 욱여넣지 않습니다. "왜"가 있는 커밋 하나가 글 하나입니다.
 3. **코드를 실제로 읽습니다.** 스니펫을 넣을 거면 파일을 열어서 확인합니다. **절대 지어내지 않습니다.**
-4. `src/content/posts/<slug>.md` 로 씁니다. `category: game` · `project: <id>` · `author: ai`.
-5. 사람이 읽고 고친 뒤 `author: both` 로 바꿉니다.
+4. `src/content/posts/<slug>.md` 로 씁니다. `category: game` · `project: <id>`.
+5. 사람이 읽고 고칩니다. 초안을 그대로 올리지 않습니다.
 
 ---
 
@@ -518,6 +516,16 @@ node scripts/import-tistory.mjs --dry    # 티스토리 이관 (한 번 쓰고 �
 ## 8. 고친 것 기록
 
 새 항목은 **위에** 붙입니다. 한 작업에 서너 줄이면 충분합니다 — 자세한 건 커밋에 있습니다.
+
+### 2026-08-13 · 글쓴이 표시를 뺐습니다
+
+글 117개 중 116개가 「직접 씀」이었습니다. 어차피 전부 제 글이라 날짜 옆에
+붙는 그 한 줄이 아무것도 구분해 주지 못했고, `/admin` 폼에서도 매번 그냥
+넘기는 칸이었습니다.
+
+- 화면·스키마·`/admin` 폼·글 117개의 frontmatter 에서 전부 뺐습니다. 「나중에 쓸지도 모르니 값만 남겨두기」는 안 했습니다 — 안 쓰는 키가 남아 있으면 다음에 볼 때 뭔지 다시 알아봐야 합니다.
+- **AI가 초안을 썼다는 표시도 같이 없어졌습니다.** 대신 §5 절차에서 사람이 반드시 읽고 고친 뒤 올리도록 했습니다. 표시로 면피하는 것보다 초안을 그대로 안 올리는 쪽이 맞다고 봤습니다.
+- `/admin` 폼을 고쳤으므로 `index.html` 의 `config.yml?v=` 를 올렸습니다 (§6-2).
 
 ### 2026-08-13 · 검색엔진에 글이 제대로 안 잡히던 것
 

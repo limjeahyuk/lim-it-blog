@@ -2,7 +2,6 @@
 title: 'PNG 와 JPG의 차이'
 pubDate: 2025-12-11
 category: study
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/94

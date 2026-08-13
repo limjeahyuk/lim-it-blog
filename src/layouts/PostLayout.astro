@@ -3,7 +3,7 @@ import { Image } from 'astro:assets'
 import type { CollectionEntry } from 'astro:content'
 import BaseLayout from '../components/BaseLayout.astro'
 import FormattedDate from '../components/FormattedDate.astro'
-import { AUTHOR_LABEL, SITE_DESCRIPTION, getProject } from '../consts'
+import { SITE_DESCRIPTION, getProject } from '../consts'
 
 /**
  * `excerpt` 는 본문에서 뽑은 요약입니다. `<head>` 의 meta description 에만
@@ -19,7 +19,6 @@ const {
   updatedDate,
   heroImage,
   project,
-  author,
   tags,
 } = Astro.props
 
@@ -59,8 +58,6 @@ const proj = project ? getProject(project) : undefined
           {description && <p class="desc">{description}</p>}
           <div class="meta">
             <FormattedDate date={pubDate} />
-            <span class="sep">·</span>
-            <span>{AUTHOR_LABEL[author]}</span>
             {
               updatedDate && (
                 <>

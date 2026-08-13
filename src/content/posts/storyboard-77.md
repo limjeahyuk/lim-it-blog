@@ -2,7 +2,6 @@
 title: '[swift] HTTP 통신 방법'
 pubDate: 2023-02-28
 category: ios/storyboard
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/77

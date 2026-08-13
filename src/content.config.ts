@@ -1,7 +1,7 @@
 import { defineCollection } from 'astro:content'
 import { glob } from 'astro/loaders'
 import { z } from 'astro/zod'
-import { AUTHOR_KINDS, CATEGORY_IDS, PROJECT_IDS } from './consts'
+import { CATEGORY_IDS, PROJECT_IDS } from './consts'
 
 /**
  * 빈 문자열을 「값 없음」으로 봅니다.
@@ -34,9 +34,6 @@ const posts = defineCollection({
 
       /** 어느 프로젝트의 devlog인지. 카테고리와 별개입니다(게임 글에만 붙습니다). */
       project: blankAsUndefined(z.enum(PROJECT_IDS).optional()),
-
-      /** 누가 썼는지. 기본값은 직접 쓴 글. */
-      author: z.enum(AUTHOR_KINDS).default('me'),
 
       tags: z.array(z.string()).default([]),
 

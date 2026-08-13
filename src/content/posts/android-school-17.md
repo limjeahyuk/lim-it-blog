@@ -2,7 +2,6 @@
 title: '[Android] 3.18 수업내용'
 pubDate: 2022-03-20
 category: study/android-school
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/17

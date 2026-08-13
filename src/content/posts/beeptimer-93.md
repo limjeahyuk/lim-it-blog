@@ -2,7 +2,6 @@
 title: 'LiveActivity 업데이트'
 pubDate: 2025-11-14
 category: ios/beeptimer
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/93

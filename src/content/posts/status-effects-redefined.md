@@ -4,7 +4,6 @@ description: 종류를 늘려도 게임이 깊어지지 않던 이유를 찾다�
 pubDate: 2026-08-07
 category: game
 project: gridbrawl
-author: ai
 tags:
   - 게임설계
   - 리팩터링

@@ -2,7 +2,6 @@
 title: 'Database Index'
 pubDate: 2025-12-16
 category: study
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/99

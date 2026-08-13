@@ -2,7 +2,6 @@
 title: '[MusicTree] recent'
 pubDate: 2022-03-16
 category: study/javascript
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/11

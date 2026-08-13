@@ -2,7 +2,6 @@
 title: '여러가지 방법으로 sdk를 직접 배포해보자'
 pubDate: 2024-07-14
 category: ios/sdk
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/88

@@ -112,15 +112,6 @@ collections:
         default: []
         hint: 쉼표로 나눕니다. 슬래시(/)는 주소가 깨지니 쓰지 마세요.
 
-      - name: author
-        label: 글쓴이
-        widget: select
-        default: me
-        options:
-          - { label: 직접 씀, value: me }
-          - { label: AI 초안, value: ai }
-          - { label: AI 초안 + 직접 손봄, value: both }
-
       - name: draft
         label: 초안으로 두기
         widget: boolean

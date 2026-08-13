@@ -2,7 +2,6 @@
 title: '[swiftUI] 기초 시작'
 pubDate: 2023-01-15
 category: ios/swiftui
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/67

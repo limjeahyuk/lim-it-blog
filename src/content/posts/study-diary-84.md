@@ -2,7 +2,6 @@
 title: 'SD. Slide 구현'
 pubDate: 2023-06-21
 category: ios/study-diary
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/84

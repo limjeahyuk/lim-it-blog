@@ -2,7 +2,6 @@
 title: 'TypeScript를 이용한 core서버 api 구축'
 pubDate: 2022-10-21
 category: study
-author: me
 tags: []
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/56
