@@ -355,6 +355,66 @@ a.pill:hover {
   margin: 2.5em 0;
 }
 
+/* ---------------------------------------------------------------
+   본문 강조 — /admin 툴바의 「색」·「형광펜」이 넣는 것들
+
+   마크다운에는 색이 없어서 <span class="c-*"> 로 넣습니다.
+   ⚠ 색 값을 본문에 직접 박지 마세요. 다크에서 읽히는 파스텔은 흰
+     배경에서 2~3:1 로 떨어지고, 그 반대도 마찬가지입니다. 클래스만
+     넣고 실제 색은 여기서 테마별로 고릅니다.
+
+   대비는 본문 배경(article.card) 기준으로 전부 4.5:1 이상입니다.
+   색을 늘리려면 admin/editor.js 의 COLORS 도 같이 늘리세요.
+--------------------------------------------------------------- */
+
+:root,
+html[data-theme='dark'] {
+  --c-teal: var(--lim-teal-400); /* 8.7:1 */
+  --c-blue: var(--lim-blue-400); /* 5.1:1 */
+  --c-green: var(--lim-green-400); /* 6.3:1 */
+  --c-orange: var(--lim-orange-400); /* 6.3:1 */
+  --c-red: var(--lim-red-400); /* 5.2:1 */
+
+  /* 형광펜. 어두운 배경에 형광색을 그대로 깔면 화면이 타서,
+     반투명하게 깔고 글자는 그대로 둡니다. */
+  --hl-bg: rgba(88, 221, 223, 0.22);
+  --hl-fg: var(--text);
+}
+
+html[data-theme='light'] {
+  --c-teal: var(--lim-teal-700); /* 4.6:1 */
+  --c-blue: var(--lim-blue-700); /* 9.2:1 */
+  --c-green: var(--lim-green-600); /* 6.1:1 */
+  --c-orange: var(--lim-orange-700); /* 5.3:1 */
+  --c-red: var(--lim-red-600); /* 5.1:1 */
+
+  --hl-bg: var(--lim-teal-300);
+  --hl-fg: var(--lim-gray-990);
+}
+
+.prose .c-teal {
+  color: var(--c-teal);
+}
+.prose .c-blue {
+  color: var(--c-blue);
+}
+.prose .c-green {
+  color: var(--c-green);
+}
+.prose .c-orange {
+  color: var(--c-orange);
+}
+.prose .c-red {
+  color: var(--c-red);
+}
+
+.prose mark {
+  background-color: var(--hl-bg);
+  color: var(--hl-fg);
+  border-radius: var(--radius-sm);
+  padding: 0.1em 0.25em;
+}
+
 /*
   폰에서의 본문 리듬.
 

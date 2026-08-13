@@ -34,6 +34,13 @@ collections:
     # Decap 3.9 는 배열만 받습니다 (기본 정렬 지정은 안 됩니다 — 넣으면 설정이 통째로 깨집니다).
     sortable_fields: ['pubDate', 'title']
 
+    # 사진은 글마다 제 폴더로 들어갑니다 — public/images/<주소>/.
+    # 티스토리에서 옮겨온 404장이 쓰고 있는 규칙과 같은 자리입니다.
+    # 앞의 / 는 "저장소 뿌리 기준"이라는 뜻입니다. 빼면 이 컬렉션 폴더
+    # (src/content/posts) 밑으로 들어갑니다.
+    media_folder: '/public/images/{{fields.slug}}'
+    public_folder: '/images/{{fields.slug}}'
+
     # 이 순서가 폰에서 보이는 순서입니다.
     # 제목 → 주소 → 본문. 여기까지가 글쓰기고, 나머지 분류는 전부 뒤로 뺐습니다.
     fields:
@@ -51,14 +58,15 @@ collections:
       - name: body
         label: 본문
         widget: markdown
-        # 리치 텍스트는 폰에서 한글 입력이 끊기고 코드펜스(```)를 망칩니다.
-        # 마크다운 원문 한 가지만 씁니다.
+        hint: 글자를 고른 뒤 위 버튼을 누르면 그 자리에 들어갑니다.
+        # 이 위젯은 admin/editor.js 가 갈아끼웁니다 — 마크다운 원문 +
+        # 직접 만든 툴바(제목·굵게·색·사진). 왜 그렇게 했는지는 editor.js
+        # 맨 위에 적어 뒀습니다.
         #
-        # ⚠ modes 의 순서로는 기본 모드를 못 정합니다. 두 개를 다 적으면
+        # 아래 modes 는 editor.js 가 죽었을 때의 fallback 입니다.
+        # ⚠ 리치 텍스트는 폰에서 한글 입력이 끊기고 코드펜스(```)를 망칩니다.
+        #   modes 의 순서로는 기본 모드를 못 정합니다 — 두 개를 다 적으면
         #   무조건 리치 텍스트로 열립니다. raw 하나만 남겨야 원문으로 열립니다.
-        # ⚠ raw 모드에서는 툴바 버튼이 전부 비활성이라 이미지 삽입(구성요소 추가)이
-        #   막힙니다. public/uploads 는 지금까지 쓴 적이 없어서 버렸습니다.
-        #   이미지를 CMS 로 올려야 하면 여기에 'rich_text' 를 도로 넣으세요.
         modes: ['raw']
 
       - name: pubDate

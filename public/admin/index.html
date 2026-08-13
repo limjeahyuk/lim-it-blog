@@ -18,7 +18,7 @@
       ?v= 는 캐시 무효화용입니다. config.yml 은 주소가 늘 같아서 브라우저가
       오래 물고 있습니다. 폼을 고쳤는데 폰에서 안 바뀌면 이 숫자를 올리세요.
     -->
-    <link href="/admin/config.yml?v=4" type="text/yaml" rel="cms-config-url" />
+    <link href="/admin/config.yml?v=5" type="text/yaml" rel="cms-config-url" />
 
     <style>
       /* ===============================================================
@@ -278,6 +278,31 @@
         color: var(--a-accent) !important;
       }
 
+      /*
+        미디어 라이브러리 — 툴바의 「사진」이 여는 창입니다.
+
+        예전에는 CMS 로 사진을 안 올렸기 때문에(§6-2) 이 창이 손도 안 탄
+        Decap 기본값이었습니다. 흰 판에 920px 고정폭이라 폰에서는 화면 밖으로
+        나갑니다. 이제 사진을 여기로 올리므로 같이 맞춥니다.
+      */
+      [class*='StyledModal'] {
+        background-color: var(--a-card) !important;
+        color: var(--a-text) !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 16px !important;
+        max-width: calc(100vw - 24px) !important;
+        max-height: calc(100vh - 48px) !important;
+      }
+
+      [class*='LibraryTitle'],
+      [class*='CardText'] {
+        color: var(--a-text) !important;
+      }
+
+      [class*='CardGridContainer'] {
+        overflow-y: auto !important;
+      }
+
       /* 떠 있는 메뉴 */
       [class*='DropdownList'],
       [class*='-menu'] {
@@ -301,7 +326,114 @@
       }
 
       /* ===============================================================
-         2. Decap CMS 모바일 대응.
+         2. 본문 편집기 (editor.js 가 만드는 툴바)
+
+         Decap 기본 markdown 위젯을 갈아끼운 것입니다 — 왜 갈아끼웠는지는
+         editor.js 맨 위에 적어 뒀습니다. 여기는 그 모양만 잡습니다.
+         =============================================================== */
+
+      .lim-md {
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+
+      /*
+        툴바는 붙여 둡니다. 본문 상자가 내용만큼 길어지기 때문에, 안 붙여
+        두면 글 중간에서 버튼을 쓰려고 맨 위까지 올라가야 합니다.
+        top 은 Decap 편집기 툴바(48px) 아래입니다.
+      */
+      .lim-md-bar {
+        position: sticky;
+        top: 48px;
+        z-index: 5;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 6px;
+        background-color: var(--a-surface);
+        border-bottom: 1px solid var(--a-border);
+        border-radius: 8px 8px 0 0;
+      }
+
+      .lim-md-btn {
+        min-height: 32px;
+        padding: 0 9px;
+        border: 1px solid var(--a-border);
+        border-radius: 6px;
+        background-color: var(--a-card);
+        color: var(--a-text);
+        font-size: 13px;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .lim-md-btn:active,
+      .lim-md-btn.is-open {
+        background-color: var(--a-accent);
+        color: var(--a-accent-fg);
+        border-color: var(--a-accent);
+      }
+
+      /* 버튼 글자로 뭘 하는 버튼인지 보이게 — B 는 굵게, I 는 기울임 */
+      .lim-md-btn.is-bold {
+        font-weight: 800;
+      }
+      .lim-md-btn.is-italic {
+        font-style: italic;
+      }
+      .lim-md-btn.is-strike {
+        text-decoration: line-through;
+      }
+
+      .lim-md-palette {
+        position: sticky;
+        top: 88px;
+        z-index: 5;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 6px;
+        background-color: var(--a-surface);
+        border-bottom: 1px solid var(--a-border);
+      }
+
+      /* 색 이름은 색 위에 얹습니다. 다섯 개 다 밝은 파스텔이라 글자는 어둡게. */
+      .lim-md-swatch {
+        min-height: 30px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 999px;
+        color: #181a1b;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .lim-md-ta {
+        display: block;
+        width: 100%;
+        min-height: 320px;
+        padding: 12px;
+        border: 0 !important;
+        border-radius: 0 0 8px 8px !important;
+        background-color: var(--a-card) !important;
+        color: var(--a-text) !important;
+        font-family:
+          ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace !important;
+        font-size: 14px;
+        line-height: 1.75;
+        resize: none;
+        overflow: hidden; /* 키를 내용에 맞춰 늘리므로 안쪽 스크롤은 없앱니다 */
+      }
+
+      .lim-md-ta:focus {
+        outline: 2px solid var(--a-accent);
+        outline-offset: -2px;
+      }
+
+      /* ===============================================================
+         3. Decap CMS 모바일 대응.
 
         Decap 은 데스크톱 기준으로 만들어져 있어서 주요 컨테이너에
         min-width: 800px 이 박혀 있습니다. 폰에서 열면 화면 밖으로 넘쳐
@@ -313,22 +445,20 @@
          =============================================================== */
 
       /*
-        raw 모드에서 죽어 있는 툴바를 숨깁니다 — 화면 폭과 무관한 문제라
-        미디어쿼리 밖입니다.
+        ⚠ 아래 두 규칙은 **editor.js 가 안 불러와졌을 때만** 쓰입니다.
+          지금은 본문 위젯을 직접 만든 것으로 갈아끼워서 Decap 의 raw 편집기
+          (.cms-editor-raw)가 화면에 아예 안 나옵니다. 그래도 남겨 둡니다 —
+          editor.js 가 죽으면 Decap 기본 편집기로 떨어지는데, 그때 이 규칙이
+          없으면 죽어 있는 툴바가 도로 나오고 편집기가 위 필드를 덮습니다.
 
-        본문을 마크다운 원문(raw)만 쓰도록 바꾼 뒤로 툴바 버튼 열 개가 전부
-        비활성입니다. 자리만 차지하면서 눌리지도 않습니다.
-        `.cms-editor-raw` 안으로 좁혔으므로, config.yml 에 rich_text 를
-        도로 넣으면 (컨테이너 클래스가 바뀌어) 툴바가 알아서 돌아옵니다.
+        (원래 사연) raw 모드에서는 툴바 버튼 열 개가 전부 disabled 라
+        자리만 차지했습니다. 그런데 편집기가 margin-top: -100px 으로 툴바
+        밑에 끼워져 있어서, 툴바만 지우면 위 필드의 라벨을 덮어버립니다.
+        둘은 항상 같이 갑니다.
       */
       .cms-editor-raw [class*='EditorControlBar'] {
         display: none !important;
       }
-      /*
-        raw 편집기는 margin-top: -100px 으로 툴바 밑에 끼워 넣어져 있습니다.
-        툴바만 지우면 그 -100px 이 남아서 편집기가 위로 올라붙고 바로 위
-        필드의 힌트와 「본문」 라벨을 덮어버립니다. 둘은 항상 같이 갑니다.
-      */
       .cms-editor-raw [contenteditable='true'] {
         margin-top: 0 !important;
       }
@@ -402,9 +532,24 @@
         /* ── 4. 본문이 화면을 차지하게 ───────────────────────────────
            기본 높이가 300px 이라 폰에서는 대여섯 줄 쓰면 끝까지 차고,
            그때부터 작은 창 안에서 스크롤하며 쓰게 됩니다. */
+        .lim-md-ta,
         .cms-editor-raw [contenteditable='true'] {
           min-height: 60vh !important;
           line-height: 1.7 !important;
+        }
+
+        /* 툴바가 두세 줄로 접히므로 조금 더 촘촘하게 */
+        .lim-md-bar {
+          gap: 3px;
+          padding: 5px;
+        }
+        .lim-md-btn {
+          padding: 0 8px;
+          font-size: 12px;
+        }
+        /* 툴바가 접힌 만큼 색 줄도 내려옵니다 */
+        .lim-md-palette {
+          top: 128px;
         }
 
         /* ── 5. 상단 메뉴·날짜 버튼 글자가 반으로 접히던 것 ───────────
@@ -436,6 +581,27 @@
           padding-top: 10px !important;
           padding-bottom: 10px !important;
           line-height: 1.4 !important;
+        }
+
+        /* ── 7. 사진 고르는 창이 화면 밖으로 나가던 것 ────────────────
+           920×576 이 박혀 있어서 폰에서는 오른쪽이 잘리고, 아래쪽 버튼도
+           안 보였습니다. */
+        [class*='StyledModal'] {
+          width: calc(100vw - 16px) !important;
+          height: calc(100vh - 32px) !important;
+          min-width: 0 !important;
+        }
+        /* 창 안쪽 줄들이 400px 로 박혀 있어서, 창만 줄이면 내용이 넘칩니다.
+           검색창·「업로드」 버튼이 오른쪽으로 잘려 나갔습니다. */
+        [class*='LibraryTop'],
+        [class*='RowContainer'],
+        [class*='SearchContainer'],
+        [class*='ButtonsContainer'] {
+          width: auto !important;
+          min-width: 0 !important;
+          max-width: 100% !important;
+          flex-wrap: wrap !important;
+          gap: 8px !important;
         }
 
         /* 「게시」 메뉴는 버튼 왼쪽에 붙어서 열리는데 폭이 176px 이라
@@ -474,5 +640,11 @@
       })()
     </script>
     <script src="https://unpkg.com/decap-cms@3.9.0/dist/decap-cms.js"></script>
+    <!--
+      본문 편집기를 갈아끼웁니다. Decap 이 먼저 떠 있어야 window.CMS 가
+      생기므로 순서를 바꾸지 마세요. ?v= 는 config.yml 과 같은 이유로
+      캐시 무효화용입니다 — 고쳤는데 폰에서 안 바뀌면 숫자를 올리세요.
+    -->
+    <script src="/admin/editor.js?v=1"></script>
   </body>
 </html>
