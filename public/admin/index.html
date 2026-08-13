@@ -147,6 +147,19 @@
         color: var(--a-text) !important;
       }
 
+      /*
+        카테고리·프로젝트 값의 첫 글자가 잘리던 것.
+
+        react-select 는 **보이지 않는 입력칸**을 값 글자와 같은 칸에 겹쳐
+        둡니다 (둘 다 grid-area 1/1). 폭이 4px 쯤이라 평소엔 티가 안 나는데,
+        위 규칙이 여기에도 배경을 칠하는 바람에 그 4px 이 글자 위에 얹혀서
+        "게임 개발"이 "베임 개발"로, "MineApp"이 "VlineApp"으로 보였습니다.
+        입력칸은 배경 없이 둡니다 — 글자색만 있으면 됩니다.
+      */
+      [class*='-control'] input {
+        background-color: transparent !important;
+      }
+
       /* 켜고 끄는 스위치. 켜짐/꺼짐이 emotion 해시로만 갈려서 클래스로는
          못 잡습니다 — 대신 Decap 이 붙여 주는 role/aria 를 씁니다. */
       [role='switch'] [class*='ToggleBackground'] {
