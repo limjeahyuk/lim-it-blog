@@ -3,9 +3,6 @@ import { Image } from 'astro:assets'
 import type { CollectionEntry } from 'astro:content'
 import BaseLayout from '../components/BaseLayout.astro'
 import FormattedDate from '../components/FormattedDate.astro'
-import SideContact from '../components/SideContact.astro'
-import SideProfile from '../components/SideProfile.astro'
-import SideWorks from '../components/SideWorks.astro'
 import { SITE_DESCRIPTION, getProject } from '../consts'
 
 /**
@@ -37,72 +34,63 @@ const proj = project ? getProject(project) : undefined
   updatedDate={updatedDate}
 >
   <div class="shell">
-    <div class="main">
-      <article class="card">
-        {
-          heroImage && (
-            <Image class="hero" src={heroImage} alt="" widths={[720, 1440]} />
-          )
-        }
+    <article class="card">
+      {
+        heroImage && (
+          <Image class="hero" src={heroImage} alt="" widths={[720, 1440]} />
+        )
+      }
 
-        <div class="body">
-          <header class="head">
+      <div class="body">
+        <header class="head">
+          {
+            proj && (
+              <a
+                class="pill-category"
+                style={`background-color:${proj.color}`}
+                href={`/projects/${proj.id}`}
+              >
+                {proj.name}
+              </a>
+            )
+          }
+          <h1>{title}</h1>
+          {description && <p class="desc">{description}</p>}
+          <div class="meta">
+            <FormattedDate date={pubDate} />
             {
-              proj && (
-                <a
-                  class="pill-category"
-                  style={`background-color:${proj.color}`}
-                  href={`/projects/${proj.id}`}
-                >
-                  {proj.name}
-                </a>
+              updatedDate && (
+                <>
+                  <span class="sep">·</span>
+                  <span>
+                    수정 <FormattedDate date={updatedDate} />
+                  </span>
+                </>
               )
             }
-            <h1>{title}</h1>
-            {description && <p class="desc">{description}</p>}
-            <div class="meta">
-              <FormattedDate date={pubDate} />
-              {
-                updatedDate && (
-                  <>
-                    <span class="sep">·</span>
-                    <span>
-                      수정 <FormattedDate date={updatedDate} />
-                    </span>
-                  </>
-                )
-              }
-            </div>
-            {
-              tags.length > 0 && (
-                <div class="tags">
-                  {tags.map((tag) => (
-                    <a class="pill" href={`/tags/${tag}`}>
-                      {tag}
-                    </a>
-                  ))}
-                </div>
-              )
-            }
-          </header>
-
-          <hr />
-
-          <div class="prose">
-            <slot />
           </div>
+          {
+            tags.length > 0 && (
+              <div class="tags">
+                {tags.map((tag) => (
+                  <a class="pill" href={`/tags/${tag}`}>
+                    {tag}
+                  </a>
+                ))}
+              </div>
+            )
+          }
+        </header>
+
+        <hr />
+
+        <div class="prose">
+          <slot />
         </div>
-      </article>
+      </div>
+    </article>
 
-      <a class="back" href="/">← 목록으로</a>
-    </div>
-
-    {/* 글 옆(폰에서는 글 아래)에도 프로필·Works·Contact 를 둡니다 — §6-4 와 같은 이유 */}
-    <aside class="rt">
-      <SideProfile />
-      <SideWorks />
-      <SideContact />
-    </aside>
+    <a class="back" href="/">← 목록으로</a>
   </div>
 </BaseLayout>
 
@@ -117,47 +105,6 @@ const proj = project ? getProject(project) : undefined
   @media (max-width: 768px) {
     .shell {
       padding: 0.5rem 1rem 3rem;
-    }
-  }
-
-  .main {
-    min-width: 0;
-  }
-
-  /*
-    오른쪽 열은 좁은 화면에서 본문 아래로 내려옵니다 (§6-4 의 피드와 같은 규칙).
-    글만 읽고 나가는 사람도 이 블로그가 누구 것인지는 보게 됩니다.
-  */
-  .rt {
-    margin-top: 2.5rem;
-  }
-
-  /*
-    사이드바를 1200px 부터만 옆에 붙입니다.
-    사이드바(17.5rem) + 간격을 빼고도 본문 폭이 지금(864px)보다 좁아지지 않는
-    최소 지점입니다. 그보다 좁으면 옆에 붙이는 순간 글이 오히려 답답해집니다.
-  */
-  @media (min-width: 1200px) {
-    .shell {
-      max-width: 82rem;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 17.5rem;
-      gap: 1.5rem;
-      align-items: start;
-    }
-
-    .rt {
-      margin-top: 0;
-      position: sticky;
-      top: 63px;
-      max-height: calc(100vh - 73px);
-      overflow-y: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    .rt::-webkit-scrollbar {
-      display: none;
     }
   }
 
