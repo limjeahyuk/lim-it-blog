@@ -432,6 +432,182 @@
         outline-offset: -2px;
       }
 
+      /* 눌려 있는 버튼 — 지금 커서 자리에 걸린 서식 */
+      .lim-md-btn.is-on {
+        background-color: var(--a-accent);
+        color: var(--a-accent-fg);
+        border-color: var(--a-accent);
+      }
+
+      .lim-md-btn:disabled {
+        opacity: 0.35;
+      }
+
+      .lim-md-swatch.is-none {
+        background-color: var(--a-card);
+        border: 1px solid var(--a-border);
+        color: var(--a-text);
+      }
+
+      .lim-md-note {
+        margin: 0;
+        padding: 8px 12px;
+        background-color: var(--a-surface);
+        border-bottom: 1px solid var(--a-border);
+        color: var(--a-dim);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .lim-md-editor.is-hidden {
+        display: none;
+      }
+
+      /* 본문. 쓰는 화면이 곧 결과라 블로그 본문과 비슷하게 보여 줍니다. */
+      .lim-md-editor .ProseMirror {
+        min-height: 60vh;
+        padding: 12px;
+        border-radius: 0 0 8px 8px;
+        background-color: var(--a-card);
+        color: var(--a-text);
+        /* ⚠ 16px 미만이면 iOS 사파리가 탭할 때 화면을 확대합니다 */
+        font-size: 16px;
+        line-height: 1.8;
+        outline: none;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      /*
+        Decap 은 `h1…h6, p { color: #313d3e }` 를 전역으로 깔아 둡니다.
+        상속으로는 못 이깁니다 — 본문 글자가 어두운 배경에 어두운 회색으로
+        찍혔습니다. 편집기 안의 블록에는 색을 직접 다시 줍니다.
+      */
+      .lim-md-editor .ProseMirror :where(p, h1, h2, h3, h4, h5, h6, li, th, td) {
+        color: var(--a-text);
+      }
+
+      .lim-md-editor .ProseMirror :where(h1, h2, h3, h4) {
+        margin: 1.4em 0 0.5em;
+        font-weight: 700;
+        line-height: 1.35;
+      }
+      .lim-md-editor .ProseMirror h1 { font-size: 1.5em; }
+      .lim-md-editor .ProseMirror h2 { font-size: 1.3em; }
+      .lim-md-editor .ProseMirror h3 { font-size: 1.13em; }
+      .lim-md-editor .ProseMirror h4 { font-size: 1em; }
+
+      .lim-md-editor .ProseMirror p {
+        margin: 0 0 0.9em;
+      }
+
+      .lim-md-editor .ProseMirror blockquote {
+        margin: 1em 0;
+        padding: 2px 0 2px 14px;
+        border-left: 3px solid var(--a-accent);
+        color: var(--a-dim);
+      }
+      /* 위에서 p 에 색을 직접 줬으므로 인용문 안쪽도 다시 눌러 줍니다 */
+      .lim-md-editor .ProseMirror blockquote :where(p) {
+        color: var(--a-dim);
+      }
+
+      .lim-md-editor .ProseMirror :where(ul, ol) {
+        margin: 0 0 0.9em;
+        padding-left: 1.4em;
+      }
+      .lim-md-editor .ProseMirror li { margin: 0.2em 0; }
+      .lim-md-editor .ProseMirror li > p { margin: 0; }
+
+      .lim-md-editor .ProseMirror code {
+        padding: 1px 5px;
+        border-radius: 4px;
+        background-color: var(--a-surface);
+        font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+        font-size: 0.88em;
+      }
+
+      .lim-md-editor .ProseMirror pre {
+        margin: 1em 0;
+        padding: 12px;
+        border-radius: 8px;
+        background-color: var(--a-surface);
+        overflow-x: auto;
+      }
+      .lim-md-editor .ProseMirror pre code {
+        padding: 0;
+        background: none;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .lim-md-editor .ProseMirror img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
+      /* 고른 사진에 테두리를 줘서 어디가 골라졌는지 보이게 */
+      .lim-md-editor .ProseMirror img.ProseMirror-selectednode {
+        outline: 2px solid var(--a-accent);
+      }
+
+      .lim-md-editor .ProseMirror hr {
+        margin: 1.5em 0;
+        border: 0;
+        border-top: 1px solid var(--a-border);
+      }
+
+      .lim-md-editor .ProseMirror table {
+        width: 100%;
+        margin: 1em 0;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      .lim-md-editor .ProseMirror :where(th, td) {
+        padding: 6px 8px;
+        border: 1px solid var(--a-border);
+        font-size: 14px;
+      }
+      .lim-md-editor .ProseMirror th {
+        background-color: var(--a-surface);
+      }
+
+      .lim-md-editor .ProseMirror a {
+        color: var(--a-accent);
+        text-decoration: underline;
+      }
+
+      /* 형광펜은 블로그와 같은 청록 반투명입니다 (global.css 의 --hl-bg) */
+      .lim-md-editor .ProseMirror mark {
+        padding: 0 2px;
+        border-radius: 3px;
+        background-color: rgba(88, 221, 223, 0.22);
+        color: inherit;
+      }
+
+      /*
+        글자 색. 본문에는 클래스만 들어가므로(§6-2) 편집기에서도 클래스로
+        칠합니다. 여기 색은 global.css 의 다크 테마 값과 같습니다 —
+        색을 늘리면 editor.js·global.css·여기 셋을 같이 고쳐야 합니다.
+      */
+      .lim-md-editor .ProseMirror .c-teal { color: #58dddf; }
+      .lim-md-editor .ProseMirror .c-blue { color: #429ff5; }
+      .lim-md-editor .ProseMirror .c-green { color: #5bc25d; }
+      .lim-md-editor .ProseMirror .c-orange { color: #ff9100; }
+      .lim-md-editor .ProseMirror .c-red { color: #fe6d6d; }
+
+      @media (prefers-color-scheme: light) {
+        .lim-md-editor .ProseMirror .c-teal { color: #00838a; }
+        .lim-md-editor .ProseMirror .c-blue { color: #123fa5; }
+        .lim-md-editor .ProseMirror .c-green { color: #09721a; }
+        .lim-md-editor .ProseMirror .c-orange { color: #b24c00; }
+        .lim-md-editor .ProseMirror .c-red { color: #d52525; }
+
+        .lim-md-editor .ProseMirror mark {
+          background-color: #93eaeb;
+        }
+      }
+
       /* ===============================================================
          3. Decap CMS 모바일 대응.
 
@@ -645,6 +821,6 @@
       생기므로 순서를 바꾸지 마세요. ?v= 는 config.yml 과 같은 이유로
       캐시 무효화용입니다 — 고쳤는데 폰에서 안 바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=1"></script>
+    <script src="/admin/editor.js?v=2"></script>
   </body>
 </html>

@@ -6,8 +6,9 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "npm run admin && astro dev",
+    "build": "npm run admin && astro build",
+    "admin": "esbuild admin-src/editor.js --bundle --format=iife --target=es2019 --minify --outfile=public/admin/editor.js",
     "preview": "astro preview",
     "astro": "astro",
     "post": "bash scripts/post.sh",
@@ -24,6 +25,14 @@
     "sharp": "^0.35.0"
   },
   "devDependencies": {
+    "@tiptap/core": "^3.30.0",
+    "@tiptap/extension-highlight": "^3.30.0",
+    "@tiptap/extension-image": "^3.30.0",
+    "@tiptap/extension-table": "^3.30.0",
+    "@tiptap/markdown": "^3.30.0",
+    "@tiptap/pm": "^3.30.0",
+    "@tiptap/starter-kit": "^3.30.0",
+    "esbuild": "^0.28.2",
     "jsdom": "^29.1.1",
     "turndown": "^7.2.4"
   }
