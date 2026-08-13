@@ -1,0 +1,112 @@
+---
+/**
+ * 저자 지면. 예전 /categories/<경로> 자리를 대신합니다.
+ *
+ * ⚠ 옛 카테고리 주소(/categories/*)는 되살리지 않았습니다. 색인이 막
+ *   시작된 참이라 잃을 게 적다고 보고 그냥 버리기로 한 것입니다.
+ */
+import BaseLayout from '../../components/BaseLayout.astro'
+import FeedLayout from '../../components/FeedLayout.astro'
+import PostCard from '../../components/PostCard.astro'
+import { AUTHORS, type Author } from '../../consts'
+import { getPublishedPosts, postsByAuthor, type Post } from '../../lib/posts'
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts()
+  return AUTHORS.map((author) => ({
+    params: { author: author.id },
+    props: { author, posts: postsByAuthor(posts, author.id) },
+  }))
+}
+
+type Props = { author: Author; posts: Post[] }
+
+const { author, posts } = Astro.props as Props
+---
+
+<BaseLayout title={author.name} description={author.bio}>
+  <FeedLayout currentAuthor={author.id}>
+    <header class="masthead" style={`--who:${author.color}`}>
+      <p class="kicker">
+        <a href="/authors">Editors</a>
+        <span class="sep">/</span>
+        <span>{author.tagline}</span>
+      </p>
+      <h1>{author.name}</h1>
+      <p class="bio">{author.bio}</p>
+      <p class="count">글 {posts.length}편</p>
+    </header>
+
+    {
+      posts.length === 0 ? (
+        <p class="empty">아직 이 이름으로 쓴 글이 없습니다.</p>
+      ) : (
+        posts.map((post, i) => (
+          <PostCard post={post} lead={i === 0} hideAuthor />
+        ))
+      )
+    }
+  </FeedLayout>
+</BaseLayout>
+
+<style>
+  .masthead {
+    padding: 0 0 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--who);
+  }
+
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.6rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .kicker a:hover {
+    color: var(--text);
+  }
+
+  .sep {
+    opacity: 0.5;
+  }
+
+  h1 {
+    font-size: 1.875rem;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--who);
+  }
+
+  @media (min-width: 768px) {
+    h1 {
+      font-size: 2.5rem;
+    }
+  }
+
+  .bio {
+    margin: 0.75rem 0 0;
+    max-width: 34rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+
+  .count {
+    margin: 0.75rem 0 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+  }
+
+  .empty {
+    padding: 1rem 0.25rem;
+    color: var(--text-faint);
+    font-size: 0.9375rem;
+  }
+</style>

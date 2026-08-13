@@ -15,42 +15,20 @@ export async function getPublishedPosts(): Promise<Post[]> {
   )
 }
 
-/** 태그별 글 개수 (많은 순) */
-export function countByTag(posts: Post[]): [string, number][] {
+/** 저자별 글 개수 */
+export function countByAuthor(posts: Post[]): Map<string, number> {
   const counts = new Map<string, number>()
   for (const post of posts) {
-    for (const tag of post.data.tags) {
-      counts.set(tag, (counts.get(tag) ?? 0) + 1)
-    }
-  }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-}
-
-/**
- * 카테고리별 글 개수.
- *
- * 자식 글도 부모에 얹습니다 — 'study' 를 누르면 'study/react' 글도 보여야
- * 하니까요. 그래서 합계가 전체 글 수보다 큽니다(부모에서 한 번 더 세므로).
- */
-export function countByCategory(posts: Post[]): Map<string, number> {
-  const counts = new Map<string, number>()
-  for (const post of posts) {
-    const id = post.data.category
+    const id = post.data.author
     if (!id) continue
-    const parts = id.split('/')
-    for (let i = 1; i <= parts.length; i++) {
-      const key = parts.slice(0, i).join('/')
-      counts.set(key, (counts.get(key) ?? 0) + 1)
-    }
+    counts.set(id, (counts.get(id) ?? 0) + 1)
   }
   return counts
 }
 
-/** 그 카테고리와 그 아래 전부의 글 (최신순) */
-export function postsInCategory(posts: Post[], id: string): Post[] {
-  return posts.filter(
-    (p) => p.data.category === id || p.data.category?.startsWith(`${id}/`),
-  )
+/** 그 저자의 글 (최신순) */
+export function postsByAuthor(posts: Post[], id: string): Post[] {
+  return posts.filter((p) => p.data.author === id)
 }
 
 /** 프로젝트별 글 개수 */

@@ -3,7 +3,7 @@ import BaseLayout from '../../components/BaseLayout.astro'
 import FeedLayout from '../../components/FeedLayout.astro'
 import FormattedDate from '../../components/FormattedDate.astro'
 import Icon from '../../components/Icon.astro'
-import { getCategory } from '../../consts'
+import { getAuthor } from '../../consts'
 import { getPublishedPosts } from '../../lib/posts'
 
 const posts = await getPublishedPosts()
@@ -43,9 +43,12 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
                     </span>
                   )}
                   <span class="title">{post.data.title}</span>
-                  {post.data.category && (
-                    <span class="cat">
-                      {getCategory(post.data.category)?.label}
+                  {post.data.author && (
+                    <span
+                      class="cat"
+                      style={`color:${getAuthor(post.data.author)?.color}`}
+                    >
+                      {getAuthor(post.data.author)?.name}
                     </span>
                   )}
                   <span class="date">
@@ -145,7 +148,7 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
     font-variant-numeric: tabular-nums;
   }
 
-  /* 카테고리는 좁은 화면에서 빼고 날짜만 남깁니다. */
+  /* 저자 이름은 좁은 화면에서 빼고 날짜만 남깁니다. */
   @media (max-width: 640px) {
     .cat {
       display: none;

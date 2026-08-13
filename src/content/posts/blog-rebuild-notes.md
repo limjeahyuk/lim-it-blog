@@ -2,12 +2,7 @@
 title: 티스토리 116개를 옮기고 블로그를 고친 이틀
 description: 정적 사이트에 비밀글을 붙이고 폰에서 글을 쓰게 만들면서 내린 판단들
 pubDate: 2026-08-13
-category: diary
-tags:
-  - 블로그
-  - Astro
-  - DecapCMS
-  - SEO
+author: developer
 draft: false
 ---
 

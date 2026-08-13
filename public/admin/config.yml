@@ -83,26 +83,15 @@ collections:
         required: false
         hint: 목록에서 제목 아래 보이는 문장입니다. 비워도 됩니다.
 
-      - name: category
-        label: 카테고리
+      # 이 사이트의 유일한 분류입니다. 카테고리와 태그는 없앴습니다.
+      # 저자를 늘리면 src/consts.ts 의 AUTHORS 와 여기를 같이 고칩니다.
+      - name: author
+        label: 저자
         widget: select
         required: false
         options:
-          - { label: 게임 개발, value: game }
-          - { label: iOS, value: ios }
-          - { label: 'iOS / SwiftUI', value: ios/swiftui }
-          - { label: 'iOS / Storyboard', value: ios/storyboard }
-          - { label: 'iOS / SDK', value: ios/sdk }
-          - { label: 'iOS / BeepTimer', value: ios/beeptimer }
-          - { label: 'iOS / 학습 일지', value: ios/study-diary }
-          - { label: 공부, value: study }
-          - { label: '공부 / React', value: study/react }
-          - { label: '공부 / React 수업', value: study/react-school }
-          - { label: '공부 / React 간단 정리', value: study/react-notes }
-          - { label: '공부 / JavaScript', value: study/javascript }
-          - { label: '공부 / Flutter', value: study/flutter }
-          - { label: '공부 / Android 수업', value: study/android-school }
-          - { label: 일기, value: diary }
+          - { label: 임 Student — 배운 것, value: student }
+          - { label: 임 Developer — 만든 것, value: developer }
 
       - name: project
         label: 프로젝트
@@ -112,13 +101,6 @@ collections:
           - { label: GridBrawl, value: gridbrawl }
           - { label: MineApp, value: mineapp }
           - { label: BeepTimer, value: beeptimer }
-
-      - name: tags
-        label: 태그
-        widget: list
-        required: false
-        default: []
-        hint: 쉼표로 나눕니다. 슬래시(/)는 주소가 깨지니 쓰지 마세요.
 
       - name: draft
         label: 초안으로 두기
@@ -130,4 +112,4 @@ collections:
         label: 비밀글로 두기
         widget: boolean
         default: false
-        hint: 본문이 잠깁니다. 제목·요약·태그는 목록에 그대로 보입니다.
+        hint: 본문이 잠깁니다. 제목·요약·저자는 목록에 그대로 보입니다.

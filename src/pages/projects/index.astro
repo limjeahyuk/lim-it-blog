@@ -8,10 +8,10 @@ import { countByProject, getPublishedPosts } from '../../lib/posts'
 const counts = countByProject(await getPublishedPosts())
 ---
 
-<BaseLayout title="Works" description="만든 것들">
+<BaseLayout title="Live Service" description="만든 것들">
   <FeedLayout>
     <div class="feed-header">
-      <span class="title-ico"><Icon name="book-open" size={17} /> Works</span>
+      <span class="title-ico"><Icon name="book-open" size={17} /> Live Service</span>
       <span class="count">{PROJECTS.length}</span>
     </div>
 

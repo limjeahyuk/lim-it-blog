@@ -1,8 +1,7 @@
 ---
 title: '[ B ] class / 스프레드 연산자'
 pubDate: 2022-04-18
-category: study/react
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/30
 ---

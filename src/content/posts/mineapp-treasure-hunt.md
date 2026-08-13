@@ -2,12 +2,8 @@
 title: 보물찾기 모드 추가
 description: 51 x 51 한가운데 보물을 두고 누가 더 빨리 찾는 게임
 pubDate: 2026-08-13
-category: game
+author: developer
 project: mineapp
-tags:
-  - 게임설계
-  - Swift
-  - 멀티플레이
 draft: false
 ---
 

@@ -2,7 +2,7 @@
 import '../styles/global.css'
 import type { ImageMetadata } from 'astro'
 import { Font } from 'astro:assets'
-import { AUTHOR, SITE_DESCRIPTION, SITE_TITLE } from '../consts'
+import { OWNER, SITE_DESCRIPTION, SITE_TITLE } from '../consts'
 
 interface Props {
   title: string
@@ -11,6 +11,8 @@ interface Props {
   type?: 'website' | 'article'
   pubDate?: Date
   updatedDate?: Date
+  /** 글을 쓴 저자 이름 (화면 byline 과 같은 값). 없으면 사이트 주인으로 떨어집니다. */
+  authorName?: string
 }
 
 const {
@@ -20,6 +22,7 @@ const {
   type = 'website',
   pubDate,
   updatedDate,
+  authorName,
 } = Astro.props as Props
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
@@ -35,9 +38,15 @@ const ogImage = new URL(image?.src ?? '/avatar-512.png', Astro.site)
  */
 const person = {
   '@type': 'Person',
-  name: AUTHOR.name,
-  url: `https://github.com/${AUTHOR.github}`,
+  name: OWNER.name,
+  url: `https://github.com/${OWNER.github}`,
 }
+
+/**
+ * 글의 저자는 화면 byline 에 나오는 이름(임 Student 등)을 씁니다.
+ * 발행자만 사이트 주인입니다 — 오른쪽 Profile 카드와 저작권 줄에 있습니다.
+ */
+const byline = authorName ? { '@type': 'Person', name: authorName } : person
 
 const schema =
   type === 'article'
@@ -50,7 +59,7 @@ const schema =
         mainEntityOfPage: canonicalURL.href,
         image: ogImage.href,
         inLanguage: 'ko-KR',
-        author: person,
+        author: byline,
         publisher: person,
         ...(pubDate && { datePublished: pubDate.toISOString() }),
         dateModified: (updatedDate ?? pubDate)?.toISOString(),

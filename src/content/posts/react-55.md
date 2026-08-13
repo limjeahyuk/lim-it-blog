@@ -1,8 +1,7 @@
 ---
 title: '[Tumbl] React 최근 본 페이지 구현'
 pubDate: 2022-08-29
-category: study/react
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/55
 ---

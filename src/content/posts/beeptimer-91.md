@@ -1,8 +1,8 @@
 ---
 title: 'TimerController'
 pubDate: 2025-11-12
-category: ios/beeptimer
-tags: []
+author: developer
+project: beeptimer
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/91
 ---

@@ -1,8 +1,7 @@
 ---
 title: '[ H ] 삼항연산자'
 pubDate: 2022-06-03
-category: study/react
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/37
 ---

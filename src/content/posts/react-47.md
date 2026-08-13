@@ -1,8 +1,7 @@
 ---
 title: 'React와 node.js 합치고 마음대로 프로젝트'
 pubDate: 2022-07-07
-category: study/react
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/47
 ---

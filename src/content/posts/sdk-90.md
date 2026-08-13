@@ -1,8 +1,7 @@
 ---
 title: 'pod lib create를 이용한 sdk 코드 작성'
 pubDate: 2024-07-15
-category: ios/sdk
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/90
 ---

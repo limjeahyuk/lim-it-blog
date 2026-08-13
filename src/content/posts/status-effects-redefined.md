@@ -2,12 +2,8 @@
 title: 상태이상 여섯 개가 하는 일은 셋뿐이었습니다
 description: 종류를 늘려도 게임이 깊어지지 않던 이유를 찾다가, 용어부터 잘못 쓰고 있었다는 걸 알게 됐습니다.
 pubDate: 2026-08-07
-category: game
+author: developer
 project: gridbrawl
-tags:
-  - 게임설계
-  - 리팩터링
-  - 네이밍
 draft: false
 ---
 

@@ -18,7 +18,6 @@ export async function GET(context) {
       title: post.data.title,
       description: post.data.description || excerpt(post.body),
       pubDate: post.data.pubDate,
-      categories: post.data.tags,
       link: `/posts/${post.id}/`,
     })),
     customData: '<language>ko-kr</language>',

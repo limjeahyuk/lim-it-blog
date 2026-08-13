@@ -1,8 +1,7 @@
 ---
 title: 'Swift 정적 라이브러리'
 pubDate: 2023-04-02
-category: ios
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/78
 ---

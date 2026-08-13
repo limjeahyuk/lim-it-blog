@@ -1,8 +1,7 @@
 ---
 title: '[React] props / Map()'
 pubDate: 2022-03-17
-category: study/react-school
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/14
 ---

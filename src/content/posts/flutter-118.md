@@ -1,8 +1,7 @@
 ---
 title: 'Dart 공부 중 마구잡이 정리 5'
 pubDate: 2026-01-11
-category: study/flutter
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/118
 ---

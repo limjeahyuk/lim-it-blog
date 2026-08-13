@@ -2,12 +2,8 @@
 title: 너에게 닿기를 모드 추가
 description: 서로 만나기 위해서 하는 협동 게임
 pubDate: 2026-08-13
-category: game
+author: developer
 project: mineapp
-tags:
-  - 게임설계
-  - Swift
-  - 멀티플레이
 draft: false
 ---
 

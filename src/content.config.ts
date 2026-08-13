@@ -1,7 +1,7 @@
 import { defineCollection } from 'astro:content'
 import { glob } from 'astro/loaders'
 import { z } from 'astro/zod'
-import { CATEGORY_IDS, PROJECT_IDS } from './consts'
+import { AUTHOR_IDS, PROJECT_IDS } from './consts'
 
 /**
  * 빈 문자열을 「값 없음」으로 봅니다.
@@ -29,13 +29,14 @@ const posts = defineCollection({
       pubDate: z.coerce.date(),
       updatedDate: z.coerce.date().optional(),
 
-      /** 글의 1차 분류. consts.ts 의 CATEGORIES 와 일치해야 합니다. */
-      category: blankAsUndefined(z.enum(CATEGORY_IDS).optional()),
+      /**
+       * 누가 쓴 글인가. consts.ts 의 AUTHORS 와 일치해야 합니다.
+       * 이 사이트의 **유일한 분류**입니다 — 카테고리와 태그는 없앴습니다.
+       */
+      author: blankAsUndefined(z.enum(AUTHOR_IDS).optional()),
 
-      /** 어느 프로젝트의 devlog인지. 카테고리와 별개입니다(게임 글에만 붙습니다). */
+      /** 어느 프로젝트의 devlog인지. 저자와 별개입니다(만든 것 글에만 붙습니다). */
       project: blankAsUndefined(z.enum(PROJECT_IDS).optional()),
-
-      tags: z.array(z.string()).default([]),
 
       /** 초안 상태. true면 빌드에서 제외됩니다. */
       draft: z.boolean().default(false),
@@ -43,7 +44,7 @@ const posts = defineCollection({
       /**
        * 비밀글. 본문을 빌드할 때 잠그고 비밀번호를 넣어야 열립니다.
        *
-       * **제목·날짜·요약·태그는 그대로 보입니다.** 목록에 자물쇠만 붙습니다.
+       * **제목·날짜·요약·저자는 그대로 보입니다.** 목록에 자물쇠만 붙습니다.
        * 감춰야 할 내용은 본문에만 쓰세요.
        */
       secret: z.boolean().default(false),

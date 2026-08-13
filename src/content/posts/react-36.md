@@ -1,8 +1,7 @@
 ---
 title: '[ G ] State & 양방향 바인딩'
 pubDate: 2022-05-05
-category: study/react
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/36
 ---

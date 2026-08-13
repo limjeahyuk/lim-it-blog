@@ -1,8 +1,7 @@
 ---
 title: '[storyboard] swift로 todoList 만들기 #외전'
 pubDate: 2022-12-24
-category: ios/storyboard
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/63
 ---

@@ -3,7 +3,7 @@ import { Image } from 'astro:assets'
 import type { CollectionEntry } from 'astro:content'
 import BaseLayout from '../components/BaseLayout.astro'
 import FormattedDate from '../components/FormattedDate.astro'
-import { SITE_DESCRIPTION, getProject } from '../consts'
+import { SITE_DESCRIPTION, getAuthor, getProject } from '../consts'
 
 /**
  * `excerpt` 는 본문에서 뽑은 요약입니다. `<head>` 의 meta description 에만
@@ -18,11 +18,12 @@ const {
   pubDate,
   updatedDate,
   heroImage,
+  author,
   project,
-  tags,
 } = Astro.props
 
 const proj = project ? getProject(project) : undefined
+const who = author ? getAuthor(author) : undefined
 ---
 
 <BaseLayout
@@ -32,6 +33,7 @@ const proj = project ? getProject(project) : undefined
   type="article"
   pubDate={pubDate}
   updatedDate={updatedDate}
+  authorName={who?.name}
 >
   <div class="shell">
     <article class="card">
@@ -57,6 +59,16 @@ const proj = project ? getProject(project) : undefined
           <h1>{title}</h1>
           {description && <p class="desc">{description}</p>}
           <div class="meta">
+            {
+              who && (
+                <>
+                  <a class="who" href={`/authors/${who.id}`} style={`color:${who.color}`}>
+                    {who.name}
+                  </a>
+                  <span class="sep">·</span>
+                </>
+              )
+            }
             <FormattedDate date={pubDate} />
             {
               updatedDate && (
@@ -69,17 +81,6 @@ const proj = project ? getProject(project) : undefined
               )
             }
           </div>
-          {
-            tags.length > 0 && (
-              <div class="tags">
-                {tags.map((tag) => (
-                  <a class="pill" href={`/tags/${tag}`}>
-                    {tag}
-                  </a>
-                ))}
-              </div>
-            )
-          }
         </header>
 
         <hr />
@@ -166,11 +167,14 @@ const proj = project ? getProject(project) : undefined
     opacity: 0.6;
   }
 
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1rem;
+  /* 저자 이름이 이 줄에서 유일하게 색이 들어가는 자리입니다. */
+  .who {
+    font-weight: 600;
+  }
+
+  .who:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   hr {

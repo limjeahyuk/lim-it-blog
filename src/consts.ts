@@ -5,7 +5,11 @@ export const SITE_DESCRIPTION =
   '만들면서 부딪힌 것들을 적어둡니다. 왜 그렇게 고쳤는지, 그래서 뭐가 터졌는지.'
 export const SITE_URL = 'https://lim-it.vercel.app'
 
-export const AUTHOR = {
+/**
+ * 사이트 주인. 글의 저자(AUTHORS)와는 다른 것입니다 —
+ * 이쪽은 오른쪽 Profile 카드와 저작권 표시에 쓰입니다.
+ */
+export const OWNER = {
   name: 'Lim Jeahyuk',
   role: 'Developer',
   /** Profile 카드에 보이는 한 줄 소개 */
@@ -15,62 +19,62 @@ export const AUTHOR = {
 }
 
 /**
- * 카테고리 — 글의 1차 분류입니다.
+ * 저자 — 글의 유일한 분류입니다.
  *
- * 이 블로그는 게임 devlog 전용이 아닙니다. 공부한 것, 일기, 게임 개발이
- * 다 들어옵니다. 그걸 나누는 게 카테고리이고, 태그는 그 위에 얹는
- * 가로 분류입니다 (카테고리 하나 = 글의 자리, 태그 = 여러 개 붙는 꼬리표).
+ * 이 사이트는 매거진처럼 굴러갑니다. 예전에는 카테고리(트리)와 태그가
+ * 따로 있었는데, 둘 다 없애고 **저자 하나**로 합쳤습니다. 글 하나는
+ * 저자 한 명에게 속하고, 그게 전부입니다.
  *
- * id 의 슬래시가 곧 트리입니다. 'study/react' 는 'study' 아래 'react'.
- * 부모를 따로 안 적습니다 — 경로에서 뽑습니다.
+ * ⚠ 저자는 화면 요소가 아니라 **글의 규약**입니다. 그래서 항목 하나가
+ *   보이는 것(name·tagline·bio·color)과 안 보이는 것(voice)을 같이 들고
+ *   있습니다. 두 개를 다른 파일에 두면 소개는 바꿨는데 말투는 그대로인
+ *   일이 생깁니다.
  *
- * 순서가 그대로 화면 순서입니다. 부모 바로 뒤에 자식을 두세요.
- * 글이 0개인 카테고리는 사이드바에서 숨습니다 (자리는 미리 잡아둡니다).
+ * 순서가 그대로 화면 순서입니다.
+ * 저자를 늘리려면 여기 한 덩어리 + public/admin/config.yml 의 select.
  */
-export const CATEGORIES = [
-  { id: 'game', label: '게임 개발' },
-
-  { id: 'ios', label: 'iOS' },
-  { id: 'ios/swiftui', label: 'SwiftUI' },
-  { id: 'ios/storyboard', label: 'Storyboard' },
-  { id: 'ios/sdk', label: 'SDK' },
-  { id: 'ios/beeptimer', label: 'BeepTimer' },
-  { id: 'ios/study-diary', label: '학습 일지' },
-
-  { id: 'study', label: '공부' },
-  { id: 'study/react', label: 'React' },
-  { id: 'study/react-school', label: 'React 수업' },
-  { id: 'study/react-notes', label: 'React 간단 정리' },
-  { id: 'study/javascript', label: 'JavaScript' },
-  { id: 'study/flutter', label: 'Flutter' },
-  { id: 'study/android-school', label: 'Android 수업' },
-
-  { id: 'diary', label: '일기' },
+export const AUTHORS = [
+  {
+    id: 'student',
+    name: '임 Student',
+    tagline: '배우는 사람',
+    bio: '수업에서 받아적고, 공부하다 막힌 것을 정리합니다. React·JavaScript·Flutter·iOS 를 처음 익히던 기록이 대부분입니다.',
+    color: 'var(--who-student)', // 파랑 — 다크 400 / 라이트 700
+    /**
+     * AI 에게 주는 말투 지시문. 화면에는 안 나옵니다.
+     * 공통 규약(-습니다체·"저"·이모지 없음)은 CLAUDE.md §1 에 있고,
+     * 여기에는 **저자마다 다른 것만** 적습니다.
+     */
+    voice: [
+      '배우는 중에 적는 필기입니다. 결론을 내리지 말고 이해한 데까지만 씁니다.',
+      '문장이 짧습니다. 코드와 화면을 먼저 놓고 설명을 붙입니다.',
+      '모르는 것은 모른다고 씁니다 — "왜 이렇게 되는지는 아직 모르겠습니다".',
+      '남을 가르치지 않습니다. 다시 볼 사람은 본인입니다.',
+    ],
+  },
+  {
+    id: 'developer',
+    name: '임 Developer',
+    tagline: '만드는 사람',
+    bio: '만든 것을 두고 왜 그렇게 했는지 적습니다. 틀렸다가 고친 것, 안 하기로 한 것, 되돌린 것까지 남깁니다.',
+    color: 'var(--who-developer)', // 빨강 — 다크 400 / 라이트 700
+    voice: [
+      '문제부터 씁니다. 뭐가 불편했고 왜 손대야 했는지가 첫 문단에 옵니다.',
+      '무엇을 했는지보다 왜 그 선택이었는지를 씁니다.',
+      '구체적인 숫자와 이름을 씁니다 — "밸런스 조정"이 아니라 "20에서 50으로".',
+      '틀렸던 것과 되돌린 것을 반드시 씁니다. 그게 제일 읽을 만합니다.',
+      '끝에 다음에 읽을 사람(=본인)에게 쓸모 있는 문장을 한두 개 남깁니다.',
+    ],
+  },
 ] as const
 
-export type Category = (typeof CATEGORIES)[number]
-export type CategoryId = Category['id']
+export type Author = (typeof AUTHORS)[number]
+export type AuthorId = Author['id']
 
-export const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as [
-  CategoryId,
-  ...CategoryId[],
-]
+export const AUTHOR_IDS = AUTHORS.map((a) => a.id) as [AuthorId, ...AuthorId[]]
 
-export function getCategory(id: string) {
-  return CATEGORIES.find((c) => c.id === id)
-}
-
-/** 'study/react' → [공부, React]. 빵부스러기에 씁니다. */
-export function categoryTrail(id: string): Category[] {
-  const parts = id.split('/')
-  return parts
-    .map((_, i) => getCategory(parts.slice(0, i + 1).join('/')))
-    .filter((c): c is Category => c !== undefined)
-}
-
-/** 자기 글 + 자식 카테고리 글까지 (부모를 눌러도 아래가 다 보이게) */
-export function categoryDepth(id: string) {
-  return id.split('/').length - 1
+export function getAuthor(id: string) {
+  return AUTHORS.find((a) => a.id === id)
 }
 
 /**

@@ -1,37 +1,32 @@
 ---
-import SideCategories from './SideCategories.astro'
-import SideTags from './SideTags.astro'
+import SideAuthors from './SideAuthors.astro'
 import SideProfile from './SideProfile.astro'
-import SideWorks from './SideWorks.astro'
+import SideProjects from './SideProjects.astro'
 import SideContact from './SideContact.astro'
 
 interface Props {
-  /** 지금 보고 있는 카테고리 (사이드바 강조용) */
-  currentCategory?: string
-  /** 지금 보고 있는 태그 (사이드바 강조용) */
-  currentTag?: string
+  /** 지금 보고 있는 저자 (사이드바 강조용) */
+  currentAuthor?: string
 }
 
-const { currentCategory, currentTag } = Astro.props as Props
+const { currentAuthor } = Astro.props as Props
 ---
 
 <div class="container feed">
   <aside class="lt">
-    <SideCategories current={currentCategory} />
-    <SideTags current={currentTag} />
+    <SideAuthors current={currentAuthor} />
   </aside>
 
   <div class="mid">
     <div class="tags-mobile">
-      <SideCategories current={currentCategory} />
-      <SideTags current={currentTag} />
+      <SideAuthors current={currentAuthor} />
     </div>
     <slot />
   </div>
 
   <aside class="rt">
     <SideProfile />
-    <SideWorks />
+    <SideProjects />
     <SideContact />
   </aside>
 </div>

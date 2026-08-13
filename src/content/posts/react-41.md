@@ -1,8 +1,7 @@
 ---
 title: '[ L ] 리액트 도구들 (Fragment & 리액트 포털 & ref)'
 pubDate: 2022-06-21
-category: study/react
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/41
 ---

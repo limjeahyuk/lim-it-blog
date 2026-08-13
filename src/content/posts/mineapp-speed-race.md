@@ -2,13 +2,8 @@
 title: 타임어택 대결 모드 추가
 description: 가장 기본적인 대전모드로 만들었습니다.
 pubDate: 2026-08-13
-category: game
+author: developer
 project: mineapp
-tags:
-  - 게임설계
-  - Swift
-  - Firebase
-  - 멀티플레이
 draft: false
 ---
 

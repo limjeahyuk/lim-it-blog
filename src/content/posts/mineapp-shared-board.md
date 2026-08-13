@@ -2,13 +2,8 @@
 title: 같은 판을 공유하는 대결모드 추가
 description: 한 보드를 같이 푸는 대전 모드
 pubDate: 2026-08-13
-category: game
+author: developer
 project: mineapp
-tags:
-  - 게임설계
-  - Swift
-  - Firebase
-  - 멀티플레이
 draft: false
 ---
 

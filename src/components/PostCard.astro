@@ -1,145 +1,163 @@
 ---
+/**
+ * 지면의 글 한 꼭지.
+ *
+ * 카드(상자)가 아니라 **줄**입니다. 벤치마킹한 매거진들이 공통으로 그랬고,
+ * 상자를 겹겹이 쌓는 것보다 큰 제목 + 여백 쪽이 글 수가 많을 때 덜 지칩니다.
+ *
+ * 색은 저자 색 하나만 씁니다. 프로젝트 색까지 같이 띄우면 한 줄에 색이
+ * 둘이라 어느 쪽이 분류인지 안 읽힙니다 — 프로젝트는 글자로만 둡니다.
+ */
 import type { CollectionEntry } from 'astro:content'
 import FormattedDate from './FormattedDate.astro'
 import Icon from './Icon.astro'
-import { getCategory, getProject } from '../consts'
+import { getAuthor, getProject } from '../consts'
 
 interface Props {
   post: CollectionEntry<'posts'>
+  /** 지면 맨 위 한 꼭지. 제목을 키우고 요약을 폰에서도 보여줍니다. */
+  lead?: boolean
+  /** 저자 지면처럼 이미 저자가 정해진 자리에서는 이름을 빼도 됩니다. */
+  hideAuthor?: boolean
 }
 
-const { post } = Astro.props as Props
-const { title, description, pubDate, category, project, tags, secret } =
-  post.data
+const { post, lead = false, hideAuthor = false } = Astro.props as Props
+const { title, description, pubDate, author, project, secret } = post.data
+
+const who = author ? getAuthor(author) : undefined
 const proj = project ? getProject(project) : undefined
-const cat = category ? getCategory(category) : undefined
 ---
 
-<a class="wrap" href={`/posts/${post.id}/`}>
-  <article class="card">
+<article class="item" data-lead={lead}>
+  <div class="byline">
     {
-      proj && (
-        <div class="category">
-          <span class="pill-category" style={`background-color:${proj.color}`}>
-            {proj.name}
-          </span>
-        </div>
+      who && !hideAuthor && (
+        <a class="who" href={`/authors/${who.id}`} style={`color:${who.color}`}>
+          {who.name}
+        </a>
       )
     }
-    <div class="content" data-category={!!proj}>
-      <h2>
-        {secret && <span class="lock" title="비밀글"><Icon name="lock" size={15} /></span>}
-        {title}
-      </h2>
-      <div class="date">
-        {
-          cat && (
-            <>
-              <span class="cat">{cat.label}</span>
-              <span class="sep">·</span>
-            </>
-          )
-        }
-        <FormattedDate date={pubDate} />
-      </div>
-      {description && <p class="summary">{description}</p>}
-      <div class="tags">
-        {tags.map((tag) => <span class="pill">{tag}</span>)}
-      </div>
-    </div>
-  </article>
-</a>
+    {proj && <a class="proj" href={`/projects/${proj.id}`}>{proj.name}</a>}
+    <span class="date"><FormattedDate date={pubDate} /></span>
+  </div>
+
+  <a class="hit" href={`/posts/${post.id}/`}>
+    <h2>
+      {secret && <span class="lock" title="비밀글"><Icon name="lock" size={lead ? 18 : 15} /></span>}
+      {title}
+    </h2>
+    {description && <p class="summary">{description}</p>}
+  </a>
+</article>
 
 <style>
-  .card {
-    overflow: hidden;
-    position: relative;
-    margin-bottom: 1.5rem;
-    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  .item {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
   }
 
-  @media (min-width: 768px) {
-    .card {
-      margin-bottom: 2rem;
-    }
+  .item[data-lead='true'] {
+    padding-top: 0.25rem;
+    padding-bottom: 2rem;
   }
 
-  .wrap:hover .card {
-    box-shadow:
-      0 10px 15px -3px rgba(0, 0, 0, 0.1),
-      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  .byline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
   }
 
-  .category {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    z-index: 10;
+  /* 저자 이름은 색으로 구분합니다. 매거진에서 이름이 곧 분류라서
+     여기가 이 줄에서 유일하게 색이 들어가는 자리입니다. */
+  .who {
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 
-  .content {
-    padding: 1.5rem 1rem 1rem;
+  .who:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
-  .content[data-category='true'] {
-    padding-top: 3.5rem;
+  .proj {
+    color: var(--text-faint);
+  }
+
+  /* 가운뎃점은 저자 이름 뒤에 올 때만. 저자 지면에서는 이름을 빼기 때문에
+     그냥 ::before 로 두면 점 하나가 앞에 덩그러니 남습니다. */
+  .who + .proj::before {
+    content: '·';
+    margin-right: 0.5rem;
+    opacity: 0.6;
+  }
+
+  .proj:hover {
+    color: var(--text-dim);
+  }
+
+  .date {
+    margin-left: auto;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hit {
+    display: block;
   }
 
   h2 {
-    margin-bottom: 0.5rem;
-    font-size: 1.125rem;
-    line-height: 1.75rem;
-    font-weight: 500;
+    font-size: 1.25rem;
+    line-height: 1.45;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .item[data-lead='true'] h2 {
+    font-size: 1.75rem;
+    line-height: 1.35;
+    letter-spacing: -0.025em;
   }
 
   @media (min-width: 768px) {
     h2 {
-      font-size: 1.25rem;
+      font-size: 1.4375rem;
     }
+
+    .item[data-lead='true'] h2 {
+      font-size: 2.25rem;
+    }
+  }
+
+  .hit:hover h2 {
+    color: var(--accent-text);
   }
 
   /* 비밀글 자물쇠. 제목과 같은 줄에 붙되 크기는 글자를 따라갑니다. */
   .lock {
     display: inline-flex;
-    vertical-align: -0.15em;
+    vertical-align: -0.12em;
     margin-right: 0.15em;
     color: var(--text-faint);
   }
 
-  .date {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    color: var(--text-faint);
-  }
-
-  .sep {
-    opacity: 0.6;
-  }
-
-  .cat {
-    color: var(--text-dim);
-  }
-
   .summary {
     display: none;
-    margin: 0 0 1rem;
-    line-height: 1.9;
+    margin: 0.5rem 0 0;
+    line-height: 1.8;
     color: var(--text-dim);
+  }
+
+  .item[data-lead='true'] .summary {
+    display: block;
   }
 
   @media (min-width: 768px) {
     .summary {
       display: block;
     }
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
   }
 </style>

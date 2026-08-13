@@ -1,8 +1,7 @@
 ---
 title: '[html/css] 기본으로 홈페이지를 따라 만들어보자'
 pubDate: 2026-01-01
-category: study
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/107
 ---

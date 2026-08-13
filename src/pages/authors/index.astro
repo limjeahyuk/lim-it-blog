@@ -1,0 +1,129 @@
+---
+/**
+ * 저자 목록. the-edit 의 /editors 자리입니다.
+ *
+ * 글이 0개인 저자도 여기에는 나옵니다 — 사이드바와 다른 규칙입니다.
+ * 사이드바는 고르는 곳이라 빈 이름이 방해가 되지만, 이 페이지는 소개하는
+ * 곳이라 아직 안 쓴 이름이 있는 게 이상하지 않습니다.
+ */
+import BaseLayout from '../../components/BaseLayout.astro'
+import FeedLayout from '../../components/FeedLayout.astro'
+import { AUTHORS } from '../../consts'
+import { countByAuthor, getPublishedPosts } from '../../lib/posts'
+
+const counts = countByAuthor(await getPublishedPosts())
+---
+
+<BaseLayout title="Editors" description="이 지면에 글을 쓰는 이름들">
+  <FeedLayout>
+    <header class="masthead">
+      <p class="kicker">Editors</p>
+      <h1>이 지면에 글을 쓰는 이름들</h1>
+    </header>
+
+    <div class="list">
+      {
+        AUTHORS.map((a) => (
+          <a class="row" href={`/authors/${a.id}`}>
+            <span class="bar" style={`background-color:${a.color}`} />
+            <div class="text">
+              <div class="head">
+                <span class="name" style={`color:${a.color}`}>
+                  {a.name}
+                </span>
+                <span class="tagline">{a.tagline}</span>
+                <span class="count">{counts.get(a.id) ?? 0}</span>
+              </div>
+              <p class="bio">{a.bio}</p>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </FeedLayout>
+</BaseLayout>
+
+<style>
+  .masthead {
+    padding-bottom: 1.25rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kicker {
+    margin: 0 0 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    line-height: 1.4;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  @media (min-width: 768px) {
+    h1 {
+      font-size: 1.875rem;
+    }
+  }
+
+  .row {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* 왼쪽 색 막대가 저자를 가르는 유일한 표시입니다. */
+  .bar {
+    width: 3px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+
+  .text {
+    min-width: 0;
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .row:hover .name {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .tagline {
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+  }
+
+  .count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bio {
+    margin: 0.5rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+</style>

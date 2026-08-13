@@ -1,8 +1,7 @@
 ---
 title: '면접 질문'
 pubDate: 2025-12-20
-category: study
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/105
 ---

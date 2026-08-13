@@ -1,8 +1,7 @@
 ---
 title: '간단한 정리 1'
 pubDate: 2026-01-04
-category: study/react
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/110
 ---

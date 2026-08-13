@@ -1,8 +1,7 @@
 ---
 title: 'CocoaPod / Podfile 관련한 내용 정리'
 pubDate: 2024-07-15
-category: ios/sdk
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/89
 ---

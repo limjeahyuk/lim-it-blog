@@ -1,12 +1,8 @@
 ---
 title: 공유할 수 있는 시드 추가
 pubDate: 2026-08-13
-category: game
+author: developer
 project: mineapp
-tags:
-  - 게임설계
-  - Swift
-  - SwiftUI
 draft: false
 ---
 

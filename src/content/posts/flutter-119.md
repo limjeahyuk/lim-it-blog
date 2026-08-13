@@ -1,8 +1,7 @@
 ---
 title: 'Flutter의 동작 원리 및 특징'
 pubDate: 2026-01-13
-category: study/flutter
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/119
 ---

@@ -1,8 +1,7 @@
 ---
 title: '면접 회고'
 pubDate: 2025-12-23
-category: study
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/106
 ---

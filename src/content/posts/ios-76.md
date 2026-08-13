@@ -1,8 +1,7 @@
 ---
 title: '[swift] 모듈화 Library / framework'
 pubDate: 2023-02-19
-category: ios
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/76
 ---

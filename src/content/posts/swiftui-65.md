@@ -1,8 +1,7 @@
 ---
 title: '[swiftUI] stack ( VStack / HStack / ZStack )'
 pubDate: 2022-12-25
-category: ios/swiftui
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/65
 ---

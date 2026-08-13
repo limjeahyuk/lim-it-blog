@@ -1,8 +1,7 @@
 ---
 title: '[ M ] 사이드이펙트 / useEffect'
 pubDate: 2022-06-21
-category: study/react
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/42
 ---

@@ -1,8 +1,7 @@
 ---
 title: 'React : useReducer와 useState의 차이'
 pubDate: 2022-07-29
-category: study/react
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/53
 ---

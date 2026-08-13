@@ -1,8 +1,7 @@
 ---
 title: '[0] React, nodejs를 이용한 쇼핑몰 만들기'
 pubDate: 2022-07-22
-category: study
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/48
 ---

@@ -1,8 +1,7 @@
 ---
 title: 'Garbage Collection 과 ARC'
 pubDate: 2025-12-16
-category: study
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/97
 ---

@@ -1,0 +1,142 @@
+---
+/**
+ * 저자 목록. 이 사이트의 유일한 분류라 사이드바 맨 위에 옵니다.
+ *
+ * 예전에는 여기 카테고리 트리와 태그가 있었습니다. 둘 다 없애고 저자로
+ * 합쳤습니다 — 글 하나는 저자 한 명에게 속하고, 그게 전부입니다.
+ *
+ * 글이 0개인 저자는 숨습니다. 매거진 목록에 빈 이름이 있으면 준비 중인
+ * 것처럼 보이거든요. 자리는 consts.ts 에 미리 잡아둬도 됩니다.
+ */
+import { AUTHORS } from '../consts'
+import { countByAuthor, getPublishedPosts } from '../lib/posts'
+
+interface Props {
+  /** 지금 보고 있는 저자 (있으면 강조) */
+  current?: string
+}
+
+const { current } = Astro.props as Props
+
+const posts = await getPublishedPosts()
+const counts = countByAuthor(posts)
+
+const rows = AUTHORS.filter((a) => (counts.get(a.id) ?? 0) > 0).map((a) => ({
+  ...a,
+  count: counts.get(a.id) ?? 0,
+}))
+---
+
+<div class="wrap">
+  <a class="side-title" href="/authors">Editors</a>
+  <div class="list">
+    <a href="/" data-active={current === undefined}>
+      <span class="name">전체</span>
+      <span class="count">{posts.length}</span>
+    </a>
+    {
+      rows.map((row) => (
+        <a href={`/authors/${row.id}`} data-active={current === row.id}>
+          <span class="dot" style={`background-color:${row.color}`} />
+          <span class="name">{row.name}</span>
+          <span class="count">{row.count}</span>
+        </a>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  /* 매거진 지면의 목차라 알약이 아니라 글자로 둡니다. */
+  .side-title {
+    display: block;
+    padding: 0.25rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .side-title:hover {
+    color: var(--text);
+  }
+
+  /* 좁은 화면에서는 가로 스크롤 한 줄. 화면 양끝까지 흘려서
+     옆으로 더 있다는 걸 보이게 합니다 — 안쪽에서 끊기면 그게 끝인 줄 압니다. */
+  .list {
+    display: flex;
+    margin-bottom: 1.5rem;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .list a {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.75rem;
+    margin: 0.125rem 0;
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--text-faint);
+    flex-shrink: 0;
+  }
+
+  .list a:hover {
+    background-color: var(--card);
+    color: var(--text-dim);
+  }
+
+  .list a[data-active='true'] {
+    color: var(--text);
+    background-color: var(--card);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 좁은 화면의 한 줄 목록에서는 개수가 방해만 됩니다. */
+  .count {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .list {
+      display: block;
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+
+    .list a {
+      padding-block: 0.3rem;
+    }
+
+    .count {
+      display: inline;
+    }
+  }
+</style>

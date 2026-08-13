@@ -1,8 +1,7 @@
 ---
 title: 'Dynamic Programming이란?'
 pubDate: 2025-12-11
-category: study
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/95
 ---

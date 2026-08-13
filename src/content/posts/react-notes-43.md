@@ -1,8 +1,7 @@
 ---
 title: 'React 간단 정리 1'
 pubDate: 2022-06-29
-category: study/react-notes
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/43
 ---

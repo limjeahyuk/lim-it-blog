@@ -1,8 +1,7 @@
 ---
 title: '[React] UI 라이브러리 / grid 컨테이너'
 pubDate: 2022-03-18
-category: study/react-school
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/16
 ---

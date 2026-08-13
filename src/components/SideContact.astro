@@ -1,15 +1,15 @@
 ---
 import Icon from './Icon.astro'
-import { AUTHOR } from '../consts'
+import { OWNER } from '../consts'
 import type { IconName } from '../lib/icon-names'
 
 const links: { label: string; href: string; icon: IconName }[] = [
   {
     label: 'github',
-    href: `https://github.com/${AUTHOR.github}`,
+    href: `https://github.com/${OWNER.github}`,
     icon: 'folder-code',
   },
-  { label: 'email', href: `mailto:${AUTHOR.email}`, icon: 'at' },
+  { label: 'email', href: `mailto:${OWNER.email}`, icon: 'at' },
 ]
 
 const year = new Date().getFullYear()
@@ -27,7 +27,7 @@ const year = new Date().getFullYear()
       ))
     }
   </div>
-  <div class="copy">© {AUTHOR.name} {year}</div>
+  <div class="copy">© {OWNER.name} {year}</div>
 </div>
 
 <style>

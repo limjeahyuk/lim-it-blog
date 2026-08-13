@@ -1,8 +1,7 @@
 ---
 title: '[swiftUI] 복잡한 인터페이스 구성'
 pubDate: 2023-01-24
-category: ios/swiftui
-tags: []
+author: student
 draft: false
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/73
 ---

@@ -15,23 +15,23 @@ const recent = posts.slice(0, RECENT)
 
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
   <FeedLayout>
-    <div class="feed-header">
-      <span class="title-ico"><Icon name="notebook" size={17} /> Recent Posts</span>
-      <span class="count">{posts.length}</span>
-    </div>
+    <header class="masthead">
+      <p class="kicker">Latest</p>
+      <p class="tagline">{SITE_DESCRIPTION}</p>
+    </header>
 
     {
       posts.length === 0 ? (
         <p class="empty">아직 글이 없습니다.</p>
       ) : (
-        recent.map((post) => <PostCard post={post} />)
+        recent.map((post, i) => <PostCard post={post} lead={i === 0} />)
       )
     }
 
     {
       posts.length > RECENT && (
         <a class="more" href="/posts">
-          <span>글 {posts.length}개 전부 보기</span>
+          <span>글 {posts.length}편 전부 보기</span>
           <Icon name="chevron-right" size={16} />
         </a>
       )
@@ -40,18 +40,27 @@ const recent = posts.slice(0, RECENT)
 </BaseLayout>
 
 <style>
-  .feed-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.9375rem;
+  .masthead {
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
   }
 
-  .count {
-    font-size: 0.8125rem;
+  .kicker {
+    margin: 0 0 0.4rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--text-faint);
+  }
+
+  .tagline {
+    margin: 0;
+    max-width: 30rem;
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--text-dim);
   }
 
   .empty {
@@ -64,10 +73,9 @@ const recent = posts.slice(0, RECENT)
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 1rem 1.25rem;
-    border-radius: var(--radius-card);
-    background-color: var(--card);
-    font-size: 0.9375rem;
+    padding: 1.25rem 0.25rem;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
     color: var(--text-dim);
   }
 
