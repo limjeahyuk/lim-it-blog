@@ -1,0 +1,16 @@
+{
+  "name": "lim-it",
+  "short_name": "lim-it",
+  "description": "만들면서 부딪힌 것들을 적어둡니다. 왜 그렇게 고쳤는지, 그래서 뭐가 터졌는지.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "lang": "ko-KR",
+  "theme_color": "#181a1b",
+  "background_color": "#181a1b",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
