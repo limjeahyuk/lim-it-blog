@@ -71,7 +71,7 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
         <header class="band-head">
           <h2 style={`color:${s.author.color}`}>{s.author.name}</h2>
           <a class="all" href={`/authors/${s.author.id}`}>
-            전부 보기
+            All
           </a>
         </header>
 
@@ -103,7 +103,7 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
   <section class="band recent">
     <header class="band-head">
       <h2>최근 글</h2>
-      <a class="all" href="/posts">글 {posts.length}편 전부 보기</a>
+      <a class="all" href="/posts">All</a>
     </header>
 
     <div class="rows">
