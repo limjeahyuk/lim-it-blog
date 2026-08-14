@@ -43,7 +43,7 @@ const counts = countByAuthor(posts)
 <!-- 판 뒤를 덮는 그늘. 큰 화면에서 바깥을 눌러 닫는 자리이기도 합니다. -->
 <div class="scrim"></div>
 
-<aside id="menu" class="panel" aria-label="메뉴">
+<aside id="menu" class="panel" aria-label="메뉴" tabindex="-1">
   <div class="panel-top">
     <a class="logo" href="/">{SITE_TITLE}</a>
     <div class="tools">
@@ -217,6 +217,10 @@ const counts = countByAuthor(posts)
     transition:
       transform 320ms cubic-bezier(0.2, 0.7, 0.3, 1),
       visibility 0s linear 320ms;
+  }
+
+  .panel:focus {
+    outline: none;
   }
 
   .panel.is-open {
@@ -422,12 +426,27 @@ const counts = countByAuthor(posts)
     burger.setAttribute('aria-expanded', String(open))
     if (open) {
       lock()
-      field.focus({ preventScroll: true })
+      /*
+        ⚠ 검색칸에 포커스를 주지 않습니다. 폰에서는 판이 열리자마자
+          키보드가 올라와 메뉴의 절반을 덮습니다. 메뉴를 열었다고 해서
+          검색을 하려는 것은 아닙니다 — 키보드는 검색칸을 눌렀을 때만.
+
+        대신 판 자체로 포커스를 옮깁니다. 키보드로 다니는 사람이 탭을
+        눌렀을 때 뒤 지면이 아니라 판 안에서 이어지게 하려는 것입니다.
+      */
+      panel.focus({ preventScroll: true })
     } else {
       unlock()
       burger.focus({ preventScroll: true })
     }
   }
+
+  // 돋보기를 눌러도 검색칸이 잡히게 — 아이콘 자리가 죽은 공간이 되지 않도록.
+  document
+    .querySelector<HTMLElement>('.find')!
+    .addEventListener('click', (e) => {
+      if (e.target !== field) field.focus()
+    })
 
   burger.addEventListener('click', () => setOpen(true))
   close.addEventListener('click', () => setOpen(false))
