@@ -11,13 +11,11 @@ import type { Post } from './posts'
  *
  *   1. frontmatter 의 `heroImage`  (손으로 고른 것)
  *   2. 본문에 나오는 첫 사진
- *   3. 기본 사진
+ *   3. 없음 — 그리는 쪽에서 저자 색 판으로 채웁니다
  *
  * ⚠ 비밀글은 본문을 뒤지지 않습니다. 잠긴 본문에서 뽑은 사진을 목록에
  *   띄우면 잠근 의미가 없습니다 (§6-3 과 같은 이유).
  */
-export const DEFAULT_COVER = '/images/default-cover.svg'
-
 /** 마크다운 `![alt](주소)` 와 본문에 직접 쓴 `<img src="주소">` 둘 다 봅니다. */
 const MD_IMAGE = /!\[[^\]]*\]\(\s*([^)\s]+)/
 const HTML_IMAGE = /<img[^>]+src\s*=\s*["']([^"']+)["']/i
@@ -38,6 +36,8 @@ export function firstBodyImage(body: string | undefined): string | undefined {
 export type Cover =
   | { kind: 'asset'; src: ImageMetadata }
   | { kind: 'file'; src: string }
+  /** 쓸 사진이 없습니다. 그리는 쪽에서 색 판으로 채웁니다. */
+  | { kind: 'none' }
 
 export function coverOf(post: Post): Cover {
   if (post.data.heroImage) {
@@ -47,5 +47,5 @@ export function coverOf(post: Post): Cover {
     const found = firstBodyImage(post.body)
     if (found) return { kind: 'file', src: found }
   }
-  return { kind: 'file', src: DEFAULT_COVER }
+  return { kind: 'none' }
 }
