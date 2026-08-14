@@ -11,6 +11,7 @@
 import BaseLayout from '../../components/BaseLayout.astro'
 import FormattedDate from '../../components/FormattedDate.astro'
 import PreviewCover from '../../components/PreviewCover.astro'
+import PreviewFooter from '../../components/PreviewFooter.astro'
 import PreviewNav from '../../components/PreviewNav.astro'
 import { AUTHORS, PROJECTS, getAuthor } from '../../consts'
 import { coverOf } from '../../lib/cover'
@@ -97,6 +98,8 @@ const who = (id?: string) => (id ? getAuthor(id) : undefined)
 
     <a class="more" href="/posts">글 {posts.length}편 전부 보기 →</a>
   </div>
+
+  <PreviewFooter />
 </BaseLayout>
 
 <style>
@@ -226,18 +229,74 @@ const who = (id?: string) => (id ? getAuthor(id) : undefined)
     text-decoration: none;
   }
 
-  @media (min-width: 700px) {
+  /*
+    큰 화면. 롱블랙은 오늘의 한 편을 가로로 눕히고 아래 묶음을 카드로 폅니다.
+
+    ⚠ 가로 스크롤은 폰에서만 씁니다. 마우스로는 옆으로 미는 방법이 잘 안
+      보여서, 데스크톱에서는 같은 줄을 4열 격자로 폅니다.
+  */
+  @media (min-width: 900px) {
     .wrap {
-      padding: 2.5rem 1.5rem 4rem;
+      max-width: 1280px;
+      padding: 2.5rem 2rem 4rem;
+    }
+
+    /*
+      사진 왼쪽 · 글 오른쪽.
+
+      ⚠ 자리를 하나하나 지정해야 합니다. 그냥 두 열로 두면 자식이 넷이라
+        (사진·제목·요약·날짜) 요약과 날짜가 둘째 줄로 흘러내려서 사진
+        아래에 붙습니다.
+    */
+    .lead {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      grid-template-rows: auto auto auto;
+      column-gap: 2.5rem;
+      align-content: center;
     }
 
     .lead :global(.frame) {
-      aspect-ratio: 21 / 9 !important;
+      grid-column: 1;
+      grid-row: 1 / span 3;
+      align-self: center;
+      aspect-ratio: 3 / 2 !important;
     }
 
     .lead h1 {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: end;
+      margin-top: 0;
       font-size: 2.5rem;
-      max-width: 22ch;
+    }
+
+    .lead .sub {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .lead .meta {
+      grid-column: 2;
+      grid-row: 3;
+      align-self: start;
+    }
+
+    .track {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.625rem;
+      margin-inline: 0;
+      padding-inline: 0;
+      overflow: visible;
+    }
+
+    .card {
+      width: auto;
+    }
+
+    .card h3 {
+      font-size: 1.0625rem;
     }
   }
 </style>

@@ -1,0 +1,153 @@
+---
+/**
+ * 시안용 아래쪽 띠.
+ *
+ * 지금 홈은 오른쪽 열에 Editors·Live Service·Contact 가 있는데, 시안 셋은
+ * 지면을 화면 전체로 쓰느라 그 열이 없습니다. 참고한 세 곳(디에디트·롱블랙·
+ * 폴인)도 사이드바가 없고 그 정보를 위(메뉴)나 아래(푸터)로 보냅니다.
+ *
+ * 그래서 아래로 내려 보고 판단하려고 붙였습니다 — 정하고 나면 지웁니다.
+ */
+import { AUTHORS, OWNER, PROJECTS } from '../consts'
+import { countByAuthor, getPublishedPosts } from '../lib/posts'
+
+const posts = await getPublishedPosts()
+const counts = countByAuthor(posts)
+---
+
+<footer class="foot">
+  <div class="inner">
+    <section>
+      <h2>Editors</h2>
+      <ul>
+        {
+          AUTHORS.map((a) => (
+            <li>
+              <a href={`/authors/${a.id}`} style={`color:${a.color}`}>
+                {a.name}
+              </a>
+              <span class="n">{counts.get(a.id) ?? 0}</span>
+            </li>
+          ))
+        }
+        <li>
+          <a href="/posts">전체</a>
+          <span class="n">{posts.length}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Live Service</h2>
+      <ul>
+        {
+          PROJECTS.map((p) => (
+            <li>
+              <a href={`/projects/${p.id}`}>{p.name}</a>
+              {
+                p.active && (
+                  <span class="live" style={`background-color:${p.color}`}>
+                    LIVE
+                  </span>
+                )
+              }
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <ul>
+        <li><a href={`https://github.com/${OWNER.github}`}>github</a></li>
+        <li><a href={`mailto:${OWNER.email}`}>email</a></li>
+      </ul>
+    </section>
+  </div>
+
+  <p class="copy">© {OWNER.name} {new Date().getFullYear()}</p>
+</footer>
+
+<style>
+  .foot {
+    margin-top: 4rem;
+    padding: 2.5rem 1.25rem 3rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .inner {
+    display: grid;
+    gap: 2rem;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.9375rem;
+  }
+
+  a {
+    color: var(--text-dim);
+    text-decoration: none;
+  }
+
+  .n {
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+
+  .live {
+    padding: 0.0625rem 0.375rem;
+    border-radius: var(--radius-full);
+    /* 배지 글자는 --card 입니다 — --pill-fg 를 쓰면 라이트에서 어두운 글자 +
+       어두운 배경이 됩니다 (§4). */
+    color: var(--card);
+    font-size: 0.625rem;
+    font-weight: 700;
+  }
+
+  .copy {
+    max-width: 1280px;
+    margin: 2.5rem auto 0;
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+  }
+
+  @media (min-width: 700px) {
+    .foot {
+      padding: 3rem 2rem 4rem;
+    }
+
+    .inner {
+      grid-template-columns: 1.4fr 1fr 1fr;
+      gap: 3rem;
+    }
+
+    ul {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+</style>
