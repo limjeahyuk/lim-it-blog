@@ -535,6 +535,12 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
       gap: 2.25rem 1.625rem;
     }
 
+    /* 폰에서는 3:2 가 딱 맞는데 큰 화면에서는 카드가 작아 보입니다.
+       큰 화면에서만 조금 높입니다. */
+    .cell :global(.frame) {
+      aspect-ratio: 4 / 3 !important;
+    }
+
     .cell h3 {
       font-size: 1.125rem;
       line-height: 1.45;
