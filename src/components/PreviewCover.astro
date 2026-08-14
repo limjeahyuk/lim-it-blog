@@ -1,0 +1,49 @@
+---
+/**
+ * 시안용 커버 그림.
+ *
+ * `coverOf()` 가 돌려주는 두 가지를 다 받습니다 — frontmatter 로 고른
+ * `heroImage`(Astro 자산)와 본문에서 찾아낸 주소(public 파일)입니다.
+ * 지금은 heroImage 를 쓴 글이 없어서 사실상 뒤쪽만 나옵니다.
+ *
+ * ⚠ 임시입니다. 시안을 고르고 나면 진짜 컴포넌트로 다시 씁니다 —
+ *   그때는 public 파일도 Astro 가 크기별로 뽑도록 옮겨야 합니다
+ *   (지금은 원본을 그대로 내보내서 폰에서 무겁습니다).
+ */
+import { Image } from 'astro:assets'
+import type { Cover } from '../lib/cover'
+
+interface Props {
+  cover: Cover
+  alt: string
+  /** 잘라낼 비율. 예: '3 / 4' */
+  ratio: string
+  sizes?: string
+}
+
+const { cover, alt, ratio, sizes = '100vw' } = Astro.props as Props
+---
+
+<div class="frame" style={`aspect-ratio:${ratio}`}>
+  {
+    cover.kind === 'asset' ? (
+      <Image src={cover.src} alt={alt} widths={[480, 960, 1440]} sizes={sizes} />
+    ) : (
+      <img src={cover.src} alt={alt} loading="lazy" decoding="async" />
+    )
+  }
+</div>
+
+<style>
+  .frame {
+    overflow: hidden;
+    background-color: var(--surface);
+  }
+
+  .frame :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>

@@ -1,0 +1,259 @@
+---
+/**
+ * 시안 C — 폴인식.
+ *
+ * 큰 카드 하나 + 4:3 카드 격자 + 그 아래 촘촘한 목록입니다. 폴인은
+ * 꼭지마다 "시리즈 · 몇 화"를 제목 위에 답니다 — 여기서는 그 자리에
+ * 저자와 프로젝트를 넣었습니다. 사진이 없는 글이 섞여도 밀도로 버팁니다.
+ *
+ * ⚠ 임시 페이지입니다. 고르고 나면 지웁니다.
+ */
+import BaseLayout from '../../components/BaseLayout.astro'
+import FormattedDate from '../../components/FormattedDate.astro'
+import PreviewCover from '../../components/PreviewCover.astro'
+import PreviewNav from '../../components/PreviewNav.astro'
+import { getAuthor, getProject } from '../../consts'
+import { coverOf } from '../../lib/cover'
+import { getPublishedPosts } from '../../lib/posts'
+
+const posts = await getPublishedPosts()
+const lead = posts[0]
+const cards = posts.slice(1, 7)
+const list = posts.slice(7, 19)
+
+const who = (id?: string) => (id ? getAuthor(id) : undefined)
+const proj = (id?: string) => (id ? getProject(id) : undefined)
+
+/** 제목 위에 붙는 줄 — 폴인의 "시리즈 · 몇 화" 자리입니다. */
+function label(post: (typeof posts)[number]) {
+  const parts = []
+  const a = who(post.data.author)
+  const p = proj(post.data.project)
+  if (a) parts.push(a.name)
+  if (p) parts.push(p.name)
+  return parts.join(' · ')
+}
+---
+
+<BaseLayout title="시안 C" description="홈 디자인 시안 C">
+  <PreviewNav current="c" />
+
+  <div class="wrap">
+    <a class="lead" href={`/posts/${lead.id}/`}>
+      <PreviewCover cover={coverOf(lead)} alt="" ratio="4 / 3" />
+      <div class="body">
+        <span class="label" style={`color:${who(lead.data.author)?.color}`}>
+          {label(lead)}
+        </span>
+        <h1>{lead.data.title}</h1>
+        {lead.data.description && <p class="sub">{lead.data.description}</p>}
+        <span class="date"><FormattedDate date={lead.data.pubDate} /></span>
+      </div>
+    </a>
+
+    <div class="cards">
+      {
+        cards.map((post) => (
+          <a class="card" href={`/posts/${post.id}/`}>
+            <PreviewCover
+              cover={coverOf(post)}
+              alt=""
+              ratio="4 / 3"
+              sizes="(min-width: 700px) 33vw, 100vw"
+            />
+            <div class="body">
+              <span class="label" style={`color:${who(post.data.author)?.color}`}>
+                {label(post)}
+              </span>
+              <h2>{post.data.title}</h2>
+              {post.data.description && (
+                <p class="sub">{post.data.description}</p>
+              )}
+              <span class="date">
+                <FormattedDate date={post.data.pubDate} />
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+
+    <h2 class="section">최근 글</h2>
+
+    <div class="rows">
+      {
+        list.map((post) => (
+          <a class="row" href={`/posts/${post.id}/`}>
+            <div class="thumb">
+              <PreviewCover
+                cover={coverOf(post)}
+                alt=""
+                ratio="1 / 1"
+                sizes="88px"
+              />
+            </div>
+            <div class="row-text">
+              <span class="label" style={`color:${who(post.data.author)?.color}`}>
+                {label(post)}
+              </span>
+              <h3>{post.data.title}</h3>
+              <span class="date">
+                <FormattedDate date={post.data.pubDate} />
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+
+    <a class="more" href="/posts">글 {posts.length}편 전부 보기 →</a>
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .lead :global(.frame),
+  .card :global(.frame) {
+    border-radius: var(--radius-card);
+  }
+
+  .label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .lead .body {
+    padding: 1rem 0.125rem 0;
+  }
+
+  .lead h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+  }
+
+  .sub {
+    margin: 0.5rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--text-dim);
+  }
+
+  .date {
+    display: block;
+    margin-top: 0.625rem;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+
+  .cards {
+    display: grid;
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+
+  .card h2 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .card .body {
+    padding: 0.875rem 0.125rem 0;
+  }
+
+  .section {
+    margin: 3rem 0 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row {
+    display: flex;
+    gap: 0.875rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .thumb {
+    flex: none;
+    width: 5.5rem;
+  }
+
+  .thumb :global(.frame) {
+    border-radius: var(--radius-md);
+  }
+
+  .row .label {
+    margin-bottom: 0.25rem;
+    font-size: 0.6875rem;
+  }
+
+  .row h3 {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .row .date {
+    margin-top: 0.375rem;
+  }
+
+  .more {
+    display: block;
+    margin-top: 2rem;
+    font-size: 0.9375rem;
+    color: var(--text-dim);
+  }
+
+  @media (min-width: 700px) {
+    .wrap {
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .lead {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .lead h1 {
+      font-size: 2rem;
+    }
+
+    .cards {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2.5rem 1.5rem;
+    }
+
+    .rows {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 2rem;
+    }
+  }
+</style>

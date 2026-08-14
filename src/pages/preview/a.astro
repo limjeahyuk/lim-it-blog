@@ -1,0 +1,205 @@
+---
+/**
+ * 시안 A — 디에디트식.
+ *
+ * 첫 꼭지가 화면을 꽉 채우고, 그 위에 제목을 얹습니다. 아래는 세로 사진
+ * 두 줄 격자입니다. 디에디트가 폰에서 쓰는 방식을 재 보고 맞췄습니다
+ * (커버 375×812, 제목 36px/800, 목록 사진 2:3, 제목 22px/800).
+ *
+ * ⚠ 임시 페이지입니다. 고르고 나면 지웁니다.
+ */
+import BaseLayout from '../../components/BaseLayout.astro'
+import FormattedDate from '../../components/FormattedDate.astro'
+import PreviewCover from '../../components/PreviewCover.astro'
+import PreviewNav from '../../components/PreviewNav.astro'
+import { getAuthor, getProject } from '../../consts'
+import { coverOf } from '../../lib/cover'
+import { getPublishedPosts } from '../../lib/posts'
+
+const posts = await getPublishedPosts()
+const [lead, ...rest] = posts.slice(0, 13)
+
+const who = (id?: string) => (id ? getAuthor(id) : undefined)
+const proj = (id?: string) => (id ? getProject(id) : undefined)
+---
+
+<BaseLayout title="시안 A" description="홈 디자인 시안 A">
+  <PreviewNav current="a" />
+
+  <a class="lead" href={`/posts/${lead.id}/`}>
+    <PreviewCover cover={coverOf(lead)} alt="" ratio="3 / 4" />
+    <div class="lead-text">
+      {
+        who(lead.data.author) && (
+          <span class="kicker" style={`color:${who(lead.data.author)!.color}`}>
+            {who(lead.data.author)!.name}
+          </span>
+        )
+      }
+      <h1>{lead.data.title}</h1>
+      {lead.data.description && <p class="sub">{lead.data.description}</p>}
+      <div class="meta">
+        <FormattedDate date={lead.data.pubDate} />
+        {proj(lead.data.project) && <span>{proj(lead.data.project)!.name}</span>}
+      </div>
+    </div>
+  </a>
+
+  <div class="grid">
+    {
+      rest.map((post) => (
+        <a class="cell" href={`/posts/${post.id}/`}>
+          <PreviewCover
+            cover={coverOf(post)}
+            alt=""
+            ratio="2 / 3"
+            sizes="(min-width: 700px) 25vw, 50vw"
+          />
+          {who(post.data.author) && (
+            <span
+              class="kicker"
+              style={`color:${who(post.data.author)!.color}`}
+            >
+              {who(post.data.author)!.name}
+            </span>
+          )}
+          <h2>{post.data.title}</h2>
+          <div class="meta">
+            <FormattedDate date={post.data.pubDate} />
+          </div>
+        </a>
+      ))
+    }
+  </div>
+
+  <a class="more" href="/posts">글 {posts.length}편 전부 보기 →</a>
+</BaseLayout>
+
+<style>
+  /* 지면을 화면 끝까지 씁니다 — 디에디트는 여백 없이 사진이 끝까지 갑니다. */
+  .lead {
+    position: relative;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .lead::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.55) 45%,
+      rgba(0, 0, 0, 0.92) 100%
+    );
+  }
+
+  .lead-text {
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1.5rem 1.25rem 2rem;
+  }
+
+  .kicker {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .lead h1 {
+    margin: 0;
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+
+  .lead .sub {
+    margin: 0.75rem 0 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .lead .meta {
+    margin-top: 1.25rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .meta {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 1rem;
+    padding: 2.5rem 1.25rem;
+  }
+
+  .cell {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .cell .kicker {
+    margin-top: 0.75rem;
+    font-size: 0.6875rem;
+  }
+
+  .cell h2 {
+    margin: 0.25rem 0 0.5rem;
+    font-size: 1.0625rem;
+    font-weight: 800;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  .more {
+    display: block;
+    padding: 0 1.25rem 3rem;
+    font-size: 0.9375rem;
+    color: var(--text-dim);
+    text-decoration: none;
+  }
+
+  @media (min-width: 700px) {
+    .lead {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .lead :global(.frame) {
+      aspect-ratio: 16 / 9 !important;
+    }
+
+    .lead h1 {
+      font-size: 3rem;
+      max-width: 20ch;
+    }
+
+    .grid {
+      max-width: 1120px;
+      margin: 0 auto;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2.5rem 1.5rem;
+    }
+
+    .more {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+  }
+</style>

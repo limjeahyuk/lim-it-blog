@@ -1,0 +1,80 @@
+---
+/**
+ * 시안 사이를 오가는 줄.
+ *
+ * ⚠ 임시입니다. 홈 디자인을 고르고 나면 `src/pages/preview/` 와 함께 지웁니다.
+ */
+interface Props {
+  current: 'a' | 'b' | 'c'
+}
+
+const { current } = Astro.props as Props
+
+const TABS = [
+  { id: 'a', label: 'A · 디에디트' },
+  { id: 'b', label: 'B · 롱블랙' },
+  { id: 'c', label: 'C · 폴인' },
+] as const
+---
+
+<nav class="switch">
+  <span class="tag">시안</span>
+  {
+    TABS.map((t) => (
+      <a href={`/preview/${t.id}`} class={t.id === current ? 'on' : ''}>
+        {t.label}
+      </a>
+    ))
+  }
+  <a class="home" href="/">지금 홈</a>
+</nav>
+
+<style>
+  .switch {
+    position: sticky;
+    top: 3rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .switch::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tag {
+    flex: none;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+  }
+
+  a {
+    flex: none;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-size: 0.8125rem;
+    color: var(--text-dim);
+    text-decoration: none;
+  }
+
+  a.on {
+    background-color: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+    font-weight: 600;
+  }
+
+  .home {
+    margin-left: auto;
+    border-style: dashed;
+  }
+</style>
