@@ -88,7 +88,7 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
               <PreviewCover
                 cover={coverOf(post)}
                 alt=""
-                ratio="2 / 3"
+                ratio="4 / 5"
                 sizes="(min-width: 900px) 25vw, 50vw"
                 tint={s.author.color}
               />
@@ -533,10 +533,6 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
     .grid {
       grid-template-columns: repeat(3, 1fr);
       gap: 2.5rem 1.625rem;
-    }
-
-    .cell :global(.frame) {
-      aspect-ratio: 4 / 5 !important;
     }
 
     .cell h3 {
