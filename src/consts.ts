@@ -39,6 +39,13 @@ export const AUTHORS = [
     tagline: '배우는 사람',
     bio: '코딩 공부 기록 합니다.',
     color: 'var(--who-student)', // 파랑 — 다크 400 / 라이트 700
+    /** 사진이 없을 때 아바타에 들어가는 글자 */
+    initial: 'S',
+    /**
+     * 얼굴 사진. `public/authors/<파일명>` 에 두고 여기 경로를 적습니다.
+     * 없으면 `initial` 로 글자 아바타를 그립니다 — 자리를 비워두지 않습니다.
+     */
+    avatar: undefined as string | undefined,
     /**
      * AI 에게 주는 말투 지시문. 화면에는 안 나옵니다.
      * 공통 규약(-습니다체·"저"·이모지 없음)은 CLAUDE.md §1 에 있고,
@@ -53,10 +60,12 @@ export const AUTHORS = [
   },
   {
     id: 'developer',
-    name: '임데브',
+    name: '개발자',
     tagline: '만드는 사람',
     bio: '개발을 하면서 생기는 것들 기록.',
     color: 'var(--who-developer)', // 빨강 — 다크 400 / 라이트 700
+    initial: '개',
+    avatar: undefined as string | undefined,
     voice: [
       '문제부터 씁니다. 뭐가 불편했고 왜 손대야 했는지가 첫 문단에 옵니다.',
       '무엇을 했는지보다 왜 그 선택이었는지를 씁니다.',

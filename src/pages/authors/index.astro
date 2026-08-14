@@ -6,6 +6,7 @@
  * 사이드바는 고르는 곳이라 빈 이름이 방해가 되지만, 이 페이지는 소개하는
  * 곳이라 아직 안 쓴 이름이 있는 게 이상하지 않습니다.
  */
+import Avatar from '../../components/Avatar.astro'
 import BaseLayout from '../../components/BaseLayout.astro'
 import FeedLayout from '../../components/FeedLayout.astro'
 import { AUTHORS } from '../../consts'
@@ -14,28 +15,25 @@ import { countByAuthor, getPublishedPosts } from '../../lib/posts'
 const counts = countByAuthor(await getPublishedPosts())
 ---
 
-<BaseLayout title="Editors" description="이 지면에 글을 쓰는 이름들">
+<BaseLayout title="Editors" description={AUTHORS.map((a) => a.name).join(' · ')}>
   <FeedLayout>
-    <header class="masthead">
-      <p class="kicker">Editors</p>
-      <h1>이 지면에 글을 쓰는 이름들</h1>
-    </header>
+    <h1>Editors</h1>
 
-    <div class="list">
+    <div class="grid">
       {
         AUTHORS.map((a) => (
-          <a class="row" href={`/authors/${a.id}`}>
-            <span class="bar" style={`background-color:${a.color}`} />
-            <div class="text">
-              <div class="head">
-                <span class="name" style={`color:${a.color}`}>
-                  {a.name}
-                </span>
-                <span class="tagline">{a.tagline}</span>
-                <span class="count">{counts.get(a.id) ?? 0}</span>
-              </div>
-              <p class="bio">{a.bio}</p>
+          <a class="who" href={`/authors/${a.id}`}>
+            <Avatar
+              name={a.name}
+              initial={a.initial}
+              color={a.color}
+              src={a.avatar}
+            />
+            <div class="name" style={`color:${a.color}`}>
+              {a.name}
             </div>
+            <p class="bio">{a.bio}</p>
+            <p class="count">글 {counts.get(a.id) ?? 0}편</p>
           </a>
         ))
       }
@@ -44,86 +42,59 @@ const counts = countByAuthor(await getPublishedPosts())
 </BaseLayout>
 
 <style>
-  .masthead {
-    padding-bottom: 1.25rem;
-    margin-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .kicker {
-    margin: 0 0 0.5rem;
-    font-size: 0.6875rem;
+  h1 {
+    margin-bottom: 2.5rem;
+    font-size: 1.125rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--text-faint);
+    text-align: center;
+    color: var(--accent-text);
   }
 
-  h1 {
-    font-size: 1.5rem;
-    line-height: 1.4;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+  /*
+    칸을 고정 폭으로 채웁니다. 저자가 둘일 때는 왼쪽부터 두 칸만 차고,
+    늘어나면 다음 줄로 넘어갑니다 — 레퍼런스(the-edit)도 마지막 줄이
+    왼쪽 정렬로 남습니다.
+  */
+  .grid {
+    display: grid;
+    /* 140px 이면 375px 폰에서 두 칸이 들어갑니다. 160px 이면 한 칸이 되고,
+       저자 하나가 화면을 통째로 먹어서 스크롤이 길어집니다. */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 2.5rem 1.5rem;
   }
 
-  @media (min-width: 768px) {
-    h1 {
-      font-size: 1.875rem;
-    }
-  }
-
-  .row {
+  .who {
     display: flex;
-    gap: 1rem;
-    padding: 1.5rem 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* 왼쪽 색 막대가 저자를 가르는 유일한 표시입니다. */
-  .bar {
-    width: 3px;
-    border-radius: var(--radius-full);
-    flex-shrink: 0;
-  }
-
-  .text {
-    min-width: 0;
-  }
-
-  .head {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
   .name {
-    font-size: 1.125rem;
+    margin-top: 1rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: -0.01em;
   }
 
-  .row:hover .name {
+  .who:hover .name {
     text-decoration: underline;
     text-underline-offset: 4px;
   }
 
-  .tagline {
+  .bio {
+    margin: 0.5rem 0 0;
     font-size: 0.8125rem;
-    color: var(--text-faint);
+    line-height: 1.7;
+    color: var(--text-dim);
   }
 
   .count {
-    margin-left: auto;
+    margin: 0.4rem 0 0;
     font-size: 0.75rem;
     color: var(--text-faint);
     font-variant-numeric: tabular-nums;
-  }
-
-  .bio {
-    margin: 0.5rem 0 0;
-    font-size: 0.9375rem;
-    line-height: 1.8;
-    color: var(--text-dim);
   }
 </style>

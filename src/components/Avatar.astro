@@ -1,0 +1,83 @@
+---
+/**
+ * 저자 얼굴 자리.
+ *
+ * 사진이 아직 없습니다. 그렇다고 빈 원을 두면 준비 중인 것처럼 보여서,
+ * 저자 색과 글자로 채워 둡니다 — 사진이 생기면 `AUTHORS[].avatar` 에
+ * 경로만 적으면 그대로 갈아끼워집니다.
+ *
+ * ⚠ 색을 CSS 변수로 받기 때문에 SVG 파일로 뽑지 않고 여기서 그립니다.
+ *   파일로 두면 다크·라이트 중 한쪽에서 대비가 떨어집니다.
+ */
+interface Props {
+  name: string
+  /** 사진이 없을 때 원 안에 들어가는 글자 */
+  initial: string
+  /** `--who-*` 를 가리키는 값 */
+  color: string
+  /** `public/` 아래 경로. 없으면 글자 아바타 */
+  src?: string
+  /** 지름(px) */
+  size?: number
+}
+
+const { name, initial, color, src, size = 132 } = Astro.props as Props
+---
+
+<div
+  class="avatar"
+  style={`--who:${color}; --size:${size}px`}
+  data-photo={!!src}
+>
+  {
+    src ? (
+      <img src={src} alt={name} width={size} height={size} loading="lazy" />
+    ) : (
+      <span class="initial" aria-hidden="true">
+        {initial}
+      </span>
+    )
+  }
+</div>
+
+<style>
+  .avatar {
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* color-mix 를 모르는 브라우저에서는 이 값이 그대로 남습니다. */
+    background-color: var(--surface);
+    background-color: color-mix(in srgb, var(--who) 16%, var(--card));
+  }
+
+  /*
+    사진은 흑백으로 깝니다. 벤치마킹한 매거진들이 에디터 사진을 전부
+    흑백으로 두는데, 색이 제각각인 사진이 나란히 서면 저자 색보다
+    사진이 먼저 읽혀서 분류가 흐려집니다.
+  */
+  .avatar[data-photo='true'] {
+    background-color: var(--surface);
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1);
+  }
+
+  .initial {
+    color: var(--who);
+    font-size: calc(var(--size) * 0.4);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    /* 한글은 글자 상자가 아래로 치우쳐 있어서 살짝 올려야 가운데로 보입니다. */
+    transform: translateY(-0.02em);
+  }
+</style>

@@ -5,6 +5,7 @@
  * ⚠ 옛 카테고리 주소(/categories/*)는 되살리지 않았습니다. 색인이 막
  *   시작된 참이라 잃을 게 적다고 보고 그냥 버리기로 한 것입니다.
  */
+import Avatar from '../../components/Avatar.astro'
 import BaseLayout from '../../components/BaseLayout.astro'
 import FeedLayout from '../../components/FeedLayout.astro'
 import PostCard from '../../components/PostCard.astro'
@@ -32,9 +33,20 @@ const { author, posts } = Astro.props as Props
         <span class="sep">/</span>
         <span>{author.tagline}</span>
       </p>
-      <h1>{author.name}</h1>
-      <p class="bio">{author.bio}</p>
-      <p class="count">글 {posts.length}편</p>
+      <div class="who">
+        <Avatar
+          name={author.name}
+          initial={author.initial}
+          color={author.color}
+          src={author.avatar}
+          size={72}
+        />
+        <div>
+          <h1>{author.name}</h1>
+          <p class="bio">{author.bio}</p>
+          <p class="count">글 {posts.length}편</p>
+        </div>
+      </div>
     </header>
 
     {
@@ -72,6 +84,12 @@ const { author, posts } = Astro.props as Props
 
   .sep {
     opacity: 0.5;
+  }
+
+  .who {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
 
   h1 {

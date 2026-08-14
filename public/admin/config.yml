@@ -91,7 +91,7 @@ collections:
         required: false
         options:
           - { label: study Lim — 배운 것, value: student }
-          - { label: 임데브 — 만든 것, value: developer }
+          - { label: 개발자 — 만든 것, value: developer }
 
       - name: project
         label: 프로젝트
