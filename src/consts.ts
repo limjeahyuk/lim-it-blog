@@ -60,11 +60,11 @@ export const AUTHORS = [
   },
   {
     id: 'developer',
-    name: '개발자',
+    name: '임데브',
     tagline: '만드는 사람',
     bio: '개발을 하면서 생기는 것들 기록.',
     color: 'var(--who-developer)', // 빨강 — 다크 400 / 라이트 700
-    initial: '개',
+    initial: '임',
     avatar: undefined as string | undefined,
     voice: [
       '문제부터 씁니다. 뭐가 불편했고 왜 손대야 했는지가 첫 문단에 옵니다.',

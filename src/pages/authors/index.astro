@@ -5,10 +5,12 @@
  * 글이 0개인 저자도 여기에는 나옵니다 — 사이드바와 다른 규칙입니다.
  * 사이드바는 고르는 곳이라 빈 이름이 방해가 되지만, 이 페이지는 소개하는
  * 곳이라 아직 안 쓴 이름이 있는 게 이상하지 않습니다.
+ *
+ * ⚠ 여기는 오른쪽 열을 쓰지 않습니다. 저자를 소개하는 자리에 옆에서
+ *   같은 저자 목록이 또 나오면 무엇을 보라는 것인지 알 수 없습니다.
  */
 import Avatar from '../../components/Avatar.astro'
 import BaseLayout from '../../components/BaseLayout.astro'
-import FeedLayout from '../../components/FeedLayout.astro'
 import { AUTHORS } from '../../consts'
 import { countByAuthor, getPublishedPosts } from '../../lib/posts'
 
@@ -16,7 +18,7 @@ const counts = countByAuthor(await getPublishedPosts())
 ---
 
 <BaseLayout title="Editors" description={AUTHORS.map((a) => a.name).join(' · ')}>
-  <FeedLayout>
+  <div class="wrap">
     <h1>Editors</h1>
 
     <div class="grid">
@@ -38,10 +40,16 @@ const counts = countByAuthor(await getPublishedPosts())
         ))
       }
     </div>
-  </FeedLayout>
+  </div>
 </BaseLayout>
 
 <style>
+  .wrap {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
   h1 {
     margin-bottom: 2.5rem;
     font-size: 1.125rem;
