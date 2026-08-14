@@ -1,0 +1,392 @@
+---
+/**
+ * 시안 D — A + B + C 를 합친 것.
+ *
+ *   A 에서  첫 꼭지를 사진으로 크게 세우는 것과 세로 사진 격자
+ *   B 에서  저자로 지면을 나누는 것
+ *   C 에서  맨 아래 최근 글 목록
+ *
+ * A 와 다른 점 하나: **저자 이름을 크게** 씁니다. A 에서는 제목 위에 붙는
+ * 작은 글씨였는데, 여기서는 그게 지면을 나누는 표지라 키웠습니다.
+ *
+ * ⚠ 임시 페이지입니다. 고르고 나면 지웁니다.
+ */
+import BaseLayout from '../../components/BaseLayout.astro'
+import FormattedDate from '../../components/FormattedDate.astro'
+import PreviewCover from '../../components/PreviewCover.astro'
+import PreviewFooter from '../../components/PreviewFooter.astro'
+import PreviewNav from '../../components/PreviewNav.astro'
+import { AUTHORS, getAuthor, getProject } from '../../consts'
+import { coverOf } from '../../lib/cover'
+import { getPublishedPosts, postsByAuthor } from '../../lib/posts'
+
+const posts = await getPublishedPosts()
+const lead = posts[0]
+
+/** 저자별 묶음. 폰에서 2열이라 짝수로 끊습니다. */
+const sections = AUTHORS.map((a) => ({
+  author: a,
+  items: postsByAuthor(posts, a.id)
+    .filter((p) => p.id !== lead.id)
+    .slice(0, 6),
+})).filter((s) => s.items.length > 0)
+
+/** 맨 아래 목록에는 위에서 이미 보여준 글을 빼고 최신순으로 채웁니다. */
+const shown = new Set([lead.id, ...sections.flatMap((s) => s.items.map((p) => p.id))])
+const recent = posts.filter((p) => !shown.has(p.id)).slice(0, 10)
+
+const who = (id?: string) => (id ? getAuthor(id) : undefined)
+const proj = (id?: string) => (id ? getProject(id) : undefined)
+---
+
+<BaseLayout title="시안 D" description="홈 디자인 시안 D">
+  <PreviewNav current="d" />
+
+  {/* 첫 꼭지 — A 와 같습니다. 폰에서는 사진 위에, 큰 화면에서는 사진 옆에. */}
+  <a class="lead" href={`/posts/${lead.id}/`}>
+    <PreviewCover cover={coverOf(lead)} alt="" ratio="3 / 4" />
+    <div class="lead-text">
+      {
+        who(lead.data.author) && (
+          <span class="who" style={`color:${who(lead.data.author)!.color}`}>
+            {who(lead.data.author)!.name}
+          </span>
+        )
+      }
+      <h1>{lead.data.title}</h1>
+      {lead.data.description && <p class="sub">{lead.data.description}</p>}
+      <div class="meta">
+        <FormattedDate date={lead.data.pubDate} />
+        {proj(lead.data.project) && <span>{proj(lead.data.project)!.name}</span>}
+      </div>
+    </div>
+  </a>
+
+  {/* 저자별 묶음 — B 에서 가져왔습니다. */}
+  {
+    sections.map((s) => (
+      <section class="band">
+        <header class="band-head">
+          <h2 style={`color:${s.author.color}`}>{s.author.name}</h2>
+          <span class="tagline">{s.author.tagline}</span>
+          <a class="all" href={`/authors/${s.author.id}`}>
+            전부 보기
+          </a>
+        </header>
+
+        <div class="grid">
+          {s.items.map((post) => (
+            <a class="cell" href={`/posts/${post.id}/`}>
+              <PreviewCover
+                cover={coverOf(post)}
+                alt=""
+                ratio="2 / 3"
+                sizes="(min-width: 900px) 25vw, 50vw"
+              />
+              <h3>{post.data.title}</h3>
+              <div class="meta">
+                <FormattedDate date={post.data.pubDate} />
+                {proj(post.data.project) && (
+                  <span>{proj(post.data.project)!.name}</span>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  {/* 최근 글 — C 에서 가져왔습니다. */}
+  <section class="band recent">
+    <header class="band-head">
+      <h2>최근 글</h2>
+      <a class="all" href="/posts">글 {posts.length}편 전부 보기</a>
+    </header>
+
+    <div class="rows">
+      {
+        recent.map((post) => (
+          <a class="row" href={`/posts/${post.id}/`}>
+            <div class="thumb">
+              <PreviewCover cover={coverOf(post)} alt="" ratio="1 / 1" sizes="120px" />
+            </div>
+            <div class="row-text">
+              {who(post.data.author) && (
+                <span class="who" style={`color:${who(post.data.author)!.color}`}>
+                  {who(post.data.author)!.name}
+                </span>
+              )}
+              <h3>{post.data.title}</h3>
+              <span class="date">
+                <FormattedDate date={post.data.pubDate} />
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <PreviewFooter />
+</BaseLayout>
+
+<style>
+  /* ── 첫 꼭지 ─────────────────────────────────────────── */
+
+  .lead {
+    position: relative;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .lead::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.55) 45%,
+      rgba(0, 0, 0, 0.92) 100%
+    );
+  }
+
+  .lead-text {
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1.5rem 1.25rem 2rem;
+  }
+
+  .lead h1 {
+    margin: 0;
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+
+  .lead .sub {
+    margin: 0.75rem 0 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .lead .meta {
+    margin-top: 1.25rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /*
+    저자 이름. A 에서는 10px 짜리 꼬리표였는데, D 에서는 이게 지면을
+    나누는 표지라 키웠습니다.
+  */
+  .who {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+
+  .meta {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+  }
+
+  /* ── 저자 묶음 ───────────────────────────────────────── */
+
+  .band {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 0;
+  }
+
+  .band-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    padding-top: 1.25rem;
+    border-top: 2px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .band-head h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .tagline {
+    font-size: 0.875rem;
+    color: var(--text-faint);
+  }
+
+  .all {
+    margin-left: auto;
+    font-size: 0.875rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 1rem;
+  }
+
+  .cell {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .cell h3 {
+    margin: 0.75rem 0 0.5rem;
+    font-size: 1.0625rem;
+    font-weight: 800;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── 최근 글 ─────────────────────────────────────────── */
+
+  .rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row {
+    display: flex;
+    gap: 0.875rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--border);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .thumb {
+    flex: none;
+    width: 5.5rem;
+  }
+
+  .thumb :global(.frame) {
+    border-radius: var(--radius-md);
+  }
+
+  .row .who {
+    margin-bottom: 0.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .row h3 {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .date {
+    display: block;
+    margin-top: 0.375rem;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+
+  /* ── 큰 화면 ─────────────────────────────────────────── */
+
+  @media (min-width: 900px) {
+    .lead {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem 2rem 0;
+    }
+
+    .lead::after {
+      display: none;
+    }
+
+    .lead :global(.frame) {
+      aspect-ratio: 4 / 5 !important;
+    }
+
+    .lead-text {
+      position: static;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 0 0 3rem;
+    }
+
+    .lead .who {
+      font-size: 1.125rem;
+    }
+
+    .lead h1 {
+      font-size: 3.25rem;
+      color: var(--text);
+    }
+
+    .lead .sub {
+      margin-top: 1.25rem;
+      font-size: 1.0625rem;
+      color: var(--text-dim);
+    }
+
+    .lead .meta {
+      color: var(--text-faint);
+    }
+
+    .band {
+      padding: 3.5rem 2rem 0;
+    }
+
+    .band-head h2 {
+      font-size: 2.25rem;
+    }
+
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2.5rem 1.625rem;
+    }
+
+    .cell :global(.frame) {
+      aspect-ratio: 4 / 5 !important;
+    }
+
+    .cell h3 {
+      font-size: 1.375rem;
+      line-height: 1.35;
+    }
+
+    /* 최근 글은 두 줄로 — 세로로만 쌓으면 큰 화면에서 한참 내려갑니다. */
+    .rows {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 2.5rem;
+    }
+
+    .thumb {
+      width: 7.5rem;
+    }
+
+    .row {
+      padding: 1.125rem 0;
+    }
+
+    .row h3 {
+      font-size: 1.0625rem;
+    }
+  }
+</style>
