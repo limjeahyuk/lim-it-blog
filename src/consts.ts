@@ -25,7 +25,7 @@ export const OWNER = {
  * 저자 한 명에게 속하고, 그게 전부입니다.
  *
  * ⚠ 저자는 화면 요소가 아니라 **글의 규약**입니다. 그래서 항목 하나가
- *   보이는 것(name·tagline·bio·color)과 안 보이는 것(voice)을 같이 들고
+ *   보이는 것(name·bio·color)과 안 보이는 것(voice)을 같이 들고
  *   있습니다. 두 개를 다른 파일에 두면 소개는 바꿨는데 말투는 그대로인
  *   일이 생깁니다.
  *
@@ -36,7 +36,6 @@ export const AUTHORS = [
   {
     id: 'student',
     name: 'study Lim',
-    tagline: '배우는 사람',
     bio: '코딩 공부 기록 합니다.',
     color: 'var(--who-student)', // 파랑 — 다크 400 / 라이트 700
     /** 사진이 없을 때 아바타에 들어가는 글자 */
@@ -61,7 +60,6 @@ export const AUTHORS = [
   {
     id: 'developer',
     name: '임데브',
-    tagline: '만드는 사람',
     bio: '개발을 하면서 생기는 것들 기록.',
     color: 'var(--who-developer)', // 빨강 — 다크 400 / 라이트 700
     initial: '임',

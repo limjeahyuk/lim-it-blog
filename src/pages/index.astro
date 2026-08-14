@@ -70,7 +70,6 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
       <section class="band" style={`--who:${s.author.color}`}>
         <header class="band-head">
           <h2 style={`color:${s.author.color}`}>{s.author.name}</h2>
-          <span class="tagline">{s.author.tagline}</span>
           <a class="all" href={`/authors/${s.author.id}`}>
             전부 보기
           </a>
@@ -313,10 +312,6 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
     letter-spacing: -0.01em;
   }
 
-  .tagline {
-    font-size: 0.875rem;
-    color: var(--text-faint);
-  }
 
   .all {
     margin-left: auto;
