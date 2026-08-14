@@ -1,6 +1,6 @@
 // 사이트 전역 설정. 여기만 고치면 사이트 전체에 반영됩니다.
 
-export const SITE_TITLE = 'lim-it'
+export const SITE_TITLE = "lim's World"
 export const SITE_DESCRIPTION =
   '만들면서 부딪힌 것들을 적어둡니다. 왜 그렇게 고쳤는지, 그래서 뭐가 터졌는지.'
 export const SITE_URL = 'https://lim-it.vercel.app'

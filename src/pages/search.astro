@@ -1,0 +1,273 @@
+---
+/**
+ * 검색.
+ *
+ * 색인(`/search.json`)을 받아서 브라우저에서 걸러냅니다. 정적 사이트라
+ * 서버가 없어서 그렇고, 글이 124편이라 이 방식으로 충분합니다.
+ *
+ * 주소에 `?q=` 를 붙이면 그 말로 찾은 결과가 바로 열립니다 — 검색 결과를
+ * 남에게 보내거나 즐겨찾기에 넣을 수 있게.
+ */
+import BaseLayout from '../components/BaseLayout.astro'
+import { AUTHORS } from '../consts'
+---
+
+<BaseLayout title="검색" description="글 검색">
+  <div class="wrap">
+    <h1>검색</h1>
+
+    <form class="box" role="search" onsubmit="return false">
+      <label class="sr" for="q">검색어</label>
+      <input
+        id="q"
+        type="search"
+        name="q"
+        placeholder="제목·내용·저자로 찾습니다"
+        autocomplete="off"
+        autofocus
+      />
+    </form>
+
+    <div class="filters">
+      <button class="chip is-on" data-author="">전체</button>
+      {
+        AUTHORS.map((a) => (
+          <button class="chip" data-author={a.id} style={`--who:${a.color}`}>
+            {a.name}
+          </button>
+        ))
+      }
+    </div>
+
+    <p class="count" aria-live="polite"></p>
+
+    <ul class="results"></ul>
+
+    <p class="empty" hidden>찾는 글이 없습니다.</p>
+  </div>
+</BaseLayout>
+
+<script>
+  type Item = {
+    url: string
+    title: string
+    desc: string
+    body: string
+    author: string
+    authorId: string
+    color: string
+    project: string
+    date: string
+    secret: boolean
+  }
+
+  const input = document.querySelector<HTMLInputElement>('#q')!
+  const list = document.querySelector<HTMLUListElement>('.results')!
+  const count = document.querySelector<HTMLParagraphElement>('.count')!
+  const empty = document.querySelector<HTMLParagraphElement>('.empty')!
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')]
+
+  let items: Item[] = []
+  let author = ''
+
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '')
+
+  /** 제목에 있으면 위로, 그 다음 소개문, 본문 순서로 놓습니다. */
+  function score(item: Item, q: string) {
+    const t = norm(item.title)
+    if (t.includes(q)) return t.startsWith(q) ? 0 : 1
+    if (norm(item.desc).includes(q)) return 2
+    if (norm(item.author + item.project).includes(q)) return 3
+    if (norm(item.body).includes(q)) return 4
+    return -1
+  }
+
+  function render() {
+    const q = norm(input.value.trim())
+    let found = items.filter((i) => !author || i.authorId === author)
+
+    if (q) {
+      found = found
+        .map((i) => ({ i, s: score(i, q) }))
+        .filter((x) => x.s >= 0)
+        .sort((a, b) => a.s - b.s || (a.i.date < b.i.date ? 1 : -1))
+        .map((x) => x.i)
+    }
+
+    list.innerHTML = found
+      .slice(0, 60)
+      .map(
+        (i) => `
+        <li>
+          <a href="${i.url}">
+            <span class="who" style="color:${i.color}">${i.author}</span>
+            <span class="title">${i.secret ? '🔒 ' : ''}${esc(i.title)}</span>
+            ${i.desc ? `<span class="desc">${esc(i.desc)}</span>` : ''}
+            <span class="meta">${i.date}${i.project ? ` · ${esc(i.project)}` : ''}</span>
+          </a>
+        </li>`,
+      )
+      .join('')
+
+    count.textContent = q || author ? `${found.length}편` : `글 ${items.length}편`
+    empty.hidden = found.length > 0
+  }
+
+  function esc(s: string) {
+    return s.replace(
+      /[&<>"]/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!,
+    )
+  }
+
+  /** 주소창의 ?q= 를 입력칸과 맞춰 둡니다 (뒤로 가기로 돌아올 수 있게). */
+  function syncUrl() {
+    const url = new URL(location.href)
+    const v = input.value.trim()
+    if (v) url.searchParams.set('q', v)
+    else url.searchParams.delete('q')
+    history.replaceState(null, '', url)
+  }
+
+  chips.forEach((c) =>
+    c.addEventListener('click', () => {
+      author = c.dataset.author ?? ''
+      chips.forEach((x) => x.classList.toggle('is-on', x === c))
+      render()
+    }),
+  )
+
+  input.addEventListener('input', () => {
+    render()
+    syncUrl()
+  })
+
+  const res = await fetch('/search.json')
+  items = (await res.json()) as Item[]
+
+  const q0 = new URL(location.href).searchParams.get('q')
+  if (q0) input.value = q0
+  render()
+</script>
+
+<style>
+  .wrap {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  h1 {
+    margin: 0 0 1.25rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  input[type='search'] {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background-color: var(--card);
+    color: var(--text);
+    /* ⚠ 16px 미만이면 iOS 사파리가 탭할 때 화면을 확대합니다 */
+    font-size: 1rem;
+  }
+
+  input[type='search']:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0 0.5rem;
+  }
+
+  .chip {
+    padding: 0.3125rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: none;
+    color: var(--text-dim);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .chip.is-on {
+    border-color: var(--who, var(--text));
+    color: var(--who, var(--text));
+    font-weight: 700;
+  }
+
+  .count {
+    margin: 0.75rem 0 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+  }
+
+  .results {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .results :global(li) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .results :global(a) {
+    display: block;
+    padding: 0.875rem 0.25rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .results :global(.who) {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .results :global(.title) {
+    display: block;
+    margin-top: 0.125rem;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .results :global(a:hover .title) {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .results :global(.desc) {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--text-dim);
+  }
+
+  .results :global(.meta) {
+    display: block;
+    margin-top: 0.375rem;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+
+  .empty {
+    padding: 2rem 0.25rem;
+    color: var(--text-faint);
+  }
+</style>

@@ -1,0 +1,139 @@
+---
+/**
+ * 헤더 시안 3 — 검색을 앞에 둔 것.
+ *
+ * 검색창이 늘 열려 있습니다. 글이 124편이라 찾아 들어오는 일이 많다면
+ * 이쪽이 편합니다. 큰 화면에서는 가운데, 폰에서는 이름 아래 한 줄로.
+ *
+ * 입력하고 엔터를 치면 /search?q= 로 넘어갑니다 — 헤더에서 결과까지
+ * 그리지는 않습니다.
+ *
+ * ⚠ 임시입니다. 고르고 나면 Header.astro 로 옮기고 지웁니다.
+ */
+import Icon from './Icon.astro'
+import ThemeToggle from './ThemeToggle.astro'
+import { SITE_TITLE } from '../consts'
+---
+
+<header>
+  <div class="bar">
+    <a class="logo" href="/">{SITE_TITLE}</a>
+
+    <form class="find" action="/search" method="get" role="search">
+      <span class="ico"><Icon name="search" size={16} /></span>
+      <input type="search" name="q" placeholder="글 검색" autocomplete="off" />
+    </form>
+
+    <nav>
+      <a href="/authors">Editors</a>
+      <a href="/posts">Posts</a>
+      <a href="/projects">Live Service</a>
+    </nav>
+
+    <ThemeToggle />
+  </div>
+</header>
+
+<style>
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background-color: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem;
+  }
+
+  .logo {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .find {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 26rem;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .ico {
+    position: absolute;
+    left: 0.75rem;
+    display: flex;
+    color: var(--text-faint);
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.4375rem 0.875rem 0.4375rem 2.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background-color: var(--surface);
+    color: var(--text);
+    /* ⚠ 16px 미만이면 iOS 사파리가 탭할 때 화면을 확대합니다 */
+    font-size: 1rem;
+  }
+
+  input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+
+  nav {
+    display: flex;
+    gap: 1rem;
+  }
+
+  nav a {
+    font-size: 0.875rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  nav a:hover {
+    color: var(--text);
+  }
+
+  /* 폰에서는 한 줄에 다 못 들어갑니다 — 검색창을 아래로 내립니다. */
+  @media (max-width: 899px) {
+    .bar {
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas:
+        'logo nav toggle'
+        'find find find';
+      row-gap: 0.5rem;
+      padding-bottom: 0.625rem;
+    }
+    .logo {
+      grid-area: logo;
+    }
+    nav {
+      grid-area: nav;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+    nav a {
+      font-size: 0.8125rem;
+    }
+    .find {
+      grid-area: find;
+      max-width: none;
+    }
+  }
+</style>

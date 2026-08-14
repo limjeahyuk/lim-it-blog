@@ -13,9 +13,14 @@ interface Props {
   pubDate?: Date
   updatedDate?: Date
   authorName?: string
+  /**
+   * 헤더를 이 레이아웃이 그리지 않습니다.
+   * 헤더 시안 페이지가 자기 헤더를 직접 그릴 때만 씁니다 (임시).
+   */
+  hideHeader?: boolean
 }
 
-const head = Astro.props as Props
+const { hideHeader = false, ...head } = Astro.props as Props
 ---
 
 <!doctype html>
@@ -24,7 +29,7 @@ const head = Astro.props as Props
     <BaseHead {...head} />
   </head>
   <body>
-    <Header />
+    {!hideHeader && <Header />}
     <main>
       <slot />
     </main>

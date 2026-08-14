@@ -5,16 +5,19 @@
  * ⚠ 임시입니다. 홈 디자인을 고르고 나면 `src/pages/preview/` 와 함께 지웁니다.
  */
 interface Props {
-  current: 'a' | 'b' | 'c' | 'd'
+  current: 'a' | 'b' | 'c' | 'd' | 'h1' | 'h2' | 'h3'
 }
 
 const { current } = Astro.props as Props
 
 const TABS = [
-  { id: 'a', label: 'A · 디에디트' },
-  { id: 'b', label: 'B · 롱블랙' },
-  { id: 'c', label: 'C · 폴인' },
-  { id: 'd', label: 'D · 합친 것' },
+  { id: 'a', href: '/preview/a', label: 'A · 디에디트' },
+  { id: 'b', href: '/preview/b', label: 'B · 롱블랙' },
+  { id: 'c', href: '/preview/c', label: 'C · 폴인' },
+  { id: 'd', href: '/preview/d', label: 'D · 합친 것' },
+  { id: 'h1', href: '/preview/header-a', label: '헤더1 · 지금 것' },
+  { id: 'h2', href: '/preview/header-b', label: '헤더2 · 제호' },
+  { id: 'h3', href: '/preview/header-c', label: '헤더3 · 검색' },
 ] as const
 ---
 
@@ -22,7 +25,7 @@ const TABS = [
   <span class="tag">시안</span>
   {
     TABS.map((t) => (
-      <a href={`/preview/${t.id}`} class={t.id === current ? 'on' : ''}>
+      <a href={t.href} class={t.id === current ? 'on' : ''}>
         {t.label}
       </a>
     ))
