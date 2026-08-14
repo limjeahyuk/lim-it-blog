@@ -4,5 +4,3 @@ Allow: /
 Disallow: /admin/
 
 Sitemap: https://lim-it.vercel.app/sitemap-index.xml
-# 홈 디자인 시안 — 고르고 나면 페이지와 함께 지웁니다.
-Disallow: /preview/
