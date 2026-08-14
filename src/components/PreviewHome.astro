@@ -34,9 +34,6 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
 ---
 
 
-  {/* 읽기 진행 막대 — 헤더 바로 아래에 붙습니다 */}
-  <div class="progress" aria-hidden="true"><span></span></div>
-
   {/* 첫 꼭지 — A 와 같습니다. 폰에서는 사진 위에, 큰 화면에서는 사진 옆에. */}
   <a class="lead" href={`/posts/${lead.id}/`} data-parallax>
     <PreviewCover
@@ -172,8 +169,8 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
     targets.forEach((el) => io.observe(el))
   }
 
-  // 2·3. 패럴랙스와 진행 막대 — 스크롤마다 계산하지 않고 한 프레임에 한 번만.
-  const bar = document.querySelector<HTMLElement>('.progress span')
+  // 2. 패럴랙스 — 스크롤마다 계산하지 않고 한 프레임에 한 번만.
+  //    진행 막대는 헤더(PreviewHeaderA)로 옮겼습니다.
   const lead = document.querySelector<HTMLElement>('[data-parallax] .frame img')
   const wide = matchMedia('(min-width: 900px)')
   let ticking = false
@@ -182,10 +179,6 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
     if (ticking) return
     ticking = true
     requestAnimationFrame(() => {
-      const max = document.body.scrollHeight - innerHeight
-      if (bar) {
-        bar.style.setProperty('--p', `${max > 0 ? (scrollY / max) * 100 : 0}%`)
-      }
       const moving = wide.matches && !still
       // 화면 하나를 다 내려갈 때까지만 움직입니다.
       const run = Math.min(scrollY, innerHeight)
@@ -424,23 +417,6 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
   }
 
   /* ── 스크롤 ──────────────────────────────────────────── */
-
-  .progress {
-    position: fixed;
-    top: 3rem;
-    left: 0;
-    right: 0;
-    z-index: 30;
-    height: 2px;
-    pointer-events: none;
-  }
-
-  .progress span {
-    display: block;
-    width: var(--p, 0%);
-    height: 100%;
-    background-color: var(--accent);
-  }
 
   /*
     화면에 들어올 때 살짝 떠오릅니다.
