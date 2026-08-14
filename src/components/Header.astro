@@ -180,6 +180,8 @@ const counts = countByAuthor(posts)
     inset: 0;
     z-index: 40;
     background-color: rgba(0, 0, 0, 0.45);
+    /* 그늘 위에서 쓸어내려도 뒤가 안 움직이게 */
+    touch-action: none;
     opacity: 0;
     visibility: hidden;
     transition:
@@ -371,8 +373,17 @@ const counts = countByAuthor(posts)
   /*
     메뉴 판 여닫기와 읽기 진행 막대.
 
-    ⚠ 판이 열려 있는 동안 뒤 지면이 같이 스크롤되면 안 됩니다. body 를
-      잠그고, 닫을 때 원래 자리로 돌려놓습니다.
+    ⚠ **뒤 지면 잠그기는 폰과 데스크톱이 다릅니다.**
+
+    iOS 사파리는 `overflow: hidden` 으로 터치 스크롤이 안 막힙니다. 판을
+    열어 두고 쓸어내리면 뒤 지면이 그대로 움직입니다. 그래서 폰에서는
+    body 를 `position: fixed` 로 못박고 지금 스크롤 위치만큼 위로 올려
+    둡니다 — 화면은 그대로인데 스크롤할 것이 없어집니다.
+
+    ⚠ 이 방법을 데스크톱에도 쓰면 안 됩니다. body 가 흐름에서 빠지면서
+      `position: sticky` 인 헤더가 문서 맨 위에 붙어 화면 밖으로 나갑니다.
+      판이 화면 절반만 덮는 데스크톱에서는 헤더가 사라진 게 그대로 보입니다.
+      거기서는 `overflow: hidden` 이 제대로 먹으니 그걸 씁니다.
   */
   const burger = document.querySelector<HTMLButtonElement>('.burger')!
   const panel = document.querySelector<HTMLElement>('.panel')!
@@ -380,13 +391,42 @@ const counts = countByAuthor(posts)
   const close = document.querySelector<HTMLButtonElement>('.close')!
   const field = document.querySelector<HTMLInputElement>('#menu-q')!
 
+  const narrow = matchMedia('(max-width: 899px)')
+  let savedY = 0
+
+  function lock() {
+    savedY = window.scrollY
+    if (narrow.matches) {
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${savedY}px`
+      document.body.style.insetInline = '0'
+    } else {
+      document.documentElement.style.overflow = 'hidden'
+    }
+  }
+
+  function unlock() {
+    document.documentElement.style.overflow = ''
+    if (document.body.style.position === 'fixed') {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.insetInline = ''
+      // 못박아 둔 동안 브라우저는 맨 위에 있다고 여깁니다. 되돌려 놓습니다.
+      window.scrollTo(0, savedY)
+    }
+  }
+
   function setOpen(open: boolean) {
     panel.classList.toggle('is-open', open)
     scrim.classList.toggle('is-open', open)
     burger.setAttribute('aria-expanded', String(open))
-    document.documentElement.style.overflow = open ? 'hidden' : ''
-    if (open) field.focus({ preventScroll: true })
-    else burger.focus({ preventScroll: true })
+    if (open) {
+      lock()
+      field.focus({ preventScroll: true })
+    } else {
+      unlock()
+      burger.focus({ preventScroll: true })
+    }
   }
 
   burger.addEventListener('click', () => setOpen(true))
