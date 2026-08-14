@@ -54,18 +54,20 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
       tint={who(lead.data.author)?.color}
     />
     <div class="lead-text">
-      {
-        who(lead.data.author) && (
-          <span class="who" style={`color:${who(lead.data.author)!.color}`}>
-            {who(lead.data.author)!.name}
-          </span>
-        )
-      }
-      <h1>{lead.data.title}</h1>
-      {lead.data.description && <p class="sub">{lead.data.description}</p>}
-      <div class="meta">
-        <FormattedDate date={lead.data.pubDate} />
-        {proj(lead.data.project) && <span>{proj(lead.data.project)!.name}</span>}
+      <div class="lead-body">
+        {
+          who(lead.data.author) && (
+            <span class="who" style={`color:${who(lead.data.author)!.color}`}>
+              {who(lead.data.author)!.name}
+            </span>
+          )
+        }
+        <h1>{lead.data.title}</h1>
+        {lead.data.description && <p class="sub">{lead.data.description}</p>}
+        <div class="meta">
+          <FormattedDate date={lead.data.pubDate} />
+          {proj(lead.data.project) && <span>{proj(lead.data.project)!.name}</span>}
+        </div>
       </div>
     </div>
   </a>
@@ -181,7 +183,6 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
   // 2·3. 패럴랙스와 진행 막대 — 스크롤마다 계산하지 않고 한 프레임에 한 번만.
   const bar = document.querySelector<HTMLElement>('.progress span')
   const lead = document.querySelector<HTMLElement>('[data-parallax] .frame img')
-  const leadText = document.querySelector<HTMLElement>('[data-parallax] .lead-text')
   const wide = matchMedia('(min-width: 900px)')
   let ticking = false
 
@@ -201,21 +202,6 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
         // 사진을 스크롤의 12% 만큼만 따라 내립니다. 더 주면 멀미가 납니다.
         // 틀은 그대로 두고 안쪽 사진만 움직입니다 — 틀을 밀면 빈 틈이 생깁니다.
         lead.style.transform = moving ? `translate3d(0, ${run * 0.12}px, 0)` : ''
-      }
-
-      /*
-        첫 꼭지의 제목·요약은 가운데 놓여 있다가 스크롤을 따라 **아래로**
-        흐릅니다. 사진(12%)보다 빠르게(26%) 내려서 두 겹이 갈라져 보입니다.
-        큰 화면에서만 — 폰에서는 글자가 사진 위에 얹혀 있어서 움직이면
-        읽는 데 방해가 됩니다.
-      */
-      if (leadText) {
-        leadText.style.transform = moving
-          ? `translate3d(0, ${run * 0.26}px, 0)`
-          : ''
-        leadText.style.opacity = moving
-          ? String(Math.max(0.25, 1 - (run / innerHeight) * 0.9))
-          : ''
       }
       ticking = false
     })
@@ -518,7 +504,25 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
       flex-direction: column;
       justify-content: center;
       padding: 0 0 0 3rem;
-      will-change: transform, opacity;
+    }
+
+    /*
+      제목이 화면에서 사라지지 않게 붙여 둡니다.
+
+      처음에는 사진 옆 **가운데**에 있다가, 스크롤을 내리면 화면 가운데
+      쯤에 머뭅니다. 사진 아래쪽이 올라오면 거기서 밀려 내려가 결국
+      **사진 아래에 맞춰 멈춥니다.**
+
+      그냥 두면 사진은 아직 화면에 있는데 글자만 위로 빠져나가서, 사진만
+      덩그러니 남는 구간이 생깁니다. 그게 싫어서 붙였습니다.
+
+      top 은 "화면 가운데 - 글자 높이의 절반쯤"입니다. 글자 높이를 CSS 가
+      모르므로 9rem 으로 어림잡았습니다 — 제목이 세 줄을 넘어가면 이 값을
+      키워야 합니다.
+    */
+    .lead-body {
+      position: sticky;
+      top: calc(50vh - 9rem);
     }
 
     .lead .who {
