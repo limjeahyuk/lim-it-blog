@@ -1,5 +1,6 @@
 ---
 title: '[ MySQL ] 여러 가지 정보들'
+slug: study-58
 pubDate: 2022-11-11
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: 'React와 node.js 합치고 마음대로 프로젝트'
+slug: react-47
 pubDate: 2022-07-07
 author: student
 draft: false

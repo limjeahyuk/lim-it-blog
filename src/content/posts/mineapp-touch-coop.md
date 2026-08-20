@@ -1,5 +1,6 @@
 ---
 title: 너에게 닿기를 모드 추가
+slug: mineapp-touch-coop
 description: 서로 만나기 위해서 하는 협동 게임
 pubDate: 2026-08-13
 author: developer

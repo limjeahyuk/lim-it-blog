@@ -1,5 +1,6 @@
 ---
 title: '간단한 정리 and 막무가내 2'
+slug: study-111
 pubDate: 2026-01-05
 author: student
 draft: false

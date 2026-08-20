@@ -1,5 +1,6 @@
 ---
 title: 'swift 모듈화'
+slug: ios-79
 pubDate: 2023-05-02
 author: student
 draft: false

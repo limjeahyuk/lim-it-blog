@@ -1,5 +1,6 @@
 ---
 title: '[React] data 관리'
+slug: react-school-25
 pubDate: 2022-04-07
 author: student
 draft: false

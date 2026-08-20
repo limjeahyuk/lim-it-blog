@@ -1,5 +1,6 @@
 ---
 title: '[ M ] 사이드이펙트 / useEffect'
+slug: react-42
 pubDate: 2022-06-21
 author: student
 draft: false

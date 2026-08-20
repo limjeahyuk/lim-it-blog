@@ -1,5 +1,6 @@
 ---
 title: 'nodejs 여러가지 검색'
+slug: study-51
 pubDate: 2022-07-28
 author: student
 draft: false

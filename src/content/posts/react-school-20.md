@@ -1,5 +1,6 @@
 ---
 title: '[React] Dark mode & PageNation'
+slug: react-school-20
 pubDate: 2022-03-25
 author: student
 draft: false

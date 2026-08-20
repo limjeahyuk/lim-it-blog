@@ -1,5 +1,6 @@
 ---
 title: '[MusicTree] recent'
+slug: javascript-11
 pubDate: 2022-03-16
 author: student
 draft: false

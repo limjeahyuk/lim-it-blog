@@ -1,5 +1,6 @@
 ---
 title: 'React 간단 정리 1'
+slug: react-notes-43
 pubDate: 2022-06-29
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: 'PNG 와 JPG의 차이'
+slug: study-94
 pubDate: 2025-12-11
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: 'Xcode simulator 작동 에러'
+slug: storyboard-70
 pubDate: 2023-01-21
 author: student
 draft: false

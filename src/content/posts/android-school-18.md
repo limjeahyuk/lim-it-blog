@@ -1,5 +1,6 @@
 ---
 title: '[Android] 계산기 만들기'
+slug: android-school-18
 pubDate: 2022-03-20
 author: student
 draft: false

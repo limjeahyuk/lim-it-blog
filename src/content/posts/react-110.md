@@ -1,5 +1,6 @@
 ---
 title: '간단한 정리 1'
+slug: react-110
 pubDate: 2026-01-04
 author: student
 draft: false

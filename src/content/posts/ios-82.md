@@ -1,5 +1,6 @@
 ---
 title: 'UIView animate'
+slug: ios-82
 pubDate: 2023-06-18
 author: student
 draft: false

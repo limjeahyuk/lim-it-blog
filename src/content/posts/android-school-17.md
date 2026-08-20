@@ -1,5 +1,6 @@
 ---
 title: '[Android] 3.18 수업내용'
+slug: android-school-17
 pubDate: 2022-03-20
 author: student
 draft: false

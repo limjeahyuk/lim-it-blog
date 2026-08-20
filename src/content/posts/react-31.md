@@ -1,5 +1,6 @@
 ---
 title: '[ C ] 구조분할 / map함수'
+slug: react-31
 pubDate: 2022-04-18
 author: student
 draft: false

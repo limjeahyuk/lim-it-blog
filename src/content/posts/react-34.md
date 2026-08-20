@@ -1,5 +1,6 @@
 ---
 title: '[ E ] Props 함수'
+slug: react-34
 pubDate: 2022-04-20
 author: student
 draft: false

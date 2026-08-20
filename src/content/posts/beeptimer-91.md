@@ -1,5 +1,6 @@
 ---
 title: 'TimerController'
+slug: beeptimer-91
 pubDate: 2025-11-12
 author: developer
 project: beeptimer

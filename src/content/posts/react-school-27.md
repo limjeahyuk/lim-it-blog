@@ -1,5 +1,6 @@
 ---
 title: '[React] LocalStorage'
+slug: react-school-27
 pubDate: 2022-04-15
 author: student
 draft: false

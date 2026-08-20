@@ -1,5 +1,6 @@
 ---
 title: 'KVC 와 KVO'
+slug: study-diary-104
 pubDate: 2025-12-20
 author: student
 draft: false

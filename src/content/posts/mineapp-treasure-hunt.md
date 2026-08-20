@@ -1,5 +1,6 @@
 ---
 title: 보물찾기 모드 추가
+slug: mineapp-treasure-hunt
 description: 51 x 51 한가운데 보물을 두고 누가 더 빨리 찾는 게임
 pubDate: 2026-08-13
 author: developer

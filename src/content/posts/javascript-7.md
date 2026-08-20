@@ -1,5 +1,6 @@
 ---
 title: '[MusicTree] Javascript 공부 내용.'
+slug: javascript-7
 pubDate: 2022-03-11
 author: student
 draft: false

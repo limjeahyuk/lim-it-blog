@@ -1,5 +1,6 @@
 ---
 title: '[React] UI 라이브러리 / grid 컨테이너'
+slug: react-school-16
 pubDate: 2022-03-18
 author: student
 draft: false

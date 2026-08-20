@@ -1,5 +1,6 @@
 ---
 title: 'Garbage Collection 과 ARC'
+slug: study-97
 pubDate: 2025-12-16
 author: student
 draft: false

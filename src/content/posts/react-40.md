@@ -1,5 +1,6 @@
 ---
 title: '[ K ] Modal 창 구현'
+slug: react-40
 pubDate: 2022-06-08
 author: student
 draft: false

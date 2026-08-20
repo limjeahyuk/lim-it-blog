@@ -1,5 +1,6 @@
 ---
 title: 'Flutter 공부 중 마구잡이 정리 part.1'
+slug: flutter-120
 pubDate: 2026-01-17
 author: student
 draft: false

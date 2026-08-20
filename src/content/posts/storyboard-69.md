@@ -1,5 +1,6 @@
 ---
 title: '[swift] WKWebview Js 연동 / Bridge'
+slug: storyboard-69
 pubDate: 2023-01-21
 author: student
 draft: false

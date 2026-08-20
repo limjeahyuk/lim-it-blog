@@ -1,5 +1,6 @@
 ---
 title: 'TypeScript를 이용한 core서버 api 구축'
+slug: study-56
 pubDate: 2022-10-21
 author: student
 draft: false

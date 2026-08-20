@@ -1,5 +1,6 @@
 ---
 title: '[storyboard] swift로 todoList 만들기 #2'
+slug: storyboard-60
 pubDate: 2022-12-24
 author: student
 draft: false

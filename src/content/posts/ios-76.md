@@ -1,5 +1,6 @@
 ---
 title: '[swift] 모듈화 Library / framework'
+slug: ios-76
 pubDate: 2023-02-19
 author: student
 draft: false

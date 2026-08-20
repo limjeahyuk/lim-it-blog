@@ -1,5 +1,6 @@
 ---
 title: 'Virtual Memory란'
+slug: study-96
 pubDate: 2025-12-16
 author: student
 draft: false

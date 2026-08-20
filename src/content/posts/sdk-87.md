@@ -1,5 +1,6 @@
 ---
 title: 'Pod lib create'
+slug: sdk-87
 pubDate: 2024-07-14
 author: student
 draft: false

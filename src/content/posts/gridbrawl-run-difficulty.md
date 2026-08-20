@@ -1,5 +1,6 @@
 ---
 title: 런 난이도 4단계 추가
+slug: gridbrawl-run-difficulty
 description: 봇이 내 카드를 몇 장 보는지 하나로만 난이도를 갈랐습니다.
 pubDate: 2026-08-19
 author: developer

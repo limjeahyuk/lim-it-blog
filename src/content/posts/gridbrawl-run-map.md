@@ -1,5 +1,6 @@
 ---
 title: 런 지도에 갈래 추가
+slug: gridbrawl-run-map
 description: 15층을 그냥 올라가기만 하던 것을 갈래를 고르는 지도로 바꿨습니다.
 pubDate: 2026-08-19
 author: developer

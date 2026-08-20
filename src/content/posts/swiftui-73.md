@@ -1,5 +1,6 @@
 ---
 title: '[swiftUI] 복잡한 인터페이스 구성'
+slug: swiftui-73
 pubDate: 2023-01-24
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: 'SD. Xcode git 연동 및 branch 관리'
+slug: study-diary-83
 pubDate: 2023-06-20
 author: student
 draft: false

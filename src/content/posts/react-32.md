@@ -1,5 +1,6 @@
 ---
 title: '[ C.5 ] Array function'
+slug: react-32
 pubDate: 2022-04-18
 author: student
 draft: false

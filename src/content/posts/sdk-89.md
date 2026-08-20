@@ -1,5 +1,6 @@
 ---
 title: 'CocoaPod / Podfile 관련한 내용 정리'
+slug: sdk-89
 pubDate: 2024-07-15
 author: student
 draft: false

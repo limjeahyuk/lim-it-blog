@@ -1,5 +1,6 @@
 ---
 title: '[swiftUI] 사이드 메뉴 , TextField 꾸미기'
+slug: swiftui-75
 pubDate: 2023-01-24
 author: student
 draft: false

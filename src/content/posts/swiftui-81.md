@@ -1,5 +1,6 @@
 ---
 title: '@Binding'
+slug: swiftui-81
 pubDate: 2023-05-14
 author: student
 draft: false

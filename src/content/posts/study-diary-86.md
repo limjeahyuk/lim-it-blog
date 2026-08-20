@@ -1,5 +1,6 @@
 ---
 title: 'SD. Slider 구현 part.3'
+slug: study-diary-86
 pubDate: 2023-06-23
 author: student
 draft: false

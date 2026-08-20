@@ -1,5 +1,6 @@
 ---
 title: '[swiftUI] 사용자입력 처리'
+slug: swiftui-71
 pubDate: 2023-01-21
 author: student
 draft: false

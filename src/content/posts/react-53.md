@@ -1,5 +1,6 @@
 ---
 title: 'React : useReducer와 useState의 차이'
+slug: react-53
 pubDate: 2022-07-29
 author: student
 draft: false

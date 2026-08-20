@@ -1,5 +1,6 @@
 ---
 title: '[Tumbl] React 최근 본 페이지 구현'
+slug: react-55
 pubDate: 2022-08-29
 author: student
 draft: false

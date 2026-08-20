@@ -1,5 +1,6 @@
 ---
 title: '[ B ] class / 스프레드 연산자'
+slug: react-30
 pubDate: 2022-04-18
 author: student
 draft: false

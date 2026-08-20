@@ -1,5 +1,6 @@
 ---
 title: '[ D ] React 기본'
+slug: react-33
 pubDate: 2022-04-20
 author: student
 draft: false

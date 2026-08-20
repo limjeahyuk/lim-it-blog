@@ -1,5 +1,6 @@
 ---
 title: '[swiftUI] @State 와 @Binding'
+slug: swiftui-66
 pubDate: 2022-12-29
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: 'Flutter의 장단점'
+slug: flutter-112
 pubDate: 2026-01-06
 author: student
 draft: false

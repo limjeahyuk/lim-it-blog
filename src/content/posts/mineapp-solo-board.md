@@ -1,5 +1,6 @@
 ---
 title: 공유할 수 있는 시드 추가
+slug: mineapp-solo-board
 pubDate: 2026-08-13
 author: developer
 project: mineapp

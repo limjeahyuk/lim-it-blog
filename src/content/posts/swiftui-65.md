@@ -1,5 +1,6 @@
 ---
 title: '[swiftUI] stack ( VStack / HStack / ZStack )'
+slug: swiftui-65
 pubDate: 2022-12-25
 author: student
 draft: false

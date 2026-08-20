@@ -1,5 +1,6 @@
 ---
 title: '[Tumbl] React CKeditor  적용. + 이미지'
+slug: react-54
 pubDate: 2022-08-29
 author: student
 draft: false

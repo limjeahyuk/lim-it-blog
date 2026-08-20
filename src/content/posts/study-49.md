@@ -1,5 +1,6 @@
 ---
 title: '[1] 화면 구성 (Routes) & props 구조분해'
+slug: study-49
 pubDate: 2022-07-22
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: 'Dynamic Programming이란?'
+slug: study-95
 pubDate: 2025-12-11
 author: student
 draft: false

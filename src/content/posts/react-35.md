@@ -1,5 +1,6 @@
 ---
 title: '[ F ] 이벤트 리스너 & State'
+slug: react-35
 pubDate: 2022-04-28
 author: student
 draft: false

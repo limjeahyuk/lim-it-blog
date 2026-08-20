@@ -1,5 +1,6 @@
 ---
 title: '[React] API 사용하기'
+slug: react-school-22
 pubDate: 2022-04-02
 author: student
 draft: false

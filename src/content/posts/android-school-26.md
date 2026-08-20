@@ -1,5 +1,6 @@
 ---
 title: '[Android] ListView'
+slug: android-school-26
 pubDate: 2022-04-10
 author: student
 draft: false

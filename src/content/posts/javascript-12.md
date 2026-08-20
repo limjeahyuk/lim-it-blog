@@ -1,5 +1,6 @@
 ---
 title: '[MusicTree] Scroll을 이용한 topBtn'
+slug: javascript-12
 pubDate: 2022-03-16
 author: student
 draft: false

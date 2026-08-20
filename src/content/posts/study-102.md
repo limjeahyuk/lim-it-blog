@@ -1,5 +1,6 @@
 ---
 title: 'GIT의 특징'
+slug: study-102
 pubDate: 2025-12-19
 author: student
 draft: false

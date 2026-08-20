@@ -1,5 +1,6 @@
 ---
 title: '[MusicTree] scrollBar 꾸미기'
+slug: javascript-13
 pubDate: 2022-03-16
 author: student
 draft: false

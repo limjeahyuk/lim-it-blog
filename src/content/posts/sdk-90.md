@@ -1,5 +1,6 @@
 ---
 title: 'pod lib create를 이용한 sdk 코드 작성'
+slug: sdk-90
 pubDate: 2024-07-15
 author: student
 draft: false

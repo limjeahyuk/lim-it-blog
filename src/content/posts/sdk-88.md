@@ -1,5 +1,6 @@
 ---
 title: '여러가지 방법으로 sdk를 직접 배포해보자'
+slug: sdk-88
 pubDate: 2024-07-14
 author: student
 draft: false

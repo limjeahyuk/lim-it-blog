@@ -1,5 +1,6 @@
 ---
 title: 'express 비동기 동기 promise 사용.'
+slug: javascript-52
 pubDate: 2022-07-28
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: '면접 질문'
+slug: study-105
 pubDate: 2025-12-20
 author: student
 draft: false

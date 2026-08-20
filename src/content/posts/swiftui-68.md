@@ -1,5 +1,6 @@
 ---
 title: '[swiftUI] List 만들고 Detail 페이지 navigator'
+slug: swiftui-68
 pubDate: 2023-01-15
 author: student
 draft: false

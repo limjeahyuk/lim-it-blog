@@ -1,5 +1,6 @@
 ---
 title: 'Flutter의 동작 원리 및 특징'
+slug: flutter-119
 pubDate: 2026-01-13
 author: student
 draft: false

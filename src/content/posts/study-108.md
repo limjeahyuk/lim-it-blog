@@ -1,5 +1,6 @@
 ---
 title: 'CSS 단위 정리'
+slug: study-108
 pubDate: 2026-01-03
 author: student
 draft: false

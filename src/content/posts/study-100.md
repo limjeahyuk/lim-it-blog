@@ -1,5 +1,6 @@
 ---
 title: '비대칭 암호화란'
+slug: study-100
 pubDate: 2025-12-19
 author: student
 draft: false

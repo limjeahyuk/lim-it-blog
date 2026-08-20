@@ -1,5 +1,6 @@
 ---
 title: '[ G ] State & 양방향 바인딩'
+slug: react-36
 pubDate: 2022-05-05
 author: student
 draft: false

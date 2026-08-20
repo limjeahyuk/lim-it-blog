@@ -1,5 +1,6 @@
 ---
 title: '[React] props / Map()'
+slug: react-school-14
 pubDate: 2022-03-17
 author: student
 draft: false

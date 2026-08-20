@@ -1,5 +1,6 @@
 ---
 title: '[0] React, nodejs를 이용한 쇼핑몰 만들기'
+slug: study-48
 pubDate: 2022-07-22
 author: student
 draft: false

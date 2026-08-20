@@ -1,5 +1,6 @@
 ---
 title: '[swiftUI] 기초 시작'
+slug: swiftui-67
 pubDate: 2023-01-15
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: '[ I ] Css 스타일링'
+slug: react-38
 pubDate: 2022-06-03
 author: student
 draft: false

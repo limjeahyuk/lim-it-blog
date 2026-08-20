@@ -1,5 +1,6 @@
 ---
 title: 'CRA 지원 종료 그 이후..'
+slug: react-109
 pubDate: 2026-01-04
 author: student
 draft: false

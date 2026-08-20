@@ -1,5 +1,6 @@
 ---
 title: '[Android] 구성요소 & Activity 사용'
+slug: android-school-6
 pubDate: 2022-03-11
 author: student
 draft: false

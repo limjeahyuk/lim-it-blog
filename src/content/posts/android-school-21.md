@@ -1,5 +1,6 @@
 ---
 title: '[Android] Manifest / StartActivityforResult'
+slug: android-school-21
 pubDate: 2022-03-26
 author: student
 draft: false

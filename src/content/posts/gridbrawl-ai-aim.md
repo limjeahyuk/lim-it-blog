@@ -1,5 +1,6 @@
 ---
 title: 적 AI 조준 방식 변경
+slug: gridbrawl-ai-aim
 description: 컴퓨터가 제자리를 조준해서 초반에 무조건 빗나가던 것을 고쳤습니다.
 pubDate: 2026-08-19
 author: developer

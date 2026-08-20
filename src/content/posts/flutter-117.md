@@ -1,5 +1,6 @@
 ---
 title: 'Dart 공부 중 마구잡이 정리 4'
+slug: flutter-117
 pubDate: 2026-01-07
 author: student
 draft: false

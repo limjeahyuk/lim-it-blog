@@ -1,5 +1,6 @@
 ---
 title: '[swift] HTTP 통신 방법'
+slug: storyboard-77
 pubDate: 2023-02-28
 author: student
 draft: false

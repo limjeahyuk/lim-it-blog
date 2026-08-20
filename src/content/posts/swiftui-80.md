@@ -1,5 +1,6 @@
 ---
 title: '@State 함수 / onTapGesture'
+slug: swiftui-80
 pubDate: 2023-05-14
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: '면접 회고'
+slug: study-106
 pubDate: 2025-12-23
 author: student
 draft: false

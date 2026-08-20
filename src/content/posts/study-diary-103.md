@@ -1,5 +1,6 @@
 ---
 title: 'Auto Layout 장단점'
+slug: study-diary-103
 pubDate: 2025-12-20
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: 'Database Index'
+slug: study-99
 pubDate: 2025-12-16
 author: student
 draft: false

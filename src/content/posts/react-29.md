@@ -1,5 +1,6 @@
 ---
 title: '[ A ] React 가장 기초'
+slug: react-29
 pubDate: 2022-04-17
 author: student
 draft: false

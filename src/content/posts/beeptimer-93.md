@@ -1,5 +1,6 @@
 ---
 title: 'LiveActivity 업데이트'
+slug: beeptimer-93
 pubDate: 2025-11-14
 author: developer
 project: beeptimer

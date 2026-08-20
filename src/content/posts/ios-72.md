@@ -1,5 +1,6 @@
 ---
 title: 'Swift 기초'
+slug: ios-72
 pubDate: 2023-01-21
 author: student
 draft: false

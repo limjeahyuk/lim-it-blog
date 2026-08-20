@@ -1,5 +1,6 @@
 ---
 title: '[swiftUI] 다음 목표...'
+slug: swiftui-74
 pubDate: 2023-01-24
 author: student
 draft: false

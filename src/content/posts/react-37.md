@@ -1,5 +1,6 @@
 ---
 title: '[ H ] 삼항연산자'
+slug: react-37
 pubDate: 2022-06-03
 author: student
 draft: false

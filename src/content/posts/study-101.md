@@ -1,5 +1,6 @@
 ---
 title: 'HDD / SSD / DRAM의 비교'
+slug: study-101
 pubDate: 2025-12-19
 author: student
 draft: false

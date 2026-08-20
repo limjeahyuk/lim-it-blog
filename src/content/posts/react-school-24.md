@@ -1,5 +1,6 @@
 ---
 title: '[React] 컴포넌트 이론'
+slug: react-school-24
 pubDate: 2022-04-07
 author: student
 draft: false

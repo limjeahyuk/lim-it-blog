@@ -1,5 +1,6 @@
 ---
 title: 블로그를 매거진으로 바꾸는 기획
+slug: magazine-plan
 description: 카테고리와 태그를 없애고, 글의 성격마다 이름을 붙여 여러 명이 쓰는 것처럼 만듭니다
 pubDate: 2026-08-13
 author: developer

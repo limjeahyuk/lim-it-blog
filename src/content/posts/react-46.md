@@ -1,5 +1,6 @@
 ---
 title: 'React 와 nodejs 합치고 프로젝트 기본설정'
+slug: react-46
 pubDate: 2022-07-07
 author: student
 draft: false

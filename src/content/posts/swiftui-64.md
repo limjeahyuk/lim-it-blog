@@ -1,5 +1,6 @@
 ---
 title: '[swiftUI] 공부 계획'
+slug: swiftui-64
 pubDate: 2022-12-24
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: '[MusicTree] register 1/2'
+slug: javascript-9
 pubDate: 2022-03-13
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: '[ J ] css 모듈'
+slug: react-39
 pubDate: 2022-06-08
 author: student
 draft: false

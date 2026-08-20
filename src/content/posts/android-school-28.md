@@ -1,5 +1,6 @@
 ---
 title: '[Android] SharedPreferences / AlertDialog'
+slug: android-school-28
 pubDate: 2022-04-15
 author: student
 draft: false

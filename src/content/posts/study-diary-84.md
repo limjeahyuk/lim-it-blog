@@ -1,5 +1,6 @@
 ---
 title: 'SD. Slide 구현'
+slug: study-diary-84
 pubDate: 2023-06-21
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: '[html/css] 기본으로 홈페이지를 따라 만들어보자'
+slug: study-107
 pubDate: 2026-01-01
 author: student
 draft: false

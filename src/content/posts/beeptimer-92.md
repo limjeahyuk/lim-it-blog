@@ -1,5 +1,6 @@
 ---
 title: 'Dynamic Island 구현 / Live Activity'
+slug: beeptimer-92
 pubDate: 2025-11-13
 author: developer
 project: beeptimer

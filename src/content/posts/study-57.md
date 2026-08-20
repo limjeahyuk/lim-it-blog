@@ -1,5 +1,6 @@
 ---
 title: 'React 와 Nextjs'
+slug: study-57
 pubDate: 2022-10-24
 author: student
 draft: false

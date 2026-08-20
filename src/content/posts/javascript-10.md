@@ -1,5 +1,6 @@
 ---
 title: '[MusicTree] register & login 부분'
+slug: javascript-10
 pubDate: 2022-03-16
 author: student
 draft: false

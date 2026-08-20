@@ -1,5 +1,6 @@
 ---
 title: '[React] JSX / map / faker'
+slug: react-school-5
 pubDate: 2022-03-11
 author: student
 draft: false

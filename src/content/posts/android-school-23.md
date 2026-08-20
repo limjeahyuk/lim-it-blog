@@ -1,5 +1,6 @@
 ---
 title: '[Android] 설문지 페이지'
+slug: android-school-23
 pubDate: 2022-04-03
 author: student
 draft: false

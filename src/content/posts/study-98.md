@@ -1,5 +1,6 @@
 ---
 title: 'Cache란'
+slug: study-98
 pubDate: 2025-12-16
 author: student
 draft: false

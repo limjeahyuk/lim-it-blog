@@ -1,5 +1,6 @@
 ---
 title: 'Swift 정적 라이브러리'
+slug: ios-78
 pubDate: 2023-04-02
 author: student
 draft: false

@@ -1,5 +1,6 @@
 ---
 title: '[MusicTree]  ajax'
+slug: javascript-3
 pubDate: 2022-03-07
 author: student
 draft: false

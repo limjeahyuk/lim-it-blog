@@ -1,5 +1,6 @@
 ---
 title: 'Dart 언어란'
+slug: flutter-113
 pubDate: 2026-01-06
 author: student
 draft: false
