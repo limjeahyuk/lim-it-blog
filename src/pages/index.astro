@@ -1,558 +1,487 @@
 ---
 /**
- * 홈.
+ * 홈 — 뉴스 지면 시안.
  *
- *   1. 첫 꼭지 하나를 사진으로 크게      (폰: 사진 위에 제목 / 큰 화면: 옆에)
- *   2. 최근 글 목록
- *   3. 저자로 나눈 묶음                  (표지가 위에 붙습니다)
- *   4. Editors · Service · Contact
+ *   1. 헤드라인 한 편 크게 + 옆에 세 줄
+ *   2. 최신 글 카드 넷
+ *   3. 더 읽을 글 (번호 붙은 줄)
+ *   4. 에디터
+ *   5. Editors · Service · Contact
  *
- * 디에디트·롱블랙·폴인을 폰과 데스크톱에서 재 보고 맞춘 것입니다.
- * 어떻게 여기까지 왔는지는 CLAUDE.md §8 에 있습니다.
+ * ⚠ 지금 쓰던 홈은 `/preview/home-now` 에 그대로 있습니다. 어느 쪽으로 갈지
+ *   정하고 나면 진 쪽과 robots.txt 의 Disallow 를 같이 지웁니다.
+ *
+ * ⚠ 이 시안은 목록에 상자를 두릅니다 — CLAUDE.md §4 에서 "카드가 아니라 줄"
+ *   로 정해 둔 것과 반대입니다. 고를 때 같이 저울질할 부분입니다.
  */
 import BaseLayout from '../components/BaseLayout.astro'
 import Cover from '../components/Cover.astro'
 import FormattedDate from '../components/FormattedDate.astro'
 import SiteFooter from '../components/SiteFooter.astro'
-import { AUTHORS, SITE_DESCRIPTION, SITE_TITLE, getAuthor, getProject } from '../consts'
+import { AUTHORS, SITE_DESCRIPTION, SITE_TITLE, getAuthor } from '../consts'
 import { coverOf } from '../lib/cover'
 import { getPublishedPosts, postsByAuthor } from '../lib/posts'
 
 const posts = await getPublishedPosts()
+
+/*
+  위에서부터 최신순으로 잘라 씁니다. 겹치지 않게 이어서 집어가기 때문에
+  한 덩어리를 늘리면 아래가 그만큼 밀립니다.
+*/
 const lead = posts[0]
-
-/**
- * 첫 꼭지 바로 아래 최신순 목록.
- *
- * 여기서 먼저 집어갑니다 — "최근 글"이 저자 묶음보다 위에 있으면서 그보다
- * 오래된 글을 늘어놓으면 이름과 안 맞습니다.
- *
- * ⚠ 이 수를 늘리면 아래 저자 묶음이 그만큼 빕니다. 지금 제일 최근 12편이
- *   전부 임데브라, 10편을 집어가면 임데브 묶음에 한 편만 남습니다.
- */
-const recent = posts.filter((p) => p.id !== lead.id).slice(0, 6)
-
-/** 저자별 묶음. 위에서 이미 보여준 글은 뺍니다. 폰에서 2열이라 짝수로 끊습니다. */
-const shown = new Set([lead.id, ...recent.map((p) => p.id)])
-const sections = AUTHORS.map((a) => ({
-  author: a,
-  items: postsByAuthor(posts, a.id)
-    .filter((p) => !shown.has(p.id))
-    .slice(0, 6),
-})).filter((s) => s.items.length > 0)
+const side = posts.slice(1, 4)
+const latest = posts.slice(4, 8)
+const more = posts.slice(8, 16)
 
 const who = (id?: string) => (id ? getAuthor(id) : undefined)
-const proj = (id?: string) => (id ? getProject(id) : undefined)
 ---
+
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
-  {/* 첫 꼭지 — A 와 같습니다. 폰에서는 사진 위에, 큰 화면에서는 사진 옆에. */}
-  <a class="lead" href={`/posts/${lead.id}/`} data-parallax>
-    <Cover
-      cover={coverOf(lead)}
-      alt=""
-      ratio="3 / 4"
-      tint={who(lead.data.author)?.color}
-    />
-    <div class="lead-text">
-      <div class="lead-body">
-        {
-          who(lead.data.author) && (
-            <span class="who" style={`color:${who(lead.data.author)!.color}`}>
-              {who(lead.data.author)!.name}
-            </span>
-          )
-        }
-        <h1>{lead.data.title}</h1>
-        {lead.data.description && <p class="sub">{lead.data.description}</p>}
-        <div class="meta">
-          <FormattedDate date={lead.data.pubDate} />
-          {proj(lead.data.project) && <span>{proj(lead.data.project)!.name}</span>}
-        </div>
-      </div>
-    </div>
-  </a>
-
-  {/* 최근 글 — C 에서 가져왔습니다. */}
-  <section class="band recent">
-    <header class="band-head">
-      <h2>최근 글</h2>
-      <a class="all" href="/posts">All</a>
-    </header>
-
-    <div class="rows">
-      {
-        recent.map((post) => (
-          <a class="row" href={`/posts/${post.id}/`}>
-            <div class="thumb">
-              <Cover
-                cover={coverOf(post)}
-                alt=""
-                ratio="1 / 1"
-                sizes="120px"
-                tint={who(post.data.author)?.color}
-              />
-            </div>
-            <div class="row-text">
-              {who(post.data.author) && (
-                <span class="who" style={`color:${who(post.data.author)!.color}`}>
-                  {who(post.data.author)!.name}
+  <div class="wrap">
+    {/* ── 헤드라인 ───────────────────────────────── */}
+    <section class="top">
+      <a class="hero" href={`/posts/${lead.id}/`}>
+        <Cover
+          cover={coverOf(lead)}
+          alt=""
+          ratio="16 / 10"
+          sizes="(min-width: 900px) 62vw, 100vw"
+          tint={who(lead.data.author)?.color}
+        />
+        <div class="hero-text">
+          <span class="kicker">
+            {
+              who(lead.data.author) && (
+                <span style={`color:${who(lead.data.author)!.color}`}>
+                  {who(lead.data.author)!.name}
                 </span>
-              )}
-              <h3>{post.data.title}</h3>
-              <span class="date">
-                <FormattedDate date={post.data.pubDate} />
-              </span>
-            </div>
-          </a>
-        ))
-      }
-    </div>
-  </section>
+              )
+            }
+            <span class="dot">·</span>새 글
+          </span>
+          <h1>{lead.data.title}</h1>
+        </div>
+      </a>
 
-  {/* 저자별 묶음 — B 에서 가져왔습니다. */}
-  {
-    sections.map((s) => (
-      <section class="band" style={`--who:${s.author.color}`}>
-        <header class="band-head">
-          <h2 style={`color:${s.author.color}`}>{s.author.name}</h2>
-          <a class="all" href={`/authors/${s.author.id}`}>
-            All
-          </a>
-        </header>
-
-        <div class="grid">
-          {s.items.map((post) => (
-            <a class="cell" href={`/posts/${post.id}/`}>
-              <Cover
-                cover={coverOf(post)}
-                alt=""
-                ratio="3 / 2"
-                sizes="(min-width: 900px) 25vw, 50vw"
-                tint={s.author.color}
-              />
-              <h3>{post.data.title}</h3>
-              <div class="meta">
-                <FormattedDate date={post.data.pubDate} />
-                {proj(post.data.project) && (
-                  <span>{proj(post.data.project)!.name}</span>
+      <div class="side">
+        {
+          side.map((post) => (
+            <a class="side-item" href={`/posts/${post.id}/`}>
+              <div class="thumb">
+                <Cover
+                  cover={coverOf(post)}
+                  alt=""
+                  ratio="1 / 1"
+                  sizes="96px"
+                  tint={who(post.data.author)?.color}
+                />
+              </div>
+              <div class="side-text">
+                {who(post.data.author) && (
+                  <span class="who" style={`color:${who(post.data.author)!.color}`}>
+                    {who(post.data.author)!.name}
+                  </span>
                 )}
+                <h3>{post.data.title}</h3>
               </div>
             </a>
-          ))}
-        </div>
-      </section>
-    ))
-  }
+          ))
+        }
+      </div>
+    </section>
+
+    {/* ── 최신 글 ────────────────────────────────── */}
+    <section class="sec">
+      <header class="sec-head">
+        <h2>최신 글</h2>
+        <a class="more" href="/posts">전체보기 →</a>
+      </header>
+
+      <div class="cards">
+        {
+          latest.map((post) => (
+            <a class="card" href={`/posts/${post.id}/`}>
+              <Cover
+                cover={coverOf(post)}
+                alt=""
+                ratio="16 / 10"
+                sizes="(min-width: 900px) 25vw, 50vw"
+                tint={who(post.data.author)?.color}
+              />
+              <div class="card-body">
+                {who(post.data.author) && (
+                  <span class="who" style={`color:${who(post.data.author)!.color}`}>
+                    {who(post.data.author)!.name}
+                  </span>
+                )}
+                <h3>{post.data.title}</h3>
+                <span class="date">
+                  <FormattedDate date={post.data.pubDate} />
+                </span>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    {/* ── 더 읽을 글 ─────────────────────────────── */}
+    <section class="sec">
+      <header class="sec-head">
+        <h2>더 읽을 글</h2>
+      </header>
+
+      <ol class="ranks">
+        {
+          more.map((post, i) => (
+            <li>
+              <a href={`/posts/${post.id}/`}>
+                <span class="num">{String(i + 1).padStart(2, '0')}</span>
+                <h3>{post.data.title}</h3>
+                <span class="date">
+                  <FormattedDate date={post.data.pubDate} />
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    {/* ── 에디터 ─────────────────────────────────── */}
+    <section class="sec">
+      <header class="sec-head">
+        <h2>에디터</h2>
+      </header>
+
+      <div class="pills">
+        {
+          AUTHORS.filter((a) => postsByAuthor(posts, a.id).length > 0).map((a) => (
+            <a class="pill" href={`/authors/${a.id}`} style={`color:${a.color}`}>
+              {a.name}
+              <span class="count">{postsByAuthor(posts, a.id).length}</span>
+            </a>
+          ))
+        }
+        <a class="pill" href="/posts">전체 글<span class="count">{posts.length}</span></a>
+      </div>
+    </section>
+  </div>
 
   <SiteFooter />
 </BaseLayout>
 
-<script>
-  /*
-    스크롤 효과 셋. 라이브러리 없이 씁니다.
-
-      1. 커버가 화면에 들어올 때 살짝 떠오르기
-      2. 첫 꼭지 사진이 스크롤보다 느리게 움직이기 (큰 화면에서만)
-      3. 맨 위 진행 막대
-
-    ⚠ 애니메이션을 줄여 둔 사람(prefers-reduced-motion)에게는 아무것도
-      걸지 않습니다. 숨기는 클래스를 여기서 붙이기 때문에, 이 스크립트가
-      죽어도 지면은 그대로 다 보입니다.
-  */
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  // 1. 떠오르기
-  if (!still && 'IntersectionObserver' in window) {
-    const targets = document.querySelectorAll('.cell, .row')
-    targets.forEach((el) => el.classList.add('reveal'))
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue
-          e.target.classList.add('in')
-          io.unobserve(e.target) // 한 번 나타난 것은 다시 숨기지 않습니다
-        }
-      },
-      { rootMargin: '0px 0px -8% 0px', threshold: 0.05 },
-    )
-    targets.forEach((el) => io.observe(el))
-  }
-
-  // 2. 패럴랙스 — 스크롤마다 계산하지 않고 한 프레임에 한 번만.
-  //    진행 막대는 헤더(PreviewHeaderA)로 옮겼습니다.
-  const lead = document.querySelector<HTMLElement>('[data-parallax] .frame img')
-  const wide = matchMedia('(min-width: 900px)')
-  let ticking = false
-
-  function onScroll() {
-    if (ticking) return
-    ticking = true
-    requestAnimationFrame(() => {
-      const moving = wide.matches && !still
-      // 화면 하나를 다 내려갈 때까지만 움직입니다.
-      const run = Math.min(scrollY, innerHeight)
-
-      if (lead) {
-        // 사진을 스크롤의 12% 만큼만 따라 내립니다. 더 주면 멀미가 납니다.
-        // 틀은 그대로 두고 안쪽 사진만 움직입니다 — 틀을 밀면 빈 틈이 생깁니다.
-        lead.style.transform = moving ? `translate3d(0, ${run * 0.12}px, 0)` : ''
-      }
-      ticking = false
-    })
-  }
-
-  addEventListener('scroll', onScroll, { passive: true })
-  addEventListener('resize', onScroll)
-  onScroll()
-</script>
-
 <style>
-  /* ── 첫 꼭지 ─────────────────────────────────────────── */
+  /* 아래 띠(SiteFooter)와 같은 폭·같은 여백입니다. 둘이 어긋나면 양끝이 안 맞습니다. */
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 0;
+  }
 
-  .lead {
+  /* ── 헤드라인 ─────────────────────────────────────────── */
+
+  .top {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .hero {
     position: relative;
     display: block;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
     color: inherit;
     text-decoration: none;
   }
 
-  /* 패럴랙스로 사진이 내려가도 아래가 비지 않게 조금 키워 둡니다. */
-  .lead :global(.frame img) {
-    height: 118%;
-    will-change: transform;
-  }
-
-  .lead::after {
+  /*
+    사진 위에 글자를 얹기 때문에 아래를 어둡게 깔아야 합니다. 커버는 밝은
+    앱 캡처일 때가 많아서, 안 깔면 흰 배경에 흰 제목이 됩니다.
+  */
+  .hero::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.15) 0%,
-      rgba(0, 0, 0, 0.55) 45%,
-      rgba(0, 0, 0, 0.92) 100%
-    );
+    background: linear-gradient(to top, rgb(0 0 0 / 0.86) 0%, rgb(0 0 0 / 0.5) 34%, transparent 68%);
   }
 
-  .lead-text {
+  .hero-text {
     position: absolute;
+    inset: auto 0 0 0;
     z-index: 1;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 1.5rem 1.25rem 2rem;
+    padding: 1.25rem;
   }
 
-  .lead h1 {
-    margin: 0;
-    font-size: 2.25rem;
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgb(255 255 255 / 0.72);
+  }
+
+  .kicker .dot {
+    color: rgb(255 255 255 / 0.4);
+  }
+
+  .hero h1 {
+    margin: 0.5rem 0 0;
+    font-size: 1.375rem;
     font-weight: 800;
-    line-height: 1.3;
+    line-height: 1.35;
     letter-spacing: -0.02em;
-    color: #ffffff;
+    /* 사진 위라 테마와 상관없이 흰 글자입니다 */
+    color: #fff;
   }
 
-  .lead .sub {
-    margin: 0.75rem 0 0;
-    font-size: 1rem;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.78);
-  }
-
-  .lead .meta {
-    margin-top: 1.25rem;
-    color: rgba(255, 255, 255, 0.6);
-  }
-
-  /*
-    저자 이름. A 에서는 10px 짜리 꼬리표였는데, D 에서는 이게 지면을
-    나누는 표지라 키웠습니다.
-  */
-  .who {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.9375rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-  }
-
-  .meta {
+  .side {
     display: flex;
+    flex-direction: column;
     gap: 0.75rem;
-    font-size: 0.8125rem;
-    color: var(--text-faint);
   }
 
-  /* ── 저자 묶음 ───────────────────────────────────────── */
-
-  .band {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 2.5rem 1.25rem 0;
-  }
-
-  /*
-    저자 표지. 그 묶음을 지나는 동안 위에 붙어 있습니다 — 지금 어느 저자
-    구역을 보고 있는지가 계속 보입니다. 헤더(3rem) 바로 아래입니다.
-
-    ⚠ 배경을 깔아야 합니다. 안 깔면 아래 카드가 글자를 뚫고 지나갑니다.
-  */
-  .band-head {
-    position: sticky;
-    top: 3rem;
-    z-index: 5;
-    display: flex;
-    align-items: baseline;
-    gap: 0.625rem;
-    padding-top: 1.25rem;
-    padding-bottom: 0.875rem;
-    /* 구분선은 그 저자의 색입니다 (--who 는 section 에서 넘어옵니다) */
-    border-top: 2px solid var(--who, var(--border));
-    margin-bottom: 1.5rem;
-    background-color: var(--bg);
-  }
-
-  .band-head h2 {
-    margin: 0;
-    font-size: 1.75rem;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-  }
-
-
-  .all {
-    margin-left: auto;
-    font-size: 0.875rem;
-    color: var(--text-dim);
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .grid {
+  .side-item {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem 0.875rem;
-  }
-
-  .cell {
+    grid-template-columns: 4.5rem 1fr;
+    gap: 0.875rem;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background-color: var(--card);
     color: inherit;
     text-decoration: none;
   }
 
-  /* 제목은 두 줄에서 자릅니다 — 길이가 제각각이면 카드 아래가 들쭉날쭉합니다. */
-  .cell h3 {
+  .side-item .thumb :global(.frame) {
+    border-radius: var(--radius-sm);
+  }
+
+  .side-text h3 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin: 0.625rem 0 0.375rem;
-    font-size: 1rem;
+    margin: 0.25rem 0 0;
+    font-size: 0.9375rem;
     font-weight: 700;
     line-height: 1.45;
-    letter-spacing: -0.01em;
   }
 
-  .cell :global(.frame) {
-    border-radius: var(--radius-md);
-    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .cell:hover h3 {
+  .side-item:hover h3 {
     text-decoration: underline;
     text-underline-offset: 3px;
   }
 
-  /* ── 최근 글 ─────────────────────────────────────────── */
-
-  .rows {
-    display: flex;
-    flex-direction: column;
+  .who {
+    font-size: 0.6875rem;
+    font-weight: 700;
   }
 
-  .row {
+  /* ── 섹션 머리 ────────────────────────────────────────── */
+
+  .sec {
+    margin-top: 2.5rem;
+  }
+
+  .sec-head {
     display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .sec-head h2 {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .more {
+    font-size: 0.8125rem;
+    color: var(--accent-text);
+    text-decoration: none;
+  }
+
+  /* ── 최신 글 카드 ─────────────────────────────────────── */
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.875rem;
-    padding: 0.875rem 0;
-    border-bottom: 1px solid var(--border);
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background-color: var(--card);
     color: inherit;
     text-decoration: none;
   }
 
-  .thumb {
-    flex: none;
-    width: 5.5rem;
+  .card-body {
+    padding: 0.75rem 0.875rem 0.875rem;
   }
 
-  .thumb :global(.frame) {
-    border-radius: var(--radius-md);
-  }
-
-  .row .who {
-    margin-bottom: 0.25rem;
-    font-size: 0.8125rem;
-  }
-
-  .row h3 {
+  .card h3 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin: 0;
+    margin: 0.25rem 0 0.5rem;
     font-size: 0.9375rem;
     font-weight: 700;
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
-  .row:hover h3 {
+  .card:hover h3 {
     text-decoration: underline;
     text-underline-offset: 3px;
   }
 
   .date {
-    display: block;
-    margin-top: 0.375rem;
     font-size: 0.75rem;
     color: var(--text-faint);
   }
 
-  /* ── 스크롤 ──────────────────────────────────────────── */
+  /* ── 더 읽을 글 ───────────────────────────────────────── */
+
+  .ranks {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .ranks li {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ranks a {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr auto;
+    gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.875rem 0;
+    color: inherit;
+    text-decoration: none;
+  }
 
   /*
-    화면에 들어올 때 살짝 떠오릅니다.
-
-    ⚠ 숨기는 것은 스크립트가 켭니다(`.reveal`). CSS 로 처음부터 숨기면
-      자바스크립트가 죽었을 때 지면이 통째로 안 보입니다.
+    번호는 순위가 아니라 목록 번호입니다 — 조회수 같은 건 정적 사이트라
+    셀 방법이 없어서, 오른쪽은 날짜로 뒀습니다.
   */
-  .reveal {
-    opacity: 0;
-    transform: translateY(10px);
-    transition:
-      opacity 420ms ease-out,
-      transform 420ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  .num {
+    font-size: 0.9375rem;
+    font-weight: 800;
+    color: var(--accent-text);
   }
 
-  .reveal.in {
-    opacity: 1;
-    transform: none;
+  .ranks h3 {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.45;
   }
 
-  /* 애니메이션을 줄여 둔 사람에게는 아무것도 안 나갑니다. */
-  @media (prefers-reduced-motion: reduce) {
-    .reveal,
-    .reveal.in {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
+  .ranks a:hover h3 {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
-  /* ── 큰 화면 ─────────────────────────────────────────── */
+  /* ── 에디터 ───────────────────────────────────────────── */
+
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.4375rem 0.875rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background-color: var(--card);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .pill .count {
+    font-weight: 500;
+    color: var(--text-faint);
+  }
+
+  /* ── 큰 화면 ──────────────────────────────────────────── */
 
   @media (min-width: 900px) {
-    .lead {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      max-width: 1280px;
-      margin: 0 auto;
+    .wrap {
       padding: 2rem 2rem 0;
     }
 
-    .lead::after {
-      display: none;
+    .top {
+      grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+      gap: 1.25rem;
+      /* 옆줄 셋의 높이 합이 헤드라인과 같아지게 늘립니다 */
+      align-items: stretch;
     }
 
-    .lead :global(.frame) {
-      aspect-ratio: 4 / 5 !important;
+    .side {
+      justify-content: space-between;
     }
 
-    .lead-text {
-      position: static;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 0 0 0 3rem;
+    .side-item {
+      flex: 1;
     }
 
-    /*
-      제목이 화면에서 사라지지 않게 붙여 둡니다.
-
-      처음에는 사진 옆 **가운데**에 있다가, 스크롤을 내리면 화면 가운데
-      쯤에 머뭅니다. 사진 아래쪽이 올라오면 거기서 밀려 내려가 결국
-      **사진 아래에 맞춰 멈춥니다.**
-
-      그냥 두면 사진은 아직 화면에 있는데 글자만 위로 빠져나가서, 사진만
-      덩그러니 남는 구간이 생깁니다. 그게 싫어서 붙였습니다.
-
-      top 은 "화면 가운데 - 글자 높이의 절반쯤"입니다. 글자 높이를 CSS 가
-      모르므로 9rem 으로 어림잡았습니다 — 제목이 세 줄을 넘어가면 이 값을
-      키워야 합니다.
-    */
-    .lead-body {
-      position: sticky;
-      top: calc(50vh - 9rem);
+    .hero-text {
+      padding: 2rem;
     }
 
-    .lead .who {
-      font-size: 1.125rem;
+    .hero h1 {
+      font-size: 2rem;
+      max-width: 22ch;
     }
 
-    .lead h1 {
-      font-size: 3.25rem;
-      color: var(--text);
+    .kicker {
+      font-size: 0.8125rem;
     }
 
-    .lead .sub {
-      margin-top: 1.25rem;
-      font-size: 1.0625rem;
-      color: var(--text-dim);
+    .sec {
+      margin-top: 3.5rem;
     }
 
-    .lead .meta {
-      color: var(--text-faint);
+    .sec-head h2 {
+      font-size: 1.25rem;
     }
 
-    .band {
-      padding: 3.5rem 2rem 0;
+    .cards {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
     }
 
-    .band-head h2 {
-      font-size: 2.25rem;
-    }
-
-    .grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2.25rem 1.625rem;
-    }
-
-    /* 폰에서는 3:2 가 딱 맞는데 큰 화면에서는 카드가 작아 보입니다.
-       큰 화면에서만 조금 높입니다. */
-    .cell :global(.frame) {
-      aspect-ratio: 4 / 3 !important;
-    }
-
-    .cell h3 {
-      font-size: 1.125rem;
-      line-height: 1.45;
-    }
-
-    /* 최근 글은 두 줄로 — 세로로만 쌓으면 큰 화면에서 한참 내려갑니다. */
-    .rows {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      column-gap: 2.5rem;
-    }
-
-    .thumb {
-      width: 7.5rem;
-    }
-
-    .row {
+    .ranks a {
+      grid-template-columns: 3rem 1fr auto;
       padding: 1.125rem 0;
     }
 
-    .row h3 {
+    .num {
       font-size: 1.0625rem;
+    }
+
+    .ranks h3 {
+      font-size: 1rem;
     }
   }
 </style>
