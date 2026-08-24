@@ -58,9 +58,15 @@ import { AUTHORS, OWNER, PROJECTS } from '../consts'
 </footer>
 
 <style>
+  /*
+    가로 여백은 .foot 이 아니라 안쪽 두 덩어리가 씁니다 — 위쪽 지면(.band)
+    이 max-width 1280px **안에** 여백을 두기 때문에, 여기서 바깥에 두면
+    글 목록보다 아래 띠가 그만큼 더 넓게 퍼져서 양끝이 안 맞습니다.
+    구분선은 .foot 에 있어서 화면 끝까지 그대로 갑니다.
+  */
   .foot {
     margin-top: 4rem;
-    padding: 2.5rem 1.25rem 3rem;
+    padding: 2.5rem 0 3rem;
     border-top: 1px solid var(--border);
   }
 
@@ -69,6 +75,7 @@ import { AUTHORS, OWNER, PROJECTS } from '../consts'
     gap: 2rem;
     max-width: 1280px;
     margin: 0 auto;
+    padding-inline: 1.25rem;
   }
 
   h2 {
@@ -106,13 +113,14 @@ import { AUTHORS, OWNER, PROJECTS } from '../consts'
   .copy {
     max-width: 1280px;
     margin: 2.5rem auto 0;
+    padding-inline: 1.25rem;
     font-size: 0.8125rem;
     color: var(--text-faint);
   }
 
   @media (min-width: 700px) {
     .foot {
-      padding: 3rem 2rem 4rem;
+      padding: 3rem 0 4rem;
     }
 
     .inner {
@@ -123,6 +131,14 @@ import { AUTHORS, OWNER, PROJECTS } from '../consts'
     ul {
       flex-direction: column;
       gap: 0.5rem;
+    }
+  }
+
+  /* 지면(.band)이 여백을 2rem 으로 넓히는 지점과 같습니다 */
+  @media (min-width: 900px) {
+    .inner,
+    .copy {
+      padding-inline: 2rem;
     }
   }
 </style>
