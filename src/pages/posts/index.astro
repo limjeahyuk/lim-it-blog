@@ -1,10 +1,25 @@
 ---
+/**
+ * 서고 — 글 전부를 연도로 묶어 한 줄씩.
+ *
+ * 홈의 "최신 글 · 전체보기" 가 오는 곳입니다. 홈과 같은 폭·같은 여백을
+ * 쓰고, 오른쪽 열 대신 왼쪽에 에디터로 거르는 줄을 둡니다.
+ *
+ * ⚠ 여기는 지면이 아니라 서고입니다 — 128편이 늘어서므로 카드를 두르지
+ *   않습니다 (§4). 홈만 카드입니다.
+ *
+ * ⚠ 오른쪽 열(FeedLayout)을 안 씁니다. 그래서 Service·Contact 는 아래
+ *   띠(SiteFooter)가 대신합니다. /authors·/projects 는 아직 FeedLayout 입니다.
+ */
+import Avatar from '../../components/Avatar.astro'
 import BaseLayout from '../../components/BaseLayout.astro'
-import FeedLayout from '../../components/FeedLayout.astro'
+import Cover from '../../components/Cover.astro'
 import FormattedDate from '../../components/FormattedDate.astro'
 import Icon from '../../components/Icon.astro'
-import { getAuthor } from '../../consts'
-import { getPublishedPosts } from '../../lib/posts'
+import SiteFooter from '../../components/SiteFooter.astro'
+import { AUTHORS, getAuthor } from '../../consts'
+import { coverOf } from '../../lib/cover'
+import { getPublishedPosts, postsByAuthor } from '../../lib/posts'
 
 const posts = await getPublishedPosts()
 
@@ -14,43 +29,81 @@ for (const post of posts) {
   byYear.set(year, [...(byYear.get(year) ?? []), post])
 }
 const years = [...byYear.keys()].sort((a, b) => b - a)
+
+const filters = [
+  { id: '', name: '전체', initial: '전', color: 'var(--text-faint)', count: posts.length },
+  ...AUTHORS.map((a) => ({
+    id: a.id,
+    name: a.name,
+    initial: a.initial,
+    color: a.color,
+    count: postsByAuthor(posts, a.id).length,
+  })).filter((a) => a.count > 0),
+]
 ---
 
-{/* 여기는 목록이 아니라 서고입니다 — 100개가 넘으므로 카드가 아니라 한 줄씩 놓습니다. */}
 <BaseLayout title="Posts" description="전체 글 목록">
-  <FeedLayout>
-    <div class="feed-header">
-      <span class="title-ico"><Icon name="notebook" size={17} /> All Posts</span>
-      <span class="count">{posts.length}</span>
-    </div>
+  <div class="wrap">
+    <aside class="side">
+      <h2>Editors</h2>
+      <nav class="filters">
+        {
+          filters.map((f) => (
+            <a class="f" href={f.id ? `/posts?author=${f.id}` : '/posts'} data-author={f.id}>
+              <Avatar name={f.name} initial={f.initial} color={f.color} size={22} />
+              <span class="f-name" style={f.id ? `color:${f.color}` : undefined}>
+                {f.name}
+              </span>
+              <span class="f-n">{f.count}</span>
+            </a>
+          ))
+        }
+      </nav>
+    </aside>
 
-    {
-      posts.length === 0 ? (
-        <p class="empty">아직 글이 없습니다.</p>
-      ) : (
+    <main class="feed">
+      <header class="head">
+        <h1>전체 글</h1>
+        <span class="total">총 <b data-total>{posts.length}</b>개</span>
+      </header>
+
+      {
         years.map((year) => (
-          <section>
-            <div class="year">
-              <span>{year}</span>
-              <span class="year-count">{byYear.get(year)!.length}</span>
-            </div>
-            <div class="card rows">
+          <section class="yr">
+            <h2>{year}</h2>
+
+            <div class="rows">
               {byYear.get(year)!.map((post) => (
-                <a class="row" href={`/posts/${post.id}/`}>
-                  {post.data.secret && (
-                    <span class="lock" title="비밀글">
-                      <Icon name="lock" size={13} />
-                    </span>
-                  )}
-                  <span class="title">{post.data.title}</span>
+                <a
+                  class="row"
+                  href={`/posts/${post.id}/`}
+                  data-author={post.data.author ?? ''}
+                >
+                  <div class="thumb">
+                    <Cover
+                      cover={coverOf(post)}
+                      alt=""
+                      ratio="16 / 10"
+                      sizes="132px"
+                      tint={post.data.author ? getAuthor(post.data.author)?.color : undefined}
+                    />
+                  </div>
+
+                  <span class="title">
+                    {post.data.secret && (
+                      <span class="lock" title="비밀글">
+                        <Icon name="lock" size={13} />
+                      </span>
+                    )}
+                    {post.data.title}
+                  </span>
+
                   {post.data.author && (
-                    <span
-                      class="cat"
-                      style={`color:${getAuthor(post.data.author)?.color}`}
-                    >
+                    <span class="who" style={`color:${getAuthor(post.data.author)?.color}`}>
                       {getAuthor(post.data.author)?.name}
                     </span>
                   )}
+
                   <span class="date">
                     <FormattedDate date={post.data.pubDate} short />
                   </span>
@@ -59,86 +112,222 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
             </div>
           </section>
         ))
-      )
-    }
-  </FeedLayout>
+      }
+
+      <p class="empty" hidden>고른 에디터의 글이 없습니다.</p>
+    </main>
+  </div>
+
+  <SiteFooter />
 </BaseLayout>
 
+<script>
+  /*
+    에디터로 거르기. 128편이 이미 다 그려져 있으므로 서버를 다시 부르지
+    않고 줄을 숨겼다 켭니다 — 대신 주소(`?author=`)는 남겨서, 그 상태
+    그대로 주고받거나 뒤로가기로 돌아올 수 있게 합니다.
+  */
+  const rows = [...document.querySelectorAll<HTMLElement>('.row')]
+  const sections = [...document.querySelectorAll<HTMLElement>('.yr')]
+  const tabs = [...document.querySelectorAll<HTMLAnchorElement>('.f')]
+  const total = document.querySelector<HTMLElement>('[data-total]')
+  const empty = document.querySelector<HTMLElement>('.empty')
+
+  function apply(author: string) {
+    let shown = 0
+    for (const row of rows) {
+      const on = !author || row.dataset.author === author
+      row.hidden = !on
+      if (on) shown += 1
+    }
+
+    /* 한 줄도 안 남은 연도는 제목까지 같이 숨깁니다 */
+    for (const section of sections) {
+      const any = [...section.querySelectorAll<HTMLElement>('.row')].some((r) => !r.hidden)
+      section.hidden = !any
+    }
+
+    for (const tab of tabs) tab.classList.toggle('is-on', (tab.dataset.author ?? '') === author)
+    if (total) total.textContent = String(shown)
+    if (empty) empty.hidden = shown > 0
+  }
+
+  function fromUrl() {
+    return new URL(location.href).searchParams.get('author') ?? ''
+  }
+
+  for (const tab of tabs) {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault()
+      const author = tab.dataset.author ?? ''
+      history.pushState({}, '', author ? `/posts?author=${author}` : '/posts')
+      apply(author)
+      window.scrollTo({ top: 0 })
+    })
+  }
+
+  addEventListener('popstate', () => apply(fromUrl()))
+  apply(fromUrl())
+</script>
+
 <style>
-  .feed-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.9375rem;
+  /* 홈·아래 띠와 같은 폭·같은 여백입니다. 어긋나면 양끝이 안 맞습니다. */
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 0;
   }
 
-  .count {
-    font-size: 0.8125rem;
+  /* ── 왼쪽 · 에디터로 거르기 ───────────────────────────── */
+
+  .side h2 {
+    margin: 0 0 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--text-faint);
   }
 
-  .year {
+  .filters {
+    display: flex;
+    gap: 0.375rem;
+    /* 폰에서는 한 줄로 흘립니다. 안쪽에서 끊기면 그게 끝인 줄 압니다. */
+    overflow-x: auto;
+    margin-inline: -1.25rem;
+    padding-inline: 1.25rem;
+    scrollbar-width: none;
+  }
+
+  .filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .f {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.25rem;
-    margin: 1.75rem 0 0.6rem;
+    flex-shrink: 0;
+    padding: 0.4375rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .f.is-on {
+    background-color: var(--surface);
+  }
+
+  .f-n {
+    font-weight: 500;
     font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
     color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
   }
 
-  section:first-of-type .year {
-    margin-top: 0;
-  }
+  /* ── 지면 머리 ────────────────────────────────────────── */
 
-  .year-count {
-    font-weight: 400;
-    letter-spacing: 0;
-  }
-
-  .rows {
-    padding: 0.5rem;
-  }
-
-  .row {
+  .head {
     display: flex;
     align-items: baseline;
-    gap: 0.6rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--radius-lg);
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 1.5rem 0 1rem;
+  }
+
+  .head h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .total {
+    flex-shrink: 0;
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+
+  .total b {
+    font-weight: 700;
+  }
+
+  /* ── 연도 ─────────────────────────────────────────────── */
+
+  .yr h2 {
+    margin: 2rem 0 0;
+    padding-bottom: 0.625rem;
+    border-bottom: 1px solid var(--border);
     font-size: 0.9375rem;
-    line-height: 1.6;
+    font-weight: 800;
+    letter-spacing: 0.04em;
     color: var(--text-dim);
   }
 
-  .row:hover {
-    background-color: var(--surface);
-    color: var(--text);
+  .yr:first-of-type h2 {
+    margin-top: 0;
+  }
+
+  /* ── 한 줄 ────────────────────────────────────────────── */
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--border);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .row[hidden] {
+    display: none;
+  }
+
+  /*
+    썸네일은 640px 아래에서 뺍니다. 서고는 128줄이라, 폰에서까지 사진을
+    깔면 제목을 훑는 데 방해가 되고 원본 그대로 나가서 무겁습니다 (§4).
+  */
+  .thumb {
+    display: none;
+    flex-shrink: 0;
+    width: 8.25rem;
+  }
+
+  .thumb :global(.frame) {
+    border-radius: var(--radius-md);
+  }
+
+  .title {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .row:hover .title {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .lock {
     flex-shrink: 0;
     display: inline-flex;
-    align-self: center;
     color: var(--text-faint);
   }
 
-  .title {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .cat {
+  .who {
     flex-shrink: 0;
     margin-left: auto;
     font-size: 0.75rem;
-    color: var(--text-faint);
+    font-weight: 700;
   }
 
   .date {
@@ -148,9 +337,15 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
     font-variant-numeric: tabular-nums;
   }
 
+  .empty {
+    padding: 2rem 0;
+    color: var(--text-faint);
+    font-size: 0.9375rem;
+  }
+
   /* 저자 이름은 좁은 화면에서 빼고 날짜만 남깁니다. */
   @media (max-width: 640px) {
-    .cat {
+    .who {
       display: none;
     }
 
@@ -159,9 +354,51 @@ const years = [...byYear.keys()].sort((a, b) => b - a)
     }
   }
 
-  .empty {
-    padding: 1rem 0.25rem;
-    color: var(--text-faint);
-    font-size: 0.9375rem;
+  @media (min-width: 640px) {
+    .thumb {
+      display: block;
+    }
+  }
+
+  /* ── 큰 화면 — 왼쪽에 거르는 줄을 세로로 세웁니다 ────── */
+
+  @media (min-width: 900px) {
+    .wrap {
+      display: grid;
+      grid-template-columns: 14rem minmax(0, 1fr);
+      gap: 3rem;
+      padding: 2.5rem 2rem 0;
+    }
+
+    .filters {
+      flex-direction: column;
+      gap: 0.125rem;
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+      /* 지면과 같이 스크롤되면 128줄을 내리는 동안 사라집니다 */
+      position: sticky;
+      top: 4.5rem;
+    }
+
+    .f {
+      justify-content: flex-start;
+    }
+
+    .f-n {
+      margin-left: auto;
+    }
+
+    .head {
+      margin-top: 0;
+    }
+
+    .head h1 {
+      font-size: 2rem;
+    }
+
+    .title {
+      font-size: 1rem;
+    }
   }
 </style>

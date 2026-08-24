@@ -11,7 +11,11 @@ const { date, short } = Astro.props
 <time datetime={date.toISOString()}>
   {
     short
-      ? date.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+      ? /* ko-KR 은 "08. 19." 처럼 점과 공백을 붙여 줍니다 — 줄이 촘촘한 곳이라 뗍니다 */
+        date
+          .toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+          .replace(/\.\s*$/, '')
+          .replace(/\.\s*/g, '.')
       : date.toLocaleDateString('ko-KR', {
           year: 'numeric',
           month: 'long',
