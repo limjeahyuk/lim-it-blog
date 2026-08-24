@@ -3,8 +3,8 @@
  * 홈.
  *
  *   1. 첫 꼭지 하나를 사진으로 크게      (폰: 사진 위에 제목 / 큰 화면: 옆에)
- *   2. 저자로 나눈 묶음                  (표지가 위에 붙습니다)
- *   3. 최근 글 목록
+ *   2. 최근 글 목록
+ *   3. 저자로 나눈 묶음                  (표지가 위에 붙습니다)
  *   4. Editors · Service · Contact
  *
  * 디에디트·롱블랙·폴인을 폰과 데스크톱에서 재 보고 맞춘 것입니다.
@@ -21,17 +21,25 @@ import { getPublishedPosts, postsByAuthor } from '../lib/posts'
 const posts = await getPublishedPosts()
 const lead = posts[0]
 
-/** 저자별 묶음. 폰에서 2열이라 짝수로 끊습니다. */
+/**
+ * 첫 꼭지 바로 아래 최신순 목록.
+ *
+ * 여기서 먼저 집어갑니다 — "최근 글"이 저자 묶음보다 위에 있으면서 그보다
+ * 오래된 글을 늘어놓으면 이름과 안 맞습니다.
+ *
+ * ⚠ 이 수를 늘리면 아래 저자 묶음이 그만큼 빕니다. 지금 제일 최근 12편이
+ *   전부 임데브라, 10편을 집어가면 임데브 묶음에 한 편만 남습니다.
+ */
+const recent = posts.filter((p) => p.id !== lead.id).slice(0, 6)
+
+/** 저자별 묶음. 위에서 이미 보여준 글은 뺍니다. 폰에서 2열이라 짝수로 끊습니다. */
+const shown = new Set([lead.id, ...recent.map((p) => p.id)])
 const sections = AUTHORS.map((a) => ({
   author: a,
   items: postsByAuthor(posts, a.id)
-    .filter((p) => p.id !== lead.id)
+    .filter((p) => !shown.has(p.id))
     .slice(0, 6),
 })).filter((s) => s.items.length > 0)
-
-/** 맨 아래 목록에는 위에서 이미 보여준 글을 빼고 최신순으로 채웁니다. */
-const shown = new Set([lead.id, ...sections.flatMap((s) => s.items.map((p) => p.id))])
-const recent = posts.filter((p) => !shown.has(p.id)).slice(0, 10)
 
 const who = (id?: string) => (id ? getAuthor(id) : undefined)
 const proj = (id?: string) => (id ? getProject(id) : undefined)
@@ -63,41 +71,6 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
       </div>
     </div>
   </a>
-
-  {/* 저자별 묶음 — B 에서 가져왔습니다. */}
-  {
-    sections.map((s) => (
-      <section class="band" style={`--who:${s.author.color}`}>
-        <header class="band-head">
-          <h2 style={`color:${s.author.color}`}>{s.author.name}</h2>
-          <a class="all" href={`/authors/${s.author.id}`}>
-            All
-          </a>
-        </header>
-
-        <div class="grid">
-          {s.items.map((post) => (
-            <a class="cell" href={`/posts/${post.id}/`}>
-              <Cover
-                cover={coverOf(post)}
-                alt=""
-                ratio="3 / 2"
-                sizes="(min-width: 900px) 25vw, 50vw"
-                tint={s.author.color}
-              />
-              <h3>{post.data.title}</h3>
-              <div class="meta">
-                <FormattedDate date={post.data.pubDate} />
-                {proj(post.data.project) && (
-                  <span>{proj(post.data.project)!.name}</span>
-                )}
-              </div>
-            </a>
-          ))}
-        </div>
-      </section>
-    ))
-  }
 
   {/* 최근 글 — C 에서 가져왔습니다. */}
   <section class="band recent">
@@ -135,6 +108,41 @@ const proj = (id?: string) => (id ? getProject(id) : undefined)
       }
     </div>
   </section>
+
+  {/* 저자별 묶음 — B 에서 가져왔습니다. */}
+  {
+    sections.map((s) => (
+      <section class="band" style={`--who:${s.author.color}`}>
+        <header class="band-head">
+          <h2 style={`color:${s.author.color}`}>{s.author.name}</h2>
+          <a class="all" href={`/authors/${s.author.id}`}>
+            All
+          </a>
+        </header>
+
+        <div class="grid">
+          {s.items.map((post) => (
+            <a class="cell" href={`/posts/${post.id}/`}>
+              <Cover
+                cover={coverOf(post)}
+                alt=""
+                ratio="3 / 2"
+                sizes="(min-width: 900px) 25vw, 50vw"
+                tint={s.author.color}
+              />
+              <h3>{post.data.title}</h3>
+              <div class="meta">
+                <FormattedDate date={post.data.pubDate} />
+                {proj(post.data.project) && (
+                  <span>{proj(post.data.project)!.name}</span>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))
+  }
 
   <SiteFooter />
 </BaseLayout>
