@@ -1,6 +1,6 @@
 ---
 /**
- * 홈 — 뉴스 지면 시안.
+ * 홈 — 뉴스 지면.
  *
  *   1. 헤드라인 한 편 크게 + 옆에 세 줄
  *   2. 최신 글 카드 넷
@@ -8,11 +8,11 @@
  *   4. 에디터
  *   5. Editors · Service · Contact
  *
- * ⚠ 지금 쓰던 홈은 `/preview/home-now` 에 그대로 있습니다. 어느 쪽으로 갈지
- *   정하고 나면 진 쪽과 robots.txt 의 Disallow 를 같이 지웁니다.
+ * ⚠ 홈에만 상자(카드)를 씁니다. `/posts` 같은 목록은 여전히 "카드가 아니라
+ *   줄"입니다 — 왜 갈라놨는지는 CLAUDE.md §4 에 있습니다.
  *
- * ⚠ 이 시안은 목록에 상자를 두릅니다 — CLAUDE.md §4 에서 "카드가 아니라 줄"
- *   로 정해 둔 것과 반대입니다. 고를 때 같이 저울질할 부분입니다.
+ * ⚠ 저자 묶음이 없습니다. 최신순으로만 잘라 쓰기 때문에 새 글이 한 저자에게
+ *   몰리면 위쪽이 그 저자로 다 찹니다. 알고 고른 것입니다 (§8).
  */
 import BaseLayout from '../components/BaseLayout.astro'
 import Cover from '../components/Cover.astro'
@@ -197,14 +197,24 @@ const who = (id?: string) => (id ? getAuthor(id) : undefined)
   }
 
   /*
-    사진 위에 글자를 얹기 때문에 아래를 어둡게 깔아야 합니다. 커버는 밝은
-    앱 캡처일 때가 많아서, 안 깔면 흰 배경에 흰 제목이 됩니다.
+    사진 위에 글자를 얹기 때문에 아래를 어둡게 깔아야 합니다.
+
+    ⚠ 옅게 깔면 안 됩니다. 커버가 밝은 앱 캡처거나 GridBrawl 게임 화면처럼
+      잔글씨가 빽빽한 캡처일 때, 제목이 배경과 섞여서 안 읽힙니다.
+      한 번 얕게 깔았다가 그것 때문에 다시 진하게 만든 값입니다.
   */
   .hero::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgb(0 0 0 / 0.86) 0%, rgb(0 0 0 / 0.5) 34%, transparent 68%);
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 0.94) 0%,
+      rgb(0 0 0 / 0.78) 22%,
+      rgb(0 0 0 / 0.42) 48%,
+      rgb(0 0 0 / 0.12) 72%,
+      transparent 100%
+    );
   }
 
   .hero-text {
