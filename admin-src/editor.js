@@ -620,4 +620,74 @@ function registerWidget(CMS, h) {
   }
 
   CMS.registerWidget('markdown', LimMarkdownControl, markdownWidget.preview)
+
+  /* ---------------------------------------------------------------
+     주소(slug) 칸을 미리 채웁니다.
+
+     비워두면 폰에서 한글로 글을 쓰다 말고 영문 자판으로 바꿔서
+     주소를 쳐야 합니다. 그런데 이 값은 저장할 때만 쓰이는 게 아니라
+     **사진을 넣는 순간** 필요합니다 — config.yml 의 media_folder 가
+     public/images/{{fields.slug}} 라, 비어 있으면 openMedia() 가
+     막습니다. 그래서 저장 시점에 제목에서 뽑는 방식으로는 늦습니다.
+
+     ⚠ 제목에서 뽑지 않습니다. 한글 제목이 그대로 파일명이 되면
+       주소가 %EB%B8%94… 로 나갑니다. ASCII 만 남기면 한글 제목은
+       남는 글자가 없어서 빈 파일명이 됩니다.
+
+     ⚠ 번호(dev1·dev2…)도 안 씁니다. 다음 번호를 알려면 저장소를
+       먼저 읽어야 하는데, 새 글 화면에는 그 목록이 없을 수 있습니다.
+       티스토리에서 옮겨온 116편이 그 방식(swiftui-68)인데, 그건
+       티스토리 서버가 번호를 발급해 줬기 때문에 됐던 것입니다.
+
+     그래서 **시각**을 씁니다. 시계만 보면 나오니 저장소를 안 읽어도
+     되고, 저자를 바꿔도 주소가 안 틀어집니다.
+
+     ⚠ 분까지 넣는 게 과해 보여도 날짜만으로는 모자랍니다. 지금 글
+       128편이 71일에 몰려 있고 **31일은 하루에 두 편 이상**입니다.
+       겹치면 Decap 이 파일명만 `-1` 을 붙여 바꾸는데(덮어쓰지는
+       않습니다), 사진 폴더는 이 칸의 값 그대로라 둘이 갈라집니다.
+  --------------------------------------------------------------- */
+
+  const StringControl = stringWidget.control
+
+  function LimStringControl(props) {
+    Base.call(this, props)
+  }
+
+  LimStringControl.prototype = Object.create(Base.prototype)
+  LimStringControl.prototype.constructor = LimStringControl
+
+  LimStringControl.prototype.componentDidMount = function () {
+    const p = this.props
+    /* 값이 있으면 손대지 않습니다 — 옛 글을 열었을 때 주소가 바뀌면
+       그 자리에서 404 가 됩니다. 지운 채로 두는 것도 그대로 둡니다
+       (componentDidMount 는 한 번만 돕니다). */
+    if (!p.field || p.field.get('name') !== 'slug') return
+    if (p.value) return
+    p.onChange(slugStamp())
+  }
+
+  /* 원래 string 위젯을 그대로 그립니다. 직접 input 을 그리면 Decap 이
+     칸에 주는 스타일·포커스 처리를 하나씩 따라 만들어야 합니다. */
+  LimStringControl.prototype.render = function () {
+    return h(StringControl, this.props)
+  }
+
+  CMS.registerWidget('string', LimStringControl, stringWidget.preview)
+}
+
+/**
+ * 새 글의 기본 주소 — `2026-08-25-0930`.
+ *
+ * config.yml 의 pattern(`^[a-z0-9]+(-[a-z0-9]+)*$`)을 통과하는 모양이어야
+ * 합니다. 네 덩어리가 전부 숫자라 통과합니다.
+ */
+export function slugStamp(d = new Date()) {
+  const p = (n) => String(n).padStart(2, '0')
+  return [
+    d.getFullYear(),
+    p(d.getMonth() + 1),
+    p(d.getDate()),
+    p(d.getHours()) + p(d.getMinutes()),
+  ].join('-')
 }
