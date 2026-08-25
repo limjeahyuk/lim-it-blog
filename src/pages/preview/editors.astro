@@ -2,9 +2,14 @@
 /**
  * 위지윅 편집기 시안 — 실제로 쳐 보고 고르는 자리입니다.
  *
- * 셋 다 같은 마크다운으로 시작합니다. 밑의 "마크다운 보기" 를 누르면
- * 지금 내용이 어떤 마크다운으로 저장될지 나옵니다 — **글 128편이
- * 마크다운 파일이라 이 왕복이 제일 중요한 판단 근거입니다.**
+ * 셋 다 같은 마크다운으로 시작하고, **기능을 최대한 붙여 놨습니다** —
+ * 기본값끼리 비교하면 "툴바가 있냐 없냐"만 보이기 때문입니다.
+ *
+ * 밑의 "마크다운 보기" 를 누르면 지금 내용이 어떤 마크다운으로 저장될지
+ * 나옵니다. **글 128편이 마크다운 파일이라 이 왕복이 제일 중요합니다.**
+ *
+ * ⚠ 편집기는 높이를 고정하지 않습니다. 안쪽에 스크롤을 만들면 글을 쓰다
+ *   커서가 화면 밖으로 나가고, 페이지 스크롤과 겹쳐서 손이 꼬입니다.
  *
  * ⚠ 고르고 나면 이 파일과 robots.txt 의 Disallow, 안 고른 패키지를
  *   같이 지웁니다.
@@ -32,28 +37,41 @@ const recent = posts.slice(0, 6)
 ![전투 화면](/images/gridbrawl-ai-aim/battle.png)
 `
 
+/** 이 블로그가 실제로 쓰는 것들. 표의 순서가 곧 중요도입니다. */
+const FEATURES = [
+  ['마크다운으로 저장', '○', '○', '○'],
+  ['원문 ↔ 위지윅 토글', '직접 만듦', '내장', '없음'],
+  ['표 넣기·편집', '○', '○ (칸 병합)', '○'],
+  ['글자 색', '직접 만듦', '내장 (색 고르개)', '없음'],
+  ['형광펜', '직접 만듦', '없음', '없음'],
+  ['코드블록 문법 강조', '없음', '○ (Prism)', '○ (CodeMirror)'],
+  ['사진 넣기', '○', '○', '○ (끌어놓기)'],
+  ['슬래시(/) 메뉴', '없음', '없음', '○'],
+  ['블록 손잡이·드래그', '없음', '없음', '○'],
+  ['할 일 목록', '○', '○', '○'],
+  ['수식(LaTeX)', '없음', '없음', '○'],
+  ['한국어 UI', '직접', '내장', '영어'],
+]
+
 const panes = [
   {
     id: 'tiptap',
     name: 'Tiptap',
     now: true,
-    made: 'Tiptap GmbH',
-    note: '지금 쓰는 것. ProseMirror 위에 직접 얹어 쓰는 방식이라 자유롭지만, 툴바·색·형광펜을 전부 손으로 만들어야 합니다.',
-    tags: ['MIT', '마크다운 왕복', '툴바 직접 제작', '확장 자유'],
+    made: 'Tiptap GmbH · MIT',
+    note: '지금 쓰는 것입니다. ProseMirror 위에 직접 얹는 방식이라 뭐든 만들 수 있지만, 툴바·색·형광펜이 전부 손으로 만든 것입니다 — 아래 툴바도 이 페이지에서 직접 그린 것입니다.',
   },
   {
     id: 'toast',
     name: 'Toast UI Editor',
-    made: 'NHN',
-    note: '마크다운이 1급 시민입니다. 왼쪽 원문·오른쪽 미리보기로 볼 수 있고, 위지윅과 마크다운을 버튼 하나로 오갑니다. 표 편집이 제일 셉니다.',
-    tags: ['MIT', '마크다운 네이티브', '원문/위지윅 토글', '표 병합', '한국어 UI'],
+    made: 'NHN · MIT',
+    note: '마크다운이 1급 시민입니다. 아래 오른쪽 버튼으로 위지윅과 원문을 오갈 수 있고, 색 고르개·표 칸 병합·코드 강조를 플러그인으로 붙였습니다.',
   },
   {
     id: 'milkdown',
     name: 'Milkdown (Crepe)',
-    made: 'Mirone',
-    note: '노션처럼 씁니다. 슬래시(/) 메뉴, 블록 손잡이, 드래그 정렬, 코드블록 문법 강조가 처음부터 들어 있습니다. Tiptap 과 같은 ProseMirror 기반입니다.',
-    tags: ['MIT', '마크다운 네이티브', '슬래시 메뉴', '블록 드래그', '수식(LaTeX)'],
+    made: 'Mirone · MIT',
+    note: '노션처럼 씁니다. 빈 줄에서 "/" 를 치면 메뉴가 뜨고, 글자를 끌면 서식 막대가 따라옵니다. 왼쪽 손잡이로 문단을 통째로 옮길 수 있습니다.',
   },
 ]
 ---
@@ -63,18 +81,41 @@ const panes = [
     <header class="head">
       <h1>위지윅 편집기 시안</h1>
       <p>
-        셋 다 아래 칸에서 직접 쳐 보실 수 있습니다. <b>폰에서 한글 입력이 안 끊기는지</b>가
+        셋 다 아래에서 직접 쳐 보실 수 있습니다. <b>폰에서 한글 입력이 안 끊기는지</b>가
         제일 중요합니다 — Decap 기본 리치 텍스트를 못 쓴 이유가 그것이었습니다.
       </p>
       <p>
         <b>마크다운 보기</b>를 누르면 지금 내용이 어떤 마크다운으로 저장될지 나옵니다.
         글 128편이 마크다운 파일이라, 원본을 얼마나 안 건드리는지가 판단 근거입니다.
       </p>
+
+      <div class="table-scroll">
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th>기능</th>
+              {panes.map((p) => <th>{p.name.replace(' (Crepe)', '')}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              FEATURES.map(([label, ...cells]) => (
+                <tr>
+                  <th scope="row">{label}</th>
+                  {cells.map((c) => (
+                    <td data-v={c}>{c}</td>
+                  ))}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
     </header>
 
     {
       panes.map((p) => (
-        <section class="pane">
+        <section class="pane" id={p.id}>
           <header class="pane-head">
             <h2>
               {p.name}
@@ -84,21 +125,14 @@ const panes = [
           </header>
 
           <p class="note">{p.note}</p>
-
-          <ul class="tags">
-            {p.tags.map((t) => (
-              <li>{t}</li>
-            ))}
-          </ul>
-
           <p class="diff" id={`diff-${p.id}`}>왕복 검사 중…</p>
 
           <div class="host" id={`host-${p.id}`} />
 
           <div class="out">
-            <button type="button" data-md={p.id}>
-              마크다운 보기
-            </button>
+            <button type="button" data-md={p.id}>마크다운 보기</button>
+            <button type="button" data-reset={p.id}>처음으로 되돌리기</button>
+            <span class="count" id={`n-${p.id}`} />
             <pre id={`md-${p.id}`} hidden />
           </div>
         </section>
@@ -112,55 +146,193 @@ const panes = [
 </script>
 
 <script>
-  import { Editor } from '@tiptap/core'
+  import { Editor, Mark } from '@tiptap/core'
   import { Markdown } from '@tiptap/markdown'
   import Image from '@tiptap/extension-image'
   import { TableKit } from '@tiptap/extension-table'
+  import { TaskItem, TaskList } from '@tiptap/extension-list'
   import StarterKit from '@tiptap/starter-kit'
 
   import ToastEditor from '@toast-ui/editor'
   import '@toast-ui/editor/dist/toastui-editor.css'
   import '@toast-ui/editor/dist/theme/toastui-editor-dark.css'
   import '@toast-ui/editor/dist/i18n/ko-kr'
+  import colorSyntax from '@toast-ui/editor-plugin-color-syntax'
+  import './tui-color-picker.css'
+  import '@toast-ui/editor-plugin-color-syntax/dist/toastui-editor-plugin-color-syntax.css'
+  import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell'
+  import '@toast-ui/editor-plugin-table-merged-cell/dist/toastui-editor-plugin-table-merged-cell.css'
+  import codeSyntaxHighlight from '@toast-ui/editor-plugin-code-syntax-highlight'
+  import 'prismjs/themes/prism-tomorrow.css'
+  import Prism from 'prismjs'
 
   import { Crepe } from '@milkdown/crepe'
   import '@milkdown/crepe/theme/common/style.css'
   import '@milkdown/crepe/theme/frame.css'
 
   const sample = (window as any).__SAMPLE__ as string
-  const md: Record<string, () => string> = {}
+  const dark = document.documentElement.dataset.theme !== 'light'
 
-  /* ── Tiptap ─────────────────────────────────────────── */
+  const md: Record<string, () => string> = {}
+  const reset: Record<string, () => void> = {}
+
+  /* ─────────────────────────────────────────────────────
+     이 블로그만 쓰는 마크 둘. 색은 값이 아니라 클래스로 넣습니다 —
+     `#58dddf` 를 본문에 박으면 라이트 테마에서 안 읽힙니다.
+     (실제 편집기의 것을 시안용으로 줄여 옮긴 것입니다)
+  ───────────────────────────────────────────────────── */
+  const COLORS = [
+    { k: 'teal', label: '청록', swatch: '#58dddf' },
+    { k: 'blue', label: '파랑', swatch: '#429ff5' },
+    { k: 'green', label: '초록', swatch: '#5bc25d' },
+    { k: 'orange', label: '주황', swatch: '#ff9100' },
+    { k: 'red', label: '빨강', swatch: '#fe6d6d' },
+  ]
+
+  const TextColor = Mark.create({
+    name: 'textColor',
+    addAttributes: () => ({ key: { default: 'teal' } }),
+    parseHTML: () => [{ tag: 'span[class^="c-"]' }],
+    renderHTML: ({ mark }) => ['span', { class: `c-${mark.attrs.key}` }, 0],
+  })
+
+  const Highlight = Mark.create({
+    name: 'blogHighlight',
+    parseHTML: () => [{ tag: 'mark' }],
+    renderHTML: () => ['mark', {}, 0],
+  })
+
+  /* ── Tiptap — 툴바를 직접 그립니다 ───────────────────── */
+  const tiptapHost = document.querySelector('#host-tiptap')!
+  const bar = document.createElement('div')
+  /* 사이트 헤더에도 .bar 가 있습니다 — 이름을 겹치지 않게 둡니다 */
+  bar.className = 'tt-bar'
+  const area = document.createElement('div')
+  tiptapHost.append(bar, area)
+
   const tiptap = new Editor({
-    element: document.querySelector('#host-tiptap')!,
-    extensions: [StarterKit, Markdown, TableKit, Image],
+    element: area,
+    extensions: [
+      StarterKit.configure({ link: { openOnClick: false } }),
+      Markdown,
+      TableKit,
+      Image,
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      TextColor,
+      Highlight,
+    ],
     content: sample,
     contentType: 'markdown',
   })
-  md.tiptap = () => (tiptap as any).getMarkdown()
 
-  /* ── Toast UI ───────────────────────────────────────── */
+  type Btn = [string, string, () => void]
+  const c = () => tiptap.chain().focus()
+  const BTNS: (Btn | 'sep')[] = [
+    ['↺', '되돌리기', () => c().undo().run()],
+    ['↻', '다시', () => c().redo().run()],
+    'sep',
+    ['H2', '중간 제목', () => c().toggleHeading({ level: 2 }).run()],
+    ['H3', '작은 제목', () => c().toggleHeading({ level: 3 }).run()],
+    'sep',
+    ['B', '굵게', () => c().toggleBold().run()],
+    ['I', '기울임', () => c().toggleItalic().run()],
+    ['S', '취소선', () => c().toggleStrike().run()],
+    ['<>', '인라인 코드', () => c().toggleCode().run()],
+    'sep',
+    ['❝', '인용', () => c().toggleBlockquote().run()],
+    ['•', '목록', () => c().toggleBulletList().run()],
+    ['1.', '번호 목록', () => c().toggleOrderedList().run()],
+    ['☑', '할 일', () => c().toggleTaskList().run()],
+    'sep',
+    ['▦', '표', () => c().insertTable({ rows: 3, cols: 2, withHeaderRow: true }).run()],
+    ['{ }', '코드블록', () => c().toggleCodeBlock().run()],
+    ['—', '구분선', () => c().setHorizontalRule().run()],
+    [
+      '🔗',
+      '링크',
+      () => {
+        const href = prompt('주소')
+        if (href) c().setLink({ href }).run()
+      },
+    ],
+    [
+      '🖼',
+      '사진',
+      () => {
+        const src = prompt('사진 주소', '/images/gridbrawl-ai-aim/battle.png')
+        if (src) c().setImage({ src, alt: '' }).run()
+      },
+    ],
+    'sep',
+    ['✎', '형광펜', () => c().toggleMark('blogHighlight').run()],
+    ['✕', '서식 지우기', () => c().unsetAllMarks().clearNodes().run()],
+  ]
+
+  for (const b of BTNS) {
+    if (b === 'sep') {
+      bar.append(Object.assign(document.createElement('span'), { className: 'sep' }))
+      continue
+    }
+    const [label, title, run] = b
+    const el = document.createElement('button')
+    el.type = 'button'
+    el.textContent = label
+    el.title = title
+    el.addEventListener('click', run)
+    bar.append(el)
+  }
+
+  for (const color of COLORS) {
+    const el = document.createElement('button')
+    el.type = 'button'
+    el.className = 'swatch'
+    el.title = `${color.label} 글자`
+    el.style.background = color.swatch
+    el.addEventListener('click', () => c().toggleMark('textColor', { key: color.k }).run())
+    bar.append(el)
+  }
+
+  md.tiptap = () => (tiptap as any).getMarkdown()
+  reset.tiptap = () => tiptap.commands.setContent(sample, { contentType: 'markdown' })
+
+  /* ── Toast UI — 플러그인 셋을 붙였습니다 ────────────── */
   const toast = new ToastEditor({
     el: document.querySelector('#host-toast')!,
-    height: '420px',
+    height: 'auto',
+    minHeight: '420px',
     initialEditType: 'wysiwyg',
     previewStyle: 'tab',
     language: 'ko-KR',
     initialValue: sample,
     usageStatistics: false,
-    /* Toast 는 자기 테마를 따로 씁니다 — 지면 테마를 넘겨 줍니다 */
-    theme: document.documentElement.dataset.theme === 'light' ? 'default' : 'dark',
+    theme: dark ? 'dark' : 'default',
+    plugins: [colorSyntax, tableMergedCell, [codeSyntaxHighlight, { highlighter: Prism }]],
+    toolbarItems: [
+      ['heading', 'bold', 'italic', 'strike'],
+      ['hr', 'quote'],
+      ['ul', 'ol', 'task', 'indent', 'outdent'],
+      ['table', 'image', 'link'],
+      ['code', 'codeblock'],
+    ],
   })
   md.toast = () => toast.getMarkdown()
+  reset.toast = () => toast.setMarkdown(sample)
 
-  /* ── Milkdown (Crepe) ───────────────────────────────── */
+  /* ── Milkdown (Crepe) — 기능을 전부 켭니다 ──────────── */
   const crepe = new Crepe({
     root: document.querySelector('#host-milkdown')!,
     defaultValue: sample,
+    featureConfigs: {
+      placeholder: { text: '내용을 쓰거나 "/" 로 블록을 넣으세요' },
+    },
   })
-  /* create() 는 비동기입니다 — 끝난 뒤에 왕복 검사를 돌려야 합니다 */
   const crepeReady = crepe.create()
   md.milkdown = () => crepe.getMarkdown()
+  reset.milkdown = () => {
+    /* Crepe 는 setMarkdown 이 없어서 통째로 다시 만듭니다 */
+    location.reload()
+  }
 
   /*
     왕복 검사. 위 SAMPLE 을 넣었다 도로 꺼내서 원본과 대 봅니다 —
@@ -170,6 +342,8 @@ const panes = [
     const out = md[id]().trim()
     const src = sample.trim()
     const el = document.querySelector<HTMLElement>(`#diff-${id}`)!
+    const n = document.querySelector<HTMLElement>(`#n-${id}`)!
+    n.textContent = `${out.length}자`
 
     if (out === src) {
       el.textContent = '원본 그대로 돌아옵니다.'
@@ -193,7 +367,6 @@ const panes = [
   report('toast')
   crepeReady.then(() => report('milkdown'))
 
-  /* ── 마크다운 보기 ──────────────────────────────────── */
   for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-md]')) {
     btn.addEventListener('click', () => {
       const id = btn.dataset.md!
@@ -206,44 +379,103 @@ const panes = [
       out.textContent = md[id]()
       out.hidden = false
       btn.textContent = '접기'
+      report(id)
+    })
+  }
+
+  for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-reset]')) {
+    btn.addEventListener('click', () => {
+      reset[btn.dataset.reset!]()
+      report(btn.dataset.reset!)
     })
   }
 </script>
 
 <style is:global>
-  /* 편집기들이 자기 CSS 를 들고 오므로, 지면 색에만 맞춰 줍니다. */
+  /* 편집기들이 자기 CSS 를 들고 옵니다. 지면 색과 여백에만 맞춰 줍니다. */
   .host .ProseMirror,
   .host .toastui-editor-contents,
   .host .milkdown {
     color: var(--text);
   }
 
-  .host .toastui-editor-defaultUI {
-    border-radius: var(--radius-md);
-  }
-
-  .host .milkdown {
-    --crepe-color-background: var(--card);
-    --crepe-color-on-background: var(--text);
-    height: 420px;
-    overflow-y: auto;
-  }
-
-  /* Crepe 기본 여백이 60/120px 이라 폰에서 글자 세 개씩 끊깁니다 */
+  /*
+    ⚠ 높이를 고정하지 않습니다. 안쪽에 스크롤을 만들면 글을 쓰다 커서가
+      화면 밖으로 나가고(폰에서 특히), 페이지 스크롤과 겹쳐서 손이 꼬입니다.
+      Crepe 는 기본값이 안쪽 스크롤이라 여기서 풀어 줍니다.
+  */
+  .host .milkdown,
   .host .milkdown .ProseMirror {
+    height: auto;
+    overflow: visible;
+  }
+
+  .host .milkdown .ProseMirror {
+    min-height: 420px;
+    /* Crepe 기본 여백이 60/120px 이라 폰에서 글자가 서너 개씩 끊깁니다 */
     padding: 1.25rem;
   }
 
-  @media (min-width: 900px) {
-    .host .milkdown .ProseMirror {
-      padding: 2rem 3rem;
-    }
+  .host .tiptap {
+    min-height: 420px;
+    padding: 1.25rem;
+    outline: none;
+  }
+
+  .host .tiptap table,
+  .host .tiptap td,
+  .host .tiptap th {
+    border: 1px solid var(--border);
+    border-collapse: collapse;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .host .tiptap img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .host .tiptap ul[data-type='taskList'] {
+    list-style: none;
+    padding-left: 0.25rem;
+  }
+
+  .host .tiptap ul[data-type='taskList'] li {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* 글자 색 — 실제 본문과 같은 클래스를 씁니다 */
+  .host .tiptap .c-teal { color: #2b9c9e; }
+  .host .tiptap .c-blue { color: #1f6fb5; }
+  .host .tiptap .c-green { color: #3d8c3f; }
+  .host .tiptap .c-orange { color: #b56800; }
+  .host .tiptap .c-red { color: #c94a4a; }
+  .host .tiptap mark {
+    background-color: #ffe27a;
+    color: #1b1b1b;
+  }
+
+  html[data-theme='dark'] .host .tiptap .c-teal,
+  :root:not([data-theme='light']) .host .tiptap .c-teal { color: #58dddf; }
+  html[data-theme='dark'] .host .tiptap .c-blue,
+  :root:not([data-theme='light']) .host .tiptap .c-blue { color: #429ff5; }
+  html[data-theme='dark'] .host .tiptap .c-green,
+  :root:not([data-theme='light']) .host .tiptap .c-green { color: #5bc25d; }
+  html[data-theme='dark'] .host .tiptap .c-orange,
+  :root:not([data-theme='light']) .host .tiptap .c-orange { color: #ff9100; }
+  html[data-theme='dark'] .host .tiptap .c-red,
+  :root:not([data-theme='light']) .host .tiptap .c-red { color: #fe6d6d; }
+
+  /* Toast 의 자기 테두리는 뺍니다 — 바깥 .host 가 이미 두르고 있습니다 */
+  .host .toastui-editor-defaultUI {
+    border: 0;
   }
 </style>
 
 <style>
   .wrap {
-    max-width: 900px;
+    max-width: 1120px;
     margin: 0 auto;
     padding: 2rem 1.25rem 4rem;
   }
@@ -257,15 +489,63 @@ const panes = [
 
   .head p {
     margin: 0 0 0.5rem;
+    max-width: 60ch;
     font-size: 0.9375rem;
     line-height: 1.7;
     color: var(--text-dim);
   }
 
+  /* ── 기능 비교표 ──────────────────────────────────────── */
+
+  .table-scroll {
+    overflow-x: auto;
+    margin-top: 1.5rem;
+  }
+
+  .cmp {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+  }
+
+  .cmp th,
+  .cmp td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .cmp thead th {
+    background-color: var(--surface-2);
+    font-weight: 700;
+  }
+
+  .cmp tbody th {
+    font-weight: 500;
+    color: var(--text-dim);
+  }
+
+  .cmp td {
+    color: var(--text-faint);
+  }
+
+  .cmp td[data-v='없음'] {
+    color: var(--text-faint);
+    opacity: 0.55;
+  }
+
+  .cmp td[data-v^='○'] {
+    color: var(--accent-text);
+  }
+
+  /* ── 편집기 한 칸 ─────────────────────────────────────── */
+
   .pane {
-    margin-top: 3rem;
+    margin-top: 3.5rem;
     padding-top: 2rem;
     border-top: 1px solid var(--border);
+    scroll-margin-top: 4rem;
   }
 
   .pane-head {
@@ -279,7 +559,7 @@ const panes = [
     align-items: center;
     gap: 0.5rem;
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.375rem;
     font-weight: 800;
   }
 
@@ -299,27 +579,11 @@ const panes = [
   }
 
   .note {
-    margin: 0.625rem 0 0.75rem;
+    margin: 0.625rem 0 0.5rem;
+    max-width: 68ch;
     font-size: 0.875rem;
     line-height: 1.7;
     color: var(--text-dim);
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-    margin: 0 0 1rem;
-    padding: 0;
-    list-style: none;
-  }
-
-  .tags li {
-    padding: 0.25rem 0.625rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
-    font-size: 0.75rem;
-    color: var(--text-faint);
   }
 
   .diff {
@@ -340,7 +604,58 @@ const panes = [
     overflow: hidden;
   }
 
+  /* Tiptap 툴바 — 다른 둘은 자기 툴바가 있습니다 */
+  .host :global(.tt-bar) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--surface);
+  }
+
+  .host :global(.tt-bar button) {
+    min-width: 1.875rem;
+    height: 1.875rem;
+    padding: 0 0.375rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .host :global(.tt-bar button:hover) {
+    background-color: var(--surface-2);
+    color: var(--text);
+  }
+
+  .host :global(.tt-bar .sep) {
+    width: 1px;
+    height: 1.125rem;
+    margin: 0 0.25rem;
+    background-color: var(--border);
+  }
+
+  .host :global(.tt-bar .swatch) {
+    min-width: 1.125rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  /* ── 아래 버튼 줄 ─────────────────────────────────────── */
+
   .out {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
     margin-top: 0.75rem;
   }
 
@@ -355,8 +670,14 @@ const panes = [
     cursor: pointer;
   }
 
+  .count {
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+
   .out pre {
-    margin: 0.75rem 0 0;
+    flex-basis: 100%;
+    margin: 0.25rem 0 0;
     padding: 0.875rem;
     border-radius: var(--radius-md);
     background-color: var(--surface-2);
