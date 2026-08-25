@@ -169,10 +169,17 @@
          admin-src/skin.js 가 만들어 끼웁니다. 여기는 모양만 잡습니다.
          =============================================================== */
 
-      [class*='AppHeader'] {
+      /*
+        ⚠ `[class*='AppHeader']` 는 머리띠만 잡는 이름이 아닙니다 —
+          "새 글" 단추의 클래스가 `AppHeaderQuickNewButton` 이라 여기에
+          같이 걸립니다. 높이를 60px 로 준 적이 있는데, 그때 단추가
+          60px 짜리 동그라미가 됐습니다. **태그(header)까지 붙여서
+          머리띠 하나만 잡습니다.**
+      */
+      header[class*='AppHeader'] {
         background-color: var(--a-card) !important;
-        /* ⚠ 머리띠는 56px, 안쪽 내용은 60px 이라 내용이 밑줄 아래로 4px
-             삐져나옵니다 (hover 배경이 선 밑으로 새어 나갑니다). 같이 맞춥니다. */
+        /* 머리띠는 56px, 안쪽 내용은 60px 이라 내용이 밑줄 아래로 4px
+           삐져나옵니다 (hover 배경이 선 밑으로 샙니다). 같이 맞춥니다. */
         height: auto !important;
         min-height: 60px !important;
         border-bottom: 1px solid var(--a-border) !important;
