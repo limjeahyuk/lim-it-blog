@@ -171,6 +171,10 @@
 
       [class*='AppHeader'] {
         background-color: var(--a-card) !important;
+        /* ⚠ 머리띠는 56px, 안쪽 내용은 60px 이라 내용이 밑줄 아래로 4px
+             삐져나옵니다 (hover 배경이 선 밑으로 새어 나갑니다). 같이 맞춥니다. */
+        height: auto !important;
+        min-height: 60px !important;
         border-bottom: 1px solid var(--a-border) !important;
         box-shadow: none !important;
         color: var(--a-text) !important;
@@ -183,8 +187,11 @@
           끝에만 짧은 선이 하나 더 그어져 보였습니다. 머리띠 것만 남깁니다.
       */
       [class*='AppHeaderContent'],
-      [class*='AppHeaderActions'] {
-        border-bottom: 0 !important;
+      [class*='AppHeaderActions'],
+      [class*='AppHeaderNavList'],
+      [class*='AppHeaderActions'] [class*='StyledWrapper'] {
+        border: 0 !important;
+        box-shadow: none !important;
       }
 
       [class*='AppHeaderContent'] {
@@ -326,12 +333,31 @@
         display: none !important; /* 삼각형 */
       }
 
-      /* 로그인 아바타. GitHub 사진이 오기 전까지 빈 원이 남습니다. */
-      [class*='AvatarDropdownButton'] > span,
+      /*
+        로그인 아바타.
+
+        ⚠ 회색 원은 **사진이 없을 때만** 깝니다. GitHub 사진이 붙으면 그
+          사진이 곧 동그라미라, 뒤에 회색을 깔면 테두리처럼 한 겹 더
+          둘러쳐집니다. 사진이 없을 때(=svg 사람 모양)는 깔아 줘야 빈
+          자리가 안 비어 보입니다.
+      */
       [class*='AvatarDropdownButton'] {
-        background-color: var(--a-surface) !important;
+        background-color: transparent !important;
         border-radius: 999px !important;
+        padding: 0 !important;
         color: var(--a-dim) !important;
+      }
+      [class*='AvatarDropdownButton']:has(svg),
+      [class*='AvatarDropdownButton']:has(svg) > span {
+        background-color: var(--a-surface) !important;
+      }
+      [class*='AvatarDropdownButton'] img,
+      [class*='avatarImage'] {
+        display: block !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 999px !important;
+        object-fit: cover !important;
       }
 
       /* ===============================================================
