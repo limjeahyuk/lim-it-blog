@@ -18,7 +18,7 @@
       ?v= 는 캐시 무효화용입니다. config.yml 은 주소가 늘 같아서 브라우저가
       오래 물고 있습니다. 폼을 고쳤는데 폰에서 안 바뀌면 이 숫자를 올리세요.
     -->
-    <link href="/admin/config.yml?v=9" type="text/yaml" rel="cms-config-url" />
+    <link href="/admin/config.yml?v=10" type="text/yaml" rel="cms-config-url" />
 
     <!--
       본문 편집기(Toast UI)의 CSS. editor.js 를 묶을 때 esbuild 가 같이
@@ -269,6 +269,26 @@
       .lim-theme:hover {
         color: var(--a-text);
         background-color: var(--a-surface);
+      }
+
+      /*
+        ⚠ 글자를 `font-size: 0` + `::before` 로 갈아 끼운 단추는 **줄 높이가
+          0 이 되어** 글자가 위아래 가운데에 안 섭니다 (칸은 padding 으로
+          잡히는데 글자만 기준선 위에 얹힙니다). flex 로 가운데에 세우고
+          ::before 에 줄 높이를 다시 줍니다.
+      */
+      [class*='QuickNewButton'],
+      [class*='DeleteButton'],
+      [class*='ToolbarSectionMain'] [class*='StyledDropdownButton'] {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+      }
+      [class*='QuickNewButton']::before,
+      [class*='DeleteButton']::before,
+      [class*='ToolbarSectionMain'] [class*='StyledDropdownButton']::before {
+        line-height: 1;
       }
 
       /* "빠른 추가" → 검은 "새 글".
@@ -604,7 +624,10 @@
         목록의 "상태" 칸과 같은 값입니다.
       */
       .lim-status {
-        padding: 6px 12px;
+        display: inline-flex;
+        align-items: center;
+        line-height: 1;
+        padding: 7px 12px;
         border-radius: 999px;
         background-color: var(--a-ok-bg);
         color: var(--a-ok);
@@ -766,6 +789,24 @@
         line-height: 1.5 !important;
       }
 
+      /*
+        한 줄 요약은 textarea 입니다 (config.yml 의 widget: text).
+        한 줄짜리 칸에 넣으면 문장이 오른쪽으로 잘려서, 써 놓은 것이 뭔지
+        보려면 커서를 끝까지 밀어야 했습니다. 세 줄쯤 보이게 열어 둡니다.
+      */
+      [id^='description-field-'] {
+        /*
+          ⚠ Decap 은 이 칸에 높이를 **인라인 !important** 로 박습니다
+            (146px — 저 혼자 다섯 줄입니다). 인라인 !important 는 여기서
+            못 이깁니다. 대신 max-height 로 조입니다 — 높이는 언제나
+            max-height 안으로 들어옵니다.
+          세 줄이면 한 문장(§3)은 다 보입니다. 더 길면 안에서 스크롤됩니다.
+        */
+        min-height: 100px !important;
+        max-height: 100px !important;
+        line-height: 1.6 !important;
+      }
+
       /* 제목은 크게, 주소는 고정폭 — 시안 */
       [id^='title-field-'] {
         font-size: 22px !important;
@@ -922,6 +963,10 @@
         padding: 6px 8px 0 !important;
       }
       .toastui-editor-md-tab-container .tab-item {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
         height: 28px !important;
         padding: 0 12px !important;
         border: 1px solid var(--a-border) !important;

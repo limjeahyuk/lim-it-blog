@@ -87,9 +87,12 @@ collections:
         time_format: false
         picker_utc: false
 
+      # ⚠ string 이 아니라 text 입니다. 한 줄짜리 칸에 넣으면 문장이
+      #   오른쪽으로 잘려서, 써 놓은 것을 보려면 커서를 끝까지 밀어야
+      #   했습니다. 저장되는 값은 똑같은 한 줄 문자열입니다.
       - name: description
         label: 한 줄 요약
-        widget: string
+        widget: text
         required: false
         hint: 목록에서 제목 아래 보이는 문장입니다. 비워도 됩니다.
 
