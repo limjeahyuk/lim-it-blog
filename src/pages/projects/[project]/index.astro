@@ -1,95 +1,200 @@
 ---
+/**
+ * 프로젝트 하나 — 위에 소개 머리, 아래에 devlog.
+ *
+ * Service 목록과 같은 폭·같은 여백을 씁니다 (오른쪽 열 없음 + 아래 띠).
+ *
+ * ⚠ 숫자 띠의 플랫폼과 "최근 업데이트"는 코드가 채웁니다 — 가운데
+ *   칸만 consts.ts 의 `stats` 입니다. 거기에 없는 사실을 쓰지 마세요.
+ *
+ * ⚠ "최근 업데이트"는 **마지막 devlog 날짜**지 릴리즈 날짜가 아닙니다.
+ *   정적 사이트라 스토어 배포일을 알 방법이 없어서, 셀 수 있는 것만
+ *   셉니다 (홈의 번호를 순위로 안 쓰는 것과 같은 이유 — §4).
+ */
 import BaseLayout from '../../../components/BaseLayout.astro'
-import FeedLayout from '../../../components/FeedLayout.astro'
+import Cover from '../../../components/Cover.astro'
 import Icon from '../../../components/Icon.astro'
-import PostCard from '../../../components/PostCard.astro'
-import { PROJECTS, type Project } from '../../../consts'
-import { getPublishedPosts, type Post } from '../../../lib/posts'
+import SiteFooter from '../../../components/SiteFooter.astro'
+import { PROJECTS, getAuthor, type Project } from '../../../consts'
+import { coverOf } from '../../../lib/cover'
+import { getPublishedPosts, postsByProject, type Post } from '../../../lib/posts'
+import { leadSentence } from '../../../lib/sentence'
+import type { IconName } from '../../../lib/icon-names'
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts()
   return PROJECTS.map((project) => ({
     params: { project: project.id },
-    props: {
-      project,
-      posts: posts.filter((p) => p.data.project === project.id),
-    },
+    props: { project, posts: postsByProject(posts, project.id) },
   }))
 }
 
 type Props = { project: Project; posts: Post[] }
 
 const { project, posts } = Astro.props as Props
+
+/** 링크 종류별 아이콘. consts.ts 의 links[].kind 와 짝입니다. */
+const LINK_ICON: Record<string, IconName> = {
+  web: 'play-circle',
+  appstore: 'download',
+  support: 'circle-question',
+}
+
+/*
+  숫자 띠. 날짜는 UTC 로 읽습니다 — pubDate 는 시각 없이 들어와서
+  UTC 자정이 되는데, 로컬 시간으로 읽으면 빌드 서버 시간대에 따라
+  하루 밀립니다.
+*/
+const dot = (d: Date) =>
+  `${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.${String(
+    d.getUTCDate(),
+  ).padStart(2, '0')}`
+
+const stats = [
+  { value: project.platform, label: '플랫폼' },
+  ...project.stats,
+  ...(posts[0] ? [{ value: dot(posts[0].data.pubDate), label: '최근 업데이트' }] : []),
+]
 ---
 
 <BaseLayout
   title={project.name}
   description={`${project.name} — ${project.tagline}`}
 >
-  <FeedLayout>
-    <div class="feed-header">
-      <a href="/projects"><Icon name="book-open" size={17} /> Service</a>
+  <div class="wrap">
+    <nav class="crumb">
+      <a href="/projects">Service</a>
       <span class="sep">/</span>
-      <span>{project.name}</span>
-    </div>
+      <span aria-current="page">{project.name}</span>
+    </nav>
 
-    {/* 카드를 통째로 눌러 소개 페이지로 갑니다 — 받는 곳·플레이하는 곳이 거기 있습니다. */}
-    <a class="head-link" href={`/projects/${project.id}/about`}>
-      <div class="card head">
-        <span class="bar" style={`background-color:${project.color}`}></span>
-        <div class="content">
-          <div class="top">
-            <span
-              class="pill-category"
-              style={`background-color:${project.color}`}
-            >
-              {project.name}
-            </span>
-            {project.active && <span class="live">LIVE</span>}
-            <span class="more">
-              소개 보기
-              <Icon name="chevron-right" size={15} />
-            </span>
-          </div>
-          <h1>{project.tagline}</h1>
-          <p class="stack">{project.platform} · {project.stack.join(', ')}</p>
+    <header class="hero">
+      <div class="intro">
+        <h1>
+          {project.name}
+          {project.active && <span class="live">LIVE</span>}
+        </h1>
+
+        <p class="tagline">{project.tagline}. {leadSentence(project.summary)}</p>
+
+        <ul class="stack">
+          {project.stack.map((tech) => <li class="pill">{tech}</li>)}
+        </ul>
+
+        <div class="cta">
+          {
+            project.links.map((link) => (
+              <a
+                class="btn primary"
+                href={link.href}
+                target="_blank"
+                rel="noopener"
+                style={`background-color:${project.color}`}
+              >
+                <Icon name={LINK_ICON[link.kind] ?? 'link-external'} size={17} />
+                {link.label}
+              </a>
+            ))
+          }
+          <a class="btn ghost" href={`/projects/${project.id}/about`}>소개 보기</a>
         </div>
       </div>
-    </a>
 
-    <div class="list-title">
-      <span><Icon name="notebook" size={17} /> Devlog</span>
-      <span class="count">{posts.length}</span>
-    </div>
+      <div class="shot">
+        <Cover
+          cover={posts[0] ? coverOf(posts[0]) : { kind: 'none' }}
+          alt=""
+          ratio="16 / 10"
+          sizes="(min-width: 900px) 560px, 100vw"
+          tint={project.color}
+        />
+      </div>
+    </header>
 
-    {
-      posts.length === 0 ? (
-        <p class="empty">아직 이 프로젝트의 글이 없습니다.</p>
-      ) : (
-        posts.map((post) => <PostCard post={post} />)
-      )
-    }
-  </FeedLayout>
+    <dl class="stats" style={`--cells:${stats.length}`}>
+      {
+        stats.map((s) => (
+          <div class="cell">
+            <dt>{s.value}</dt>
+            <dd>{s.label}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <section class="devlog">
+      <header class="sec">
+        <h2>Devlog</h2>
+        <span class="n">{posts.length}개</span>
+      </header>
+
+      {
+        posts.length === 0 ? (
+          <p class="empty">아직 이 프로젝트의 글이 없습니다.</p>
+        ) : (
+          <div class="rows">
+            {posts.map((post) => (
+              <a class="row" href={`/posts/${post.id}/`}>
+                <span class="date">{dot(post.data.pubDate)}</span>
+
+                <span class="text">
+                  <span class="title">
+                    {post.data.secret && (
+                      <span class="lock" title="비밀글">
+                        <Icon name="lock" size={13} />
+                      </span>
+                    )}
+                    {post.data.title}
+                  </span>
+                  {post.data.description && (
+                    <span class="sub">{post.data.description}</span>
+                  )}
+                </span>
+
+                {post.data.author && (
+                  <span class="who" style={`color:${getAuthor(post.data.author)?.color}`}>
+                    {getAuthor(post.data.author)?.name}
+                  </span>
+                )}
+              </a>
+            ))}
+          </div>
+        )
+      }
+    </section>
+  </div>
+
+  <SiteFooter />
 </BaseLayout>
 
 <style>
-  .feed-header {
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 0;
+  }
+
+  /* ── 빵부스러기 ───────────────────────────────────────── */
+
+  .crumb {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.25rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.9375rem;
-  }
-
-  .feed-header a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+    font-size: 0.875rem;
     color: var(--text-dim);
   }
 
-  .feed-header a:hover {
+  .crumb a {
+    color: var(--text-dim);
+    text-decoration: none;
+  }
+
+  .crumb a:hover {
+    color: var(--text);
+  }
+
+  .crumb [aria-current] {
+    font-weight: 700;
     color: var(--text);
   }
 
@@ -97,97 +202,272 @@ const { project, posts } = Astro.props as Props
     color: var(--text-faint);
   }
 
-  .head {
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 2rem;
-    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
+  /* ── 머리 ─────────────────────────────────────────────── */
 
-  .head-link:hover .head {
-    box-shadow:
-      0 10px 15px -3px rgba(0, 0, 0, 0.1),
-      0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  }
-
-  .bar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-  }
-
-  .content {
-    padding: 1.25rem 1.5rem;
-  }
-
-  .top {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.7rem;
-  }
-
-  .live {
-    font-size: 0.5625rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    padding: 0.1rem 0.3rem;
-    border-radius: var(--radius-sm);
-    color: var(--card);
-    background-color: var(--text-dim);
-  }
-
-  .more {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.15rem;
-    margin-left: auto;
-    font-size: 0.8125rem;
-    color: var(--text-faint);
-  }
-
-  .head-link:hover .more {
-    color: var(--text-dim);
+  .hero {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 1.75rem;
   }
 
   h1 {
-    font-size: 1.25rem;
-    line-height: 1.6;
-    font-weight: 600;
-    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .tagline {
+    margin: 0.875rem 0 0;
+    max-width: 52ch;
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--text-dim);
   }
 
   .stack {
-    margin: 0;
-    font-size: 0.8125rem;
-    color: var(--text-faint);
-  }
-
-  .list-title {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.9375rem;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin: 1.125rem 0 0;
+    padding: 0;
+    list-style: none;
   }
 
-  .list-title span:first-child {
+  .stack .pill {
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    padding: 0.625rem 1.125rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 200ms ease;
   }
 
-  .count {
+  /*
+    배경은 프로젝트 색(밝은 파스텔)이라 글자는 두 테마 모두 어두운
+    --pill-fg 입니다. 흰 글자를 쓰면 1.5~3.0:1 로 떨어집니다 (§4).
+  */
+  .primary {
+    color: var(--pill-fg);
+  }
+
+  .primary:hover {
+    opacity: 0.85;
+  }
+
+  .ghost {
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .ghost:hover {
+    color: var(--text);
+    background-color: var(--surface);
+  }
+
+  .shot :global(.frame) {
+    border-radius: var(--radius-card);
+  }
+
+  /* ── 숫자 띠 ──────────────────────────────────────────── */
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 2rem 0 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    /* 칸 사이 선을 gap 으로 냅니다 — 칸마다 border 를 주면 겹칩니다 */
+    background-color: var(--border);
+  }
+
+  .cell {
+    padding: 1rem 1.125rem;
+    background-color: var(--card);
+  }
+
+  .cell dt {
+    font-size: 1.0625rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+  }
+
+  .cell dd {
+    margin: 0.25rem 0 0;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+
+  /* ── Devlog ───────────────────────────────────────────── */
+
+  .devlog {
+    margin-top: 3rem;
+  }
+
+  .sec {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sec h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .n {
     font-size: 0.8125rem;
     color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.875rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .date {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .text {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .row:hover .title {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .lock {
+    flex-shrink: 0;
+    display: inline-flex;
+    color: var(--text-faint);
+  }
+
+  .sub {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+  }
+
+  .who {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
   }
 
   .empty {
-    padding: 1rem 0.25rem;
+    padding: 2rem 0;
     color: var(--text-faint);
     font-size: 0.9375rem;
+  }
+
+  /* 저자 이름은 좁은 화면에서 뺍니다 — 날짜와 제목이 먼저입니다. */
+  @media (max-width: 640px) {
+    .who {
+      display: none;
+    }
+
+    .date {
+      /* 세로로 쌓아 제목이 폭을 다 쓰게 합니다 */
+      order: -1;
+    }
+
+    .row {
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+
+    .text {
+      flex: 1 0 100%;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .wrap {
+      padding: 2.5rem 2rem 0;
+    }
+
+    .hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 3rem;
+      margin-top: 2.25rem;
+    }
+
+    h1 {
+      font-size: 2.75rem;
+    }
+
+    .tagline {
+      font-size: 1rem;
+    }
+
+    .stats {
+      grid-template-columns: repeat(var(--cells, 4), minmax(0, 1fr));
+    }
+
+    .cell {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .cell dt {
+      font-size: 1.25rem;
+    }
+
+    .sec h2 {
+      font-size: 1.5rem;
+    }
+
+    .title {
+      font-size: 1rem;
+    }
   }
 </style>

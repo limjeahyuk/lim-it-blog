@@ -31,6 +31,11 @@ export function postsByAuthor(posts: Post[], id: string): Post[] {
   return posts.filter((p) => p.data.author === id)
 }
 
+/** 그 프로젝트의 devlog (최신순 — 넘긴 목록의 순서를 그대로 지킵니다) */
+export function postsByProject(posts: Post[], id: string): Post[] {
+  return posts.filter((p) => p.data.project === id)
+}
+
 /** 프로젝트별 글 개수 */
 export function countByProject(posts: Post[]): Map<string, number> {
   const counts = new Map<string, number>()

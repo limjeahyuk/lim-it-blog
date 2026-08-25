@@ -1,123 +1,277 @@
 ---
+/**
+ * Service — 만들어서 굴리고 있는 것 목록.
+ *
+ * 홈·서고와 같은 폭(1280px)·같은 여백을 쓰고 오른쪽 열을 안 씁니다.
+ * 그래서 Editors·Contact 는 아래 띠(SiteFooter)가 대신합니다.
+ *
+ * ⚠ 여기는 카드를 두릅니다. "목록에 상자를 두르지 않는다"(§4)는 글이
+ *   100개 넘게 늘어서는 지면 이야기고, 여기는 셋뿐입니다 — 사진·소개·
+ *   스택·데브로그 수가 한 덩어리로 묶여야 서로 안 섞입니다.
+ *
+ * ⚠ 썸네일은 그 프로젝트 **최신 devlog 의 커버**입니다. 프로젝트용
+ *   대표 사진을 따로 들고 있지 않아서인데, 없는 사진을 만들어 두는
+ *   것보다 실제로 올린 화면이 나오는 편이 낫다고 봤습니다. 한 장도
+ *   없으면 Cover 가 프로젝트 색 판으로 채웁니다.
+ */
 import BaseLayout from '../../components/BaseLayout.astro'
-import FeedLayout from '../../components/FeedLayout.astro'
+import Cover from '../../components/Cover.astro'
 import Icon from '../../components/Icon.astro'
+import SiteFooter from '../../components/SiteFooter.astro'
 import { PROJECTS } from '../../consts'
-import { countByProject, getPublishedPosts } from '../../lib/posts'
+import { coverOf } from '../../lib/cover'
+import { getPublishedPosts, postsByProject } from '../../lib/posts'
+import { leadSentence } from '../../lib/sentence'
 
-const counts = countByProject(await getPublishedPosts())
+const posts = await getPublishedPosts()
+
+const cards = PROJECTS.map((project) => {
+  const devlogs = postsByProject(posts, project.id)
+  return { project, count: devlogs.length, latest: devlogs[0] }
+})
 ---
 
-<BaseLayout title="Service" description="만든 것들">
-  <FeedLayout>
-    <div class="feed-header">
-      <span class="title-ico"><Icon name="book-open" size={17} /> Service</span>
-      <span class="count">{PROJECTS.length}</span>
-    </div>
+<BaseLayout
+  title="Service"
+  description="직접 만들어 운영하고 있는 게임과 앱입니다."
+>
+  <div class="wrap">
+    <header class="head">
+      <h1>Service</h1>
+      <p class="desc">
+        직접 만들어 운영하고 있는 게임과 앱입니다. 각 서비스의 데브로그에서
+        무엇을 왜 고쳤는지 볼 수 있습니다.
+      </p>
+    </header>
 
-    {
-      PROJECTS.map((project) => (
-        <a class="wrap" href={`/projects/${project.id}`}>
+    <div class="cards">
+      {
+        cards.map(({ project, count, latest }) => (
           <article class="card">
-            <span class="bar" style={`background-color:${project.color}`} />
-            <div class="content">
-              <div class="top">
-                <span
-                  class="pill-category"
-                  style={`background-color:${project.color}`}
-                >
-                  {project.name}
-                </span>
+            <a
+              class="shot"
+              href={`/projects/${project.id}`}
+              tabindex="-1"
+              aria-hidden="true"
+            >
+              <Cover
+                cover={latest ? coverOf(latest) : { kind: 'none' }}
+                alt=""
+                ratio="16 / 10"
+                sizes="(min-width: 900px) 280px, 100vw"
+                tint={project.color}
+              />
+            </a>
+
+            <div class="body">
+              <h2>
+                <a href={`/projects/${project.id}`}>{project.name}</a>
                 {project.active && <span class="live">LIVE</span>}
-                <span class="count-right">
-                  {counts.get(project.id) ?? 0}개의 글
-                </span>
-              </div>
-              <h2>{project.tagline}</h2>
-              <p class="stack">
-                {project.platform} · {project.stack.join(', ')}
+              </h2>
+
+              <p class="line">
+                {project.tagline}. {leadSentence(project.summary)}
               </p>
+
+              <ul class="stack">
+                {project.stack.map((tech) => (
+                  <li class="pill">{tech}</li>
+                ))}
+              </ul>
+
+              <div class="foot">
+                <span class="meta">{project.platform}</span>
+                <span class="meta">데브로그 {count}개</span>
+                <a class="more" href={`/projects/${project.id}/about`}>
+                  소개 보기
+                  <Icon name="arrow-right" size={15} />
+                </a>
+              </div>
             </div>
           </article>
-        </a>
-      ))
-    }
-  </FeedLayout>
+        ))
+      }
+    </div>
+  </div>
+
+  <SiteFooter />
 </BaseLayout>
 
 <style>
-  .feed-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.9375rem;
+  /* 홈·서고·아래 띠와 같은 폭·같은 여백입니다. 어긋나면 양끝이 안 맞습니다. */
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 0;
   }
 
-  .count {
-    font-size: 0.8125rem;
-    color: var(--text-faint);
+  .head {
+    margin-bottom: 2rem;
+  }
+
+  .head h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .desc {
+    margin: 0.625rem 0 0;
+    max-width: 46ch;
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--text-dim);
+  }
+
+  .cards {
+    display: grid;
+    gap: 1rem;
   }
 
   .card {
-    position: relative;
+    display: grid;
     overflow: hidden;
-    margin-bottom: 1rem;
-    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background-color: var(--card);
   }
 
-  .wrap:hover .card {
-    box-shadow:
-      0 10px 15px -3px rgba(0, 0, 0, 0.1),
-      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  .shot {
+    display: block;
+    background-color: var(--surface);
   }
 
-  .bar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-  }
-
-  .content {
-    padding: 1.15rem 1.25rem;
-  }
-
-  .top {
+  .body {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.6rem;
-  }
-
-  .live {
-    font-size: 0.5625rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    padding: 0.1rem 0.3rem;
-    border-radius: var(--radius-sm);
-    color: var(--card);
-    background-color: var(--text-dim);
-  }
-
-  .count-right {
-    margin-left: auto;
-    font-size: 0.75rem;
-    color: var(--text-faint);
+    flex-direction: column;
+    padding: 1.25rem;
   }
 
   h2 {
-    font-size: 1.0625rem;
-    line-height: 1.6;
-    font-weight: 500;
-    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  h2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  h2 a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .line {
+    margin: 0.625rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--text-dim);
   }
 
   .stack {
-    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .stack .pill {
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    /* 카드 높이가 제각각이어도 이 줄은 바닥에 붙습니다 */
+    margin-top: auto;
+    padding-top: 1.25rem;
+  }
+
+  .meta {
     font-size: 0.8125rem;
     color: var(--text-faint);
+    white-space: nowrap;
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--accent-text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .more:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  @media (min-width: 760px) {
+    .card {
+      grid-template-columns: 17rem minmax(0, 1fr);
+    }
+
+    /*
+      사진이 카드 높이를 채웁니다.
+
+      ⚠ 비율만 지우면(aspect-ratio: auto) 사진이 **거꾸로 카드 높이를
+        끌고 갑니다** — 세로로 긴 폰 캡처가 커버인 MineApp 카드가 혼자
+        593px 이 됐습니다. 틀을 띄워서(absolute) 높이를 아예 못 정하게
+        하고, 칸 높이는 오른쪽 글이 정하게 둡니다.
+      Cover 는 비율을 인라인 style 로 박기 때문에 !important 가 아니면
+      안 밀립니다.
+    */
+    .shot {
+      position: relative;
+    }
+
+    .shot :global(.frame) {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+      aspect-ratio: auto !important;
+    }
+
+    .body {
+      padding: 1.5rem 1.75rem;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .wrap {
+      padding: 2.5rem 2rem 0;
+    }
+
+    .head {
+      margin-bottom: 2.5rem;
+    }
+
+    .head h1 {
+      font-size: 2.25rem;
+    }
+
+    .desc {
+      font-size: 1rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+    }
   }
 </style>

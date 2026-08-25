@@ -104,6 +104,14 @@ export function getAuthor(id: string) {
  *   web      — 브라우저에서 바로 실행
  *   appstore — App Store 로 이동
  *   support  — 지원/문의 페이지
+ *
+ * `stats` 는 /projects/<id> 위쪽 숫자 띠에 들어갑니다. 플랫폼과 최근
+ * 업데이트는 코드가 알아서 채우므로 **여기에는 그 프로젝트에서만 나오는
+ * 것**을 씁니다.
+ *
+ * ⚠ 지어내지 마세요. summary·features 나 devlog 에 이미 있는 사실만
+ *   옮겨 적습니다 — 숫자 띠는 화면에서 제일 단정적으로 읽히는 자리라
+ *   틀리면 바로 티가 납니다.
  */
 export const PROJECTS = [
   {
@@ -114,6 +122,12 @@ export const PROJECTS = [
     stack: ['TypeScript', 'Vite', 'Capacitor', 'Firebase'],
     color: 'var(--nj-teal)', // hue 181° · 대표 프로젝트라 강조색 계열 공유
     active: true,
+    stats: [
+      // features 의 "15층 사다리를 오르는 런"
+      { value: '15층', label: '런 구조' },
+      // devlog: 런 난이도 4단계 추가 (초급→중급→고급→최고급)
+      { value: '4단계', label: '난이도' },
+    ],
     summary:
       '한 라운드에 카드 세 장을 골라 순서대로 내고, 두 파이터가 격자 위에서 동시에 움직입니다. 1:1 토너먼트 카드 전투에 로그라이크 런을 얹어서, 이기면 덱과 유물이 자라고 지면 처음부터 다시 시작합니다.',
     features: [
@@ -140,12 +154,18 @@ export const PROJECTS = [
     stack: ['Swift', 'SwiftUI', 'Firebase'],
     color: 'var(--nj-green)', // hue 121°
     active: true,
+    stats: [
+      // features 의 "초급부터 최고급까지 4난이도"
+      { value: '4난이도', label: '보드' },
+      // features 의 실시간 1:1 대전 + 협동 모드
+      { value: '1:1 · 협동', label: '멀티플레이' },
+    ],
     summary:
       '누구나 아는 클래식 지뢰찾기에 실시간 1:1 대전과 협동 모드, 온라인 랭킹을 붙였습니다. 모든 판은 시드로 결정되기 때문에 같은 판을 둘이 동시에 풀 수 있습니다.',
     features: [
       '초급부터 최고급까지 4난이도. 첫 탭과 그 주변 8칸에는 지뢰가 놓이지 않습니다.',
       '실시간 1:1 대전 — 같은 판을 동시에 풀며 누가 더 빠른지 겨룹니다.',
-      '협동 모드 「너에게 닿기를」 — 서로 다른 곳에서 시작해 길을 열고 파트너에게 닿습니다.',
+      '협동 모드 "너에게 닿기를" — 서로 다른 곳에서 시작해 길을 열고 파트너에게 닿습니다.',
       '방 코드 6자리로 친구를 부르거나, 봇과 연습할 수 있습니다.',
       '난이도별·협동 온라인 랭킹. Apple·Google 로 계정을 연동하면 기록이 기기를 옮겨 다닙니다.',
     ],
@@ -165,6 +185,12 @@ export const PROJECTS = [
     stack: ['Swift', 'SwiftUI', 'WidgetKit'],
     color: 'var(--nj-orange)', // hue  34°
     active: true,
+    stats: [
+      // summary 의 "타바타·HIIT·서킷처럼 시간을 나눠 하는 운동"
+      { value: '타바타 · HIIT', label: '운동 방식' },
+      // features 의 "Apple Watch 에서 바로 골라 실행"
+      { value: 'Apple Watch', label: '연동' },
+    ],
     summary:
       '타바타·HIIT·서킷처럼 시간을 나눠 하는 운동을 위한 타이머입니다. 운동하는 동안 화면을 볼 수 없다는 게 출발점이라, 소리와 진동으로 구간이 바뀌는 걸 알려주는 데 집중했습니다.',
     features: [
