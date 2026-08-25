@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "npm run admin && astro dev",
     "build": "npm run admin && astro build",
-    "admin": "esbuild admin-src/editor.js --bundle --format=iife --target=es2019 --minify --outfile=public/admin/editor.js",
+    "admin": "esbuild admin-src/index.js --bundle --format=iife --target=es2019 --minify --outfile=public/admin/editor.js",
     "preview": "astro preview",
     "astro": "astro",
     "post": "bash scripts/post.sh",
@@ -25,22 +25,9 @@
     "sharp": "^0.35.0"
   },
   "devDependencies": {
-    "@milkdown/crepe": "^7.22.1",
-    "@tiptap/core": "^3.30.0",
-    "@tiptap/extension-highlight": "^3.30.0",
-    "@tiptap/extension-image": "^3.30.0",
-    "@tiptap/extension-table": "^3.30.0",
-    "@tiptap/markdown": "^3.30.0",
-    "@tiptap/pm": "^3.30.0",
-    "@tiptap/starter-kit": "^3.30.0",
     "@toast-ui/editor": "^3.2.2",
-    "@toast-ui/editor-plugin-code-syntax-highlight": "^3.1.0",
-    "@toast-ui/editor-plugin-color-syntax": "^3.1.0",
     "@toast-ui/editor-plugin-table-merged-cell": "^3.1.0",
     "esbuild": "^0.28.2",
-    "jsdom": "^29.1.1",
-    "prismjs": "^1.30.0",
-    "tui-color-picker": "^2.2.8",
-    "turndown": "^7.2.4"
+    "jsdom": "^29.1.1"
   }
 }

@@ -20,6 +20,13 @@
     -->
     <link href="/admin/config.yml?v=8" type="text/yaml" rel="cms-config-url" />
 
+    <!--
+      본문 편집기(Toast UI)의 CSS. editor.js 를 묶을 때 esbuild 가 같이
+      뽑아 놓습니다 — 둘 다 저장소에 커밋합니다 (Vercel 이 astro build 를
+      직접 부르면 npm run admin 이 안 돌기 때문입니다).
+    -->
+    <link rel="stylesheet" href="/admin/editor.css?v=2" />
+
     <style>
       /* ===============================================================
          1. 블로그와 같은 옷 입히기
@@ -339,10 +346,14 @@
       }
 
       /* ===============================================================
-         2. 본문 편집기 (editor.js 가 만드는 툴바)
+         2. 본문 편집기 — Toast UI Editor
 
-         Decap 기본 markdown 위젯을 갈아끼운 것입니다 — 왜 갈아끼웠는지는
-         editor.js 맨 위에 적어 뒀습니다. 여기는 그 모양만 잡습니다.
+         Decap 기본 markdown 위젯을 갈아끼운 것입니다. 왜 갈아끼웠고 왜
+         Toast 인지는 admin-src/editor.js 맨 위에 적어 뒀습니다.
+         여기는 그 모양만 잡습니다.
+
+         ⚠ Toast 의 CSS 는 editor.css 로 따로 나옵니다 (head 의 link).
+           esbuild 가 editor.js 를 묶을 때 같이 뽑습니다.
          =============================================================== */
 
       .lim-md {
@@ -350,276 +361,173 @@
         overflow: visible !important;
       }
 
-      /*
-        툴바는 붙여 둡니다. 본문 상자가 내용만큼 길어지기 때문에, 안 붙여
-        두면 글 중간에서 버튼을 쓰려고 맨 위까지 올라가야 합니다.
-        top 은 Decap 편집기 툴바(48px) 아래입니다.
-      */
-      .lim-md-bar {
-        position: sticky;
-        top: 48px;
-        z-index: 5;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        padding: 6px;
-        background-color: var(--a-surface);
-        border-bottom: 1px solid var(--a-border);
-        border-radius: 8px 8px 0 0;
+      .lim-md-editor {
+        /* 상자를 Decap 이 아니라 Toast 가 그립니다 */
+        border-radius: 8px;
+        overflow: hidden;
       }
 
-      .lim-md-btn {
-        min-height: 32px;
-        padding: 0 9px;
-        border: 1px solid var(--a-border);
-        border-radius: 6px;
-        background-color: var(--a-card);
-        color: var(--a-text);
-        font-size: 13px;
-        line-height: 1;
-        white-space: nowrap;
-        cursor: pointer;
-      }
-
-      .lim-md-btn:active,
-      .lim-md-btn.is-open {
-        background-color: var(--a-accent);
-        color: var(--a-accent-fg);
-        border-color: var(--a-accent);
-      }
-
-      /* 버튼 글자로 뭘 하는 버튼인지 보이게 — B 는 굵게, I 는 기울임 */
-      .lim-md-btn.is-bold {
-        font-weight: 800;
-      }
-      .lim-md-btn.is-italic {
-        font-style: italic;
-      }
-      .lim-md-btn.is-strike {
-        text-decoration: line-through;
-      }
-
-      .lim-md-palette {
-        position: sticky;
-        top: 88px;
-        z-index: 5;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        padding: 6px;
-        background-color: var(--a-surface);
-        border-bottom: 1px solid var(--a-border);
-      }
-
-      /* 색 이름은 색 위에 얹습니다. 다섯 개 다 밝은 파스텔이라 글자는 어둡게. */
-      .lim-md-swatch {
-        min-height: 30px;
-        padding: 0 12px;
-        border: 0;
-        border-radius: 999px;
-        color: #181a1b;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-
-      .lim-md-ta {
-        display: block;
-        width: 100%;
-        min-height: 320px;
-        padding: 12px;
-        border: 0 !important;
-        border-radius: 0 0 8px 8px !important;
-        background-color: var(--a-card) !important;
-        color: var(--a-text) !important;
+      /* Toast 는 자기 폰트를 씁니다 — 블로그 폰트로 맞춥니다 */
+      .toastui-editor-defaultUI,
+      .toastui-editor-contents,
+      .toastui-editor-defaultUI textarea,
+      .toastui-editor-defaultUI input {
         font-family:
-          ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace !important;
-        font-size: 14px;
-        line-height: 1.75;
-        resize: none;
-        overflow: hidden; /* 키를 내용에 맞춰 늘리므로 안쪽 스크롤은 없앱니다 */
+          'Pretendard', -apple-system, BlinkMacSystemFont, system-ui,
+          sans-serif !important;
       }
 
-      .lim-md-ta:focus {
-        outline: 2px solid var(--a-accent);
-        outline-offset: -2px;
+      .toastui-editor-defaultUI {
+        border-color: var(--a-border) !important;
+        border-radius: 8px !important;
       }
 
-      /* 눌려 있는 버튼 — 지금 커서 자리에 걸린 서식 */
-      .lim-md-btn.is-on {
-        background-color: var(--a-accent);
-        color: var(--a-accent-fg);
-        border-color: var(--a-accent);
+      /*
+        ⚠ 툴바 칸의 높이를 풀어 줘야 합니다.
+
+          원문 모드에서는 이 칸 안에 "작성/미리보기" 탭 줄과 버튼 줄이 **둘 다**
+          들어가는데, Toast 는 높이를 46px 로 못박아 둡니다. 그대로 두면 버튼
+          줄이 칸 밖으로 흘러나와 본문 위에 겹쳐 그려집니다 — 툴바가 안 보이는
+          것처럼 됩니다 (한참 찾았습니다).
+      */
+      .toastui-editor-toolbar {
+        height: auto !important;
       }
 
-      .lim-md-btn:disabled {
-        opacity: 0.35;
+      /*
+        ⚠ 툴바를 sticky 로 붙이지 마세요. tiptap 때는 붙여 뒀는데, Toast 는
+          툴바 칸(.toastui-editor-toolbar)과 실제 버튼 줄이 따로 놀아서
+          바깥만 붙고 버튼은 제자리에 남습니다 (재 보고 걷어냈습니다).
+          긴 글 중간에서 버튼을 쓰려면 위로 올라가야 합니다 — 아쉽지만
+          잘못 붙은 툴바보다는 낫습니다.
+      */
+
+      .toastui-editor-defaultUI-toolbar {
+        /*
+          ⚠ 폭을 못박아야 합니다. 이 칸이 내용 크기로 줄어들면 Toast 가
+            "폭이 모자라다"고 보고 버튼을 "..." 안으로 옮기는데, 그러면 칸이
+            더 줄어들고 또 옮깁니다 — 두 개만 남을 때까지 되풀이됩니다.
+            (Toast 는 이 칸의 clientWidth 를 ResizeObserver 로 봅니다.)
+        */
+        width: 100% !important;
+        background-color: var(--a-surface) !important;
+        border-color: var(--a-border) !important;
       }
 
-      .lim-md-swatch.is-none {
-        background-color: var(--a-card);
-        border: 1px solid var(--a-border);
+      /*
+        ⚠ 본문 글자는 16px 아래로 내리지 마세요. iOS 사파리는 16px 미만
+          입력칸을 탭하면 화면을 확대합니다 — 글을 쓸 때마다 확대됩니다.
+      */
+      .toastui-editor-contents,
+      .toastui-editor-md-container .toastui-editor,
+      .toastui-editor-md-container .ProseMirror {
+        font-size: 16px !important;
+        line-height: 1.75 !important;
+      }
+
+      .toastui-editor-main .ProseMirror {
+        padding: 14px 12px 40px !important;
+      }
+
+      /*
+        ⚠ Toast 의 minHeight 옵션은 vh 를 못 받습니다 (px 만). 기본 높이로
+          두면 대여섯 줄 만에 차고, 그때부터 작은 창 안에서 스크롤하며 쓰게
+          됩니다 — 여기서 화면 높이로 잡아 줍니다.
+      */
+      .toastui-editor-main .ProseMirror,
+      .toastui-editor-md-container .toastui-editor {
+        min-height: 55vh !important;
+      }
+
+      /* 이 블로그가 쓰는 것 둘 — 글자 색과 형광펜.
+         색을 늘리면 editor.js·global.css·여기 셋을 같이 고쳐야 합니다. */
+      .toastui-editor-contents .c-teal { color: #58dddf; }
+      .toastui-editor-contents .c-blue { color: #429ff5; }
+      .toastui-editor-contents .c-green { color: #5bc25d; }
+      .toastui-editor-contents .c-orange { color: #ff9100; }
+      .toastui-editor-contents .c-red { color: #fe6d6d; }
+
+      .toastui-editor-contents mark {
+        background-color: #2b6f70;
+        color: #eef1f5;
+        border-radius: 3px;
+        padding: 0 2px;
+      }
+
+      @media (prefers-color-scheme: light) {
+        .toastui-editor-contents .c-teal { color: #00838a; }
+        .toastui-editor-contents .c-blue { color: #123fa5; }
+        .toastui-editor-contents .c-green { color: #09721a; }
+        .toastui-editor-contents .c-orange { color: #b24c00; }
+        .toastui-editor-contents .c-red { color: #d52525; }
+
+        .toastui-editor-contents mark {
+          background-color: #93eaeb;
+          color: #16181d;
+        }
+      }
+
+      /*
+        직접 넣은 툴바 버튼(색·형광·사진)은 글자입니다. Toast 의 아이콘
+        버튼은 배경 그림으로 그려지므로, 같은 칸에 앉히되 그림만 뺍니다.
+      */
+      .toastui-editor-toolbar-icons.lim-tb {
+        background-image: none !important;
+        width: auto !important;
+        min-width: 32px;
+        padding: 0 6px !important;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--a-dim);
+      }
+
+      .toastui-editor-toolbar-icons.lim-tb:hover {
         color: var(--a-text);
       }
 
+      .lim-palette {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .lim-swatch {
+        width: 24px;
+        height: 24px;
+        border: 0;
+        border-radius: 50%;
+        font-size: 0;
+        cursor: pointer;
+      }
+
+      .lim-swatch.is-none {
+        width: auto;
+        height: 24px;
+        padding: 0 10px;
+        border: 1px solid var(--a-border);
+        border-radius: 999px;
+        background: transparent;
+        color: var(--a-dim);
+        font-size: 12px;
+      }
+
+      .lim-popup .toastui-editor-popup-body {
+        padding: 0 !important;
+      }
+
+      /* 옛 글을 원문으로 열었을 때 위에 붙는 한 줄 */
       .lim-md-note {
-        margin: 0;
-        padding: 8px 12px;
+        margin: 0 0 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
         background-color: var(--a-surface);
-        border-bottom: 1px solid var(--a-border);
         color: var(--a-dim);
         font-size: 13px;
         line-height: 1.5;
       }
 
-      .lim-md-editor.is-hidden {
-        display: none;
-      }
-
-      /* 본문. 쓰는 화면이 곧 결과라 블로그 본문과 비슷하게 보여 줍니다. */
-      .lim-md-editor .ProseMirror {
-        min-height: 60vh;
-        padding: 12px;
-        border-radius: 0 0 8px 8px;
-        background-color: var(--a-card);
-        color: var(--a-text);
-        /* ⚠ 16px 미만이면 iOS 사파리가 탭할 때 화면을 확대합니다 */
-        font-size: 16px;
-        line-height: 1.8;
-        outline: none;
-        white-space: pre-wrap;
-        word-break: break-word;
-      }
-
-      /*
-        Decap 은 `h1…h6, p { color: #313d3e }` 를 전역으로 깔아 둡니다.
-        상속으로는 못 이깁니다 — 본문 글자가 어두운 배경에 어두운 회색으로
-        찍혔습니다. 편집기 안의 블록에는 색을 직접 다시 줍니다.
-      */
-      .lim-md-editor .ProseMirror :where(p, h1, h2, h3, h4, h5, h6, li, th, td) {
-        color: var(--a-text);
-      }
-
-      .lim-md-editor .ProseMirror :where(h1, h2, h3, h4) {
-        margin: 1.4em 0 0.5em;
-        font-weight: 700;
-        line-height: 1.35;
-      }
-      .lim-md-editor .ProseMirror h1 { font-size: 1.5em; }
-      .lim-md-editor .ProseMirror h2 { font-size: 1.3em; }
-      .lim-md-editor .ProseMirror h3 { font-size: 1.13em; }
-      .lim-md-editor .ProseMirror h4 { font-size: 1em; }
-
-      .lim-md-editor .ProseMirror p {
-        margin: 0 0 0.9em;
-      }
-
-      .lim-md-editor .ProseMirror blockquote {
-        margin: 1em 0;
-        padding: 2px 0 2px 14px;
-        border-left: 3px solid var(--a-accent);
-        color: var(--a-dim);
-      }
-      /* 위에서 p 에 색을 직접 줬으므로 인용문 안쪽도 다시 눌러 줍니다 */
-      .lim-md-editor .ProseMirror blockquote :where(p) {
-        color: var(--a-dim);
-      }
-
-      .lim-md-editor .ProseMirror :where(ul, ol) {
-        margin: 0 0 0.9em;
-        padding-left: 1.4em;
-      }
-      .lim-md-editor .ProseMirror li { margin: 0.2em 0; }
-      .lim-md-editor .ProseMirror li > p { margin: 0; }
-
-      .lim-md-editor .ProseMirror code {
-        padding: 1px 5px;
-        border-radius: 4px;
-        background-color: var(--a-surface);
-        font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
-        font-size: 0.88em;
-      }
-
-      .lim-md-editor .ProseMirror pre {
-        margin: 1em 0;
-        padding: 12px;
-        border-radius: 8px;
-        background-color: var(--a-surface);
-        overflow-x: auto;
-      }
-      .lim-md-editor .ProseMirror pre code {
-        padding: 0;
-        background: none;
-        font-size: 13px;
-        line-height: 1.6;
-      }
-
-      .lim-md-editor .ProseMirror img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-      }
-      /* 고른 사진에 테두리를 줘서 어디가 골라졌는지 보이게 */
-      .lim-md-editor .ProseMirror img.ProseMirror-selectednode {
-        outline: 2px solid var(--a-accent);
-      }
-
-      .lim-md-editor .ProseMirror hr {
-        margin: 1.5em 0;
-        border: 0;
-        border-top: 1px solid var(--a-border);
-      }
-
-      .lim-md-editor .ProseMirror table {
-        width: 100%;
-        margin: 1em 0;
-        border-collapse: collapse;
-        table-layout: fixed;
-      }
-      .lim-md-editor .ProseMirror :where(th, td) {
-        padding: 6px 8px;
-        border: 1px solid var(--a-border);
-        font-size: 14px;
-      }
-      .lim-md-editor .ProseMirror th {
-        background-color: var(--a-surface);
-      }
-
-      .lim-md-editor .ProseMirror a {
-        color: var(--a-accent);
-        text-decoration: underline;
-      }
-
-      /* 형광펜은 블로그와 같은 청록 반투명입니다 (global.css 의 --hl-bg) */
-      .lim-md-editor .ProseMirror mark {
-        padding: 0 2px;
-        border-radius: 3px;
-        background-color: rgba(88, 221, 223, 0.22);
-        color: inherit;
-      }
-
-      /*
-        글자 색. 본문에는 클래스만 들어가므로(§6-2) 편집기에서도 클래스로
-        칠합니다. 여기 색은 global.css 의 다크 테마 값과 같습니다 —
-        색을 늘리면 editor.js·global.css·여기 셋을 같이 고쳐야 합니다.
-      */
-      .lim-md-editor .ProseMirror .c-teal { color: #58dddf; }
-      .lim-md-editor .ProseMirror .c-blue { color: #429ff5; }
-      .lim-md-editor .ProseMirror .c-green { color: #5bc25d; }
-      .lim-md-editor .ProseMirror .c-orange { color: #ff9100; }
-      .lim-md-editor .ProseMirror .c-red { color: #fe6d6d; }
-
-      @media (prefers-color-scheme: light) {
-        .lim-md-editor .ProseMirror .c-teal { color: #00838a; }
-        .lim-md-editor .ProseMirror .c-blue { color: #123fa5; }
-        .lim-md-editor .ProseMirror .c-green { color: #09721a; }
-        .lim-md-editor .ProseMirror .c-orange { color: #b24c00; }
-        .lim-md-editor .ProseMirror .c-red { color: #d52525; }
-
-        .lim-md-editor .ProseMirror mark {
-          background-color: #93eaeb;
-        }
-      }
 
       /* ===============================================================
          3. Decap CMS 모바일 대응.
@@ -834,6 +742,6 @@
       생기므로 순서를 바꾸지 마세요. ?v= 는 config.yml 과 같은 이유로
       캐시 무효화용입니다 — 고쳤는데 폰에서 안 바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=3"></script>
+    <script src="/admin/editor.js?v=5"></script>
   </body>
 </html>

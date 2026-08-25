@@ -1,29 +1,34 @@
 /*
-  /admin 본문 편집기 — tiptap.
+  /admin 본문 편집기 — Toast UI Editor.
 
   ⚠ 이 파일은 소스입니다. 실제로 불러오는 것은 esbuild 로 묶은
-    `public/admin/editor.js` 입니다. 고쳤으면 `npm run admin` 을 돌리세요.
+    `public/admin/editor.js` (와 같이 나오는 `editor.css`) 입니다.
+    고쳤으면 `npm run admin` 을 돌리세요.
 
-  왜 tiptap 이냐:
+  왜 Toast 냐 (2026-08-25 에 tiptap 에서 옮겨왔습니다):
 
-  - Decap 의 리치 텍스트는 폰에서 한글 입력이 끊깁니다. tiptap 이 쓰는
-    ProseMirror 는 조합 입력을 제대로 다룹니다.
-  - Decap 의 원문 모드는 툴바 버튼이 전부 disabled 라 굵게도 사진도 안 됩니다.
+  - **마크다운이 1급 시민입니다.** 위지윅과 원문을 버튼 하나로 오가고,
+    원문 모드에도 툴바와 미리보기가 그대로 있습니다. tiptap 때는 원문이
+    맨 textarea 였습니다.
+  - **옛 글을 덜 망가뜨립니다.** 글 128편을 왕복시켜 보면 글자가 달라지는
+    글이 tiptap 76편 → Toast 21편입니다 (scripts/check-md-roundtrip.mjs).
+  - 툴바·표·미리보기가 내장이라 손으로 만들 것이 색과 형광펜뿐입니다.
 
-  ⚠ 저장되는 것은 여전히 **마크다운 원문**입니다. 글 117개가 마크다운
-    파일이라 형식을 바꿀 수 없습니다. tiptap 문서 → 마크다운 변환은
-    @tiptap/markdown 이 하고, 이 블로그에만 있는 것(글자 색·형광펜)은
-    아래에서 마크(Mark)로 직접 정의해 왕복시킵니다.
+  ⚠ 저장되는 것은 여전히 **마크다운 원문**입니다. 글 128편이 마크다운
+    파일이라 형식을 바꿀 수 없습니다.
 
-  ⚠ 왕복은 공짜가 아닙니다. 옛 글을 열었다 저장하면 강조 기호·목록 표시가
-    정규화되면서 파일 전체가 다시 쓰입니다. 그래서 **원문 모드 버튼**을
-    남겨 뒀습니다 — 손대면 안 되는 글은 원문으로 고치세요.
+  ⚠ 왕복은 여전히 공짜가 아닙니다. 옛 글을 서식 모드로 열었다 저장하면
+    목록 표시나 표 정렬이 Toast 방식으로 다시 쓰입니다. 그래서 **열 때 한 번
+    되돌려 보고, 원본과 다르면 원문 모드로 엽니다.**
 */
-import { Editor, Mark } from '@tiptap/core'
-import { Markdown } from '@tiptap/markdown'
-import Image from '@tiptap/extension-image'
-import { TableKit } from '@tiptap/extension-table'
-import StarterKit from '@tiptap/starter-kit'
+/*
+  ⚠ CSS 는 여기서 import 하지 않습니다 — `admin-src/index.js` 가 합니다.
+    이 파일을 node 에서 그대로 불러다 쓰는 곳이 있어서입니다
+    (scripts/check-md-roundtrip.mjs). node 는 .css import 를 못 읽습니다.
+*/
+import Editor from '@toast-ui/editor'
+import '@toast-ui/editor/dist/i18n/ko-kr'
+import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell'
 
 /* -------------------------------------------------------------------
    글자 색.
@@ -31,9 +36,13 @@ import StarterKit from '@tiptap/starter-kit'
    마크다운에 색이 없어서 <span class="c-*"> 로 넣습니다. 색 값을 본문에
    박지 않고 클래스만 넣는 이유는, 값을 박으면 다크·라이트 한쪽에서 반드시
    안 읽히기 때문입니다. 실제 색은 global.css 가 테마별로 고릅니다.
-   색을 늘리려면 global.css 의 `.prose .c-*` 도 같이 늘리세요.
+
+   ⚠ Toast 가 기본으로 주는 color-syntax 플러그인은 안 씁니다 —
+     그건 `<span style="color: #58dddf">` 를 본문에 박습니다.
+   색을 늘리려면 global.css 의 `.prose .c-*` 와 admin/index.html 의
+   편집기용 `.c-*` 도 같이 늘리세요.
    ------------------------------------------------------------------- */
-const COLORS = [
+export const COLORS = [
   { k: 'teal', label: '청록', swatch: '#58dddf' },
   { k: 'blue', label: '파랑', swatch: '#429ff5' },
   { k: 'green', label: '초록', swatch: '#5bc25d' },
@@ -41,106 +50,110 @@ const COLORS = [
   { k: 'red', label: '빨강', swatch: '#fe6d6d' },
 ]
 
-const COLOR_KEYS = COLORS.map((c) => c.k)
-
-/** 마크에 걸린 attrs 를 꺼냅니다. 마크의 renderMarkdown 은 마크 자체를 받습니다. */
-function attrOf(node, key) {
-  return (node && node.attrs && node.attrs[key]) || null
+/*
+  ⚠ 이 renderer 를 등록해야 위지윅 스키마에 그 태그의 마크가 생깁니다.
+    안 등록하면 <span> 도 <mark> 도 **글자만 남기고 태그가 사라집니다.**
+    (Toast 는 모르는 인라인 태그를 지웁니다 — 확인하고 넣은 것입니다.)
+*/
+function htmlInlineTag(name) {
+  return {
+    [name]: (node, { entering }) =>
+      entering
+        ? { type: 'openTag', tagName: name, attributes: node.attrs }
+        : { type: 'closeTag', tagName: name },
+  }
 }
 
-const TextColor = Mark.create({
-  name: 'textColor',
+/** 선택한 글자를 태그로 감쌉니다 — 원문 모드에서는 글자를 그대로 끼워 넣습니다. */
+function wrapInMarkdown(openTag, closeTag) {
+  return (payload, state, dispatch) => {
+    const { tr, selection } = state
+    const slice = selection.content()
+    const text = slice.content.textBetween(0, slice.content.size, '\n')
+    tr.replaceSelectionWith(state.schema.text(openTag + text + closeTag))
+    dispatch(tr)
+    return true
+  }
+}
 
-  addAttributes() {
+/** 위지윅에서 마크를 켜고 끕니다. */
+function toggleMarkInWysiwyg(markName, attrs) {
+  return (payload, state, dispatch) => {
+    const { tr, selection, schema, doc } = state
+    const type = schema.marks[markName]
+    if (!type) return false
+    const { from, to } = selection
+    if (from === to) return false
+
+    const already = doc.rangeHasMark(from, to, type)
+    if (already) tr.removeMark(from, to, type)
+    else tr.addMark(from, to, type.create(attrs))
+    dispatch(tr)
+    return true
+  }
+}
+
+/**
+ * 이 블로그에만 있는 것 둘 — 글자 색과 형광펜.
+ *
+ * Toast 플러그인 규약대로 명령·툴바·렌더러를 한 덩어리로 돌려줍니다.
+ * `onImage` 는 사진 버튼이 눌렸을 때 부를 것(=Decap 미디어 라이브러리)입니다.
+ */
+/**
+ * 이 블로그에만 있는 것 둘 — 글자 색과 형광펜.
+ *
+ * Toast 플러그인 규약대로 **명령과 렌더러만** 돌려줍니다. 툴바 버튼은
+ * 여기서 안 만듭니다 — 플러그인의 toolbarItems 는 `groupIndex` 로 기존
+ * 묶음 안에 끼워 넣는 방식이라, 빈 묶음을 만들어 두면 무시되고 엉뚱한
+ * 자리(목록 묶음 한가운데)에 붙습니다. 버튼은 makeEditor 에서 툴바 배열에
+ * 직접 넣습니다.
+ */
+export function limPlugin() {
+  return function () {
     return {
-      color: {
-        default: COLOR_KEYS[0],
-        parseHTML: (el) => (el.getAttribute('class') || '').replace(/^c-/, ''),
-        renderHTML: (attrs) => ({ class: 'c-' + attrs.color }),
+      markdownCommands: {
+        limColor: (payload, state, dispatch) =>
+          wrapInMarkdown('<span class="c-' + payload.key + '">', '</span>')(
+            payload,
+            state,
+            dispatch
+          ),
+        limUncolor: () => false,
+        limHighlight: (payload, state, dispatch) =>
+          wrapInMarkdown('<mark>', '</mark>')(payload, state, dispatch),
       },
-    }
-  },
 
-  parseHTML() {
-    return [
-      {
-        tag: 'span[class]',
-        // c-teal 처럼 우리가 쓰는 클래스만 가져옵니다. 남의 span 은 그냥 둡니다.
-        getAttrs: (el) => {
-          const cls = (el.getAttribute('class') || '').trim()
-          const m = /^c-([a-z]+)$/.exec(cls)
-          return m && COLOR_KEYS.indexOf(m[1]) !== -1 ? { color: m[1] } : false
+      wysiwygCommands: {
+        limColor: (payload, state, dispatch) =>
+          toggleMarkInWysiwyg('span', {
+            htmlInline: true,
+            htmlAttrs: { class: 'c-' + payload.key },
+          })(payload, state, dispatch),
+
+        limUncolor: (payload, state, dispatch) => {
+          const { tr, selection, schema, doc } = state
+          const type = schema.marks.span
+          if (!type || selection.from === selection.to) return false
+          if (!doc.rangeHasMark(selection.from, selection.to, type)) return false
+          tr.removeMark(selection.from, selection.to, type)
+          dispatch(tr)
+          return true
         },
+
+        limHighlight: (payload, state, dispatch) =>
+          toggleMarkInWysiwyg('mark', { htmlInline: true, htmlAttrs: {} })(
+            payload,
+            state,
+            dispatch
+          ),
       },
-    ]
-  },
 
-  renderHTML({ HTMLAttributes }) {
-    return ['span', HTMLAttributes, 0]
-  },
-
-  renderMarkdown: (node, h) =>
-    `<span class="c-${attrOf(node, 'color') || COLOR_KEYS[0]}">${h.renderChildren(node)}</span>`,
-
-  markdownOptions: {
-    htmlReopen: { open: '<span>', close: '</span>' },
-  },
-
-  addCommands() {
-    return {
-      setTextColor:
-        (color) =>
-        ({ commands }) =>
-          commands.setMark(this.name, { color }),
-      unsetTextColor:
-        () =>
-        ({ commands }) =>
-          commands.unsetMark(this.name),
+      toHTMLRenderers: {
+        htmlInline: Object.assign({}, htmlInlineTag('span'), htmlInlineTag('mark')),
+      },
     }
-  },
-})
-
-/*
-  형광펜. tiptap 기본 Highlight 는 `==글자==` 로 내보내는데, 이 블로그의
-  마크다운 파서(remark)는 `==` 를 모릅니다 — 그대로 별표처럼 보입니다.
-  손으로 쓰던 규칙대로 <mark> 를 씁니다.
-*/
-const Highlight = Mark.create({
-  name: 'highlight',
-  parseHTML() {
-    return [{ tag: 'mark' }]
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ['mark', HTMLAttributes, 0]
-  },
-  renderMarkdown: (node, h) => `<mark>${h.renderChildren(node)}</mark>`,
-  markdownOptions: {
-    htmlReopen: { open: '<mark>', close: '</mark>' },
-  },
-  addCommands() {
-    return {
-      toggleHighlight:
-        () =>
-        ({ commands }) =>
-          commands.toggleMark(this.name),
-    }
-  },
-})
-
-export const EXTENSIONS = [
-  StarterKit.configure({
-    // 밑줄은 마크다운에 없습니다. 넣어 주면 <u> 가 본문에 박힙니다.
-    underline: false,
-    link: { openOnClick: false },
-  }),
-  Image,
-  // 표는 StarterKit 에 없습니다. 안 넣으면 표가 있는 글을 열었다 저장할 때
-  // 표가 통째로 사라집니다 (실제로 그랬습니다).
-  TableKit,
-  Highlight,
-  TextColor,
-  Markdown,
-]
+  }
+}
 
 /**
  * 왕복 결과를 견줄 때 쓰는 다듬기.
@@ -157,15 +170,148 @@ export function normalizeMarkdown(s) {
     .trim()
 }
 
-/** 마크다운 → tiptap → 마크다운. 왕복 검사(scripts/check-md-roundtrip.mjs)에서도 씁니다. */
-export function makeEditor(element, markdown, handlers) {
-  return new Editor({
-    element,
-    extensions: EXTENSIONS,
-    content: markdown || '',
-    contentType: 'markdown',
-    ...handlers,
+/*
+  툴바.
+
+  ⚠ 기본 `image` 는 넣지 않습니다. 그건 파일을 직접 올리는 버튼이라
+    Decap 미디어 라이브러리(=public/images/<주소>/)를 안 거칩니다.
+    대신 아래 "사진" 버튼이 그 자리를 대신합니다.
+*/
+function limButton(label, title, onClick) {
+  const el = document.createElement('button')
+  el.type = 'button'
+  el.className = 'toastui-editor-toolbar-icons lim-tb'
+  el.textContent = label
+  el.setAttribute('aria-label', title)
+  el.addEventListener('click', (e) => {
+    e.preventDefault()
+    onClick()
   })
+  return el
+}
+
+/** 색·형광펜·사진 — 이 블로그가 더 쓰는 것들. `ref.editor` 로 명령을 보냅니다. */
+function limToolbarGroup(ref, onImage) {
+  const palette = document.createElement('div')
+  palette.className = 'lim-palette'
+
+  const exec = (name, payload) => {
+    if (ref.editor) ref.editor.exec(name, payload)
+  }
+
+  for (const c of COLORS) {
+    const sw = document.createElement('button')
+    sw.type = 'button'
+    sw.className = 'lim-swatch'
+    sw.title = c.label
+    sw.style.backgroundColor = c.swatch
+    sw.addEventListener('click', (e) => {
+      e.preventDefault()
+      exec('limColor', { key: c.k })
+    })
+    palette.appendChild(sw)
+  }
+
+  const clear = document.createElement('button')
+  clear.type = 'button'
+  clear.className = 'lim-swatch is-none'
+  clear.textContent = '색 빼기'
+  clear.addEventListener('click', (e) => {
+    e.preventDefault()
+    exec('limUncolor')
+  })
+  palette.appendChild(clear)
+
+  return [
+    {
+      name: 'lim-color',
+      tooltip: '글자 색',
+      el: limButton('색', '글자 색', () => {}),
+      popup: { className: 'lim-popup', body: palette, style: { width: 'auto' } },
+    },
+    {
+      name: 'lim-highlight',
+      tooltip: '형광펜',
+      el: limButton('형광', '형광펜', () => exec('limHighlight')),
+    },
+    {
+      name: 'lim-image',
+      tooltip: '사진',
+      el: limButton('사진', '사진 넣기', () => onImage && onImage()),
+    },
+  ]
+}
+
+/** 글 하나를 여는 편집기. 왕복 검사(scripts/check-md-roundtrip.mjs)도 씁니다. */
+export function makeEditor(el, markdown, { onImage, onChange, onFocus, onBlur } = {}) {
+  /* ⚠ 값이 undefined 인 채로 넘기면 Toast 가 그걸 부르려다 터집니다 */
+  const events = {}
+  if (onChange) events.change = onChange
+  if (onFocus) events.focus = onFocus
+  if (onBlur) events.blur = onBlur
+
+  /* 버튼이 만들어질 때는 editor 가 아직 없습니다 — 상자에 담아 뒤에 채웁니다 */
+  const ref = {}
+
+  const editor = new Editor({
+    el,
+    /*
+      ⚠ 높이를 고정하지 않습니다. 안쪽에 스크롤을 만들면 글을 쓰다 커서가
+        편집기 밖으로 밀려나고, 폰에서는 페이지 스크롤과 겹쳐 손이 꼬입니다.
+    */
+    height: 'auto',
+    /* ⚠ Toast 의 minHeight 는 px 만 받습니다. 화면 높이에 맞추는 건
+         admin/index.html 의 `min-height: 55vh` 가 합니다. */
+    /* 옛 글 판정 전이라 원문으로 엽니다 — 원문은 소스를 그대로 들고 있습니다 */
+    initialEditType: 'markdown',
+    previewStyle: 'tab',
+    language: 'ko-KR',
+    initialValue: markdown || '',
+    usageStatistics: false,
+    hideModeSwitch: false,
+    theme:
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'default',
+    toolbarItems: [
+      ['heading', 'bold', 'italic', 'strike'],
+      ['hr', 'quote'],
+      ['ul', 'ol', 'task', 'indent', 'outdent'],
+      limToolbarGroup(ref, onImage),
+      ['table', 'link'],
+      ['code', 'codeblock'],
+    ],
+    plugins: [tableMergedCell, limPlugin()],
+    events,
+  })
+
+  ref.editor = editor
+  return editor
+}
+
+/**
+ * 서식 모드로 열어도 되는 글인지 봅니다.
+ *
+ * 마크다운 → 위지윅 → 마크다운 을 한 번 돌려 보고 원본과 같으면 서식으로,
+ * 다르면 **원본을 도로 부어 넣고** 원문으로 둡니다. 도로 부어 넣는 것이
+ * 중요합니다 — 모드를 바꾸는 순간 Toast 가 자기 방식으로 다시 쓰기 때문에,
+ * 그냥 두면 열기만 해도 파일이 바뀐 것이 됩니다.
+ */
+export function pickMode(editor, original) {
+  /* 새 글은 볼 것도 없이 서식으로 엽니다 (만들 때는 원문 모드입니다) */
+  if (!original) {
+    editor.changeMode('wysiwyg', true)
+    return 'wysiwyg'
+  }
+
+  editor.changeMode('wysiwyg', true)
+  const back = editor.getMarkdown()
+  if (normalizeMarkdown(back) === normalizeMarkdown(original)) return 'wysiwyg'
+  editor.changeMode('markdown', true)
+  editor.setMarkdown(original)
+  return 'markdown'
 }
 
 /* ================================================================= */
@@ -185,39 +331,18 @@ function registerWidget(CMS, h) {
   const Base = Object.getPrototypeOf(stringWidget.control)
   if (!Base || !Base.prototype || !Base.prototype.setState) return
 
-  const BUTTONS = [
-    { k: 'undo', label: '↺', title: '되돌리기' },
-    { k: 'redo', label: '↻', title: '다시하기' },
-    { k: 'h2', label: 'H2', title: '큰 제목', active: ['heading', { level: 2 }] },
-    { k: 'h3', label: 'H3', title: '작은 제목', active: ['heading', { level: 3 }] },
-    { k: 'bold', label: 'B', title: '굵게', mod: 'bold', active: ['bold'] },
-    { k: 'italic', label: 'I', title: '기울임', mod: 'italic', active: ['italic'] },
-    { k: 'strike', label: 'S', title: '취소선', mod: 'strike', active: ['strike'] },
-    { k: 'highlight', label: '형광', title: '형광펜', active: ['highlight'] },
-    { k: 'color', label: '색', title: '글자 색', active: ['textColor'] },
-    { k: 'quote', label: '인용', title: '인용', active: ['blockquote'] },
-    { k: 'ul', label: '• 목록', title: '글머리 목록', active: ['bulletList'] },
-    { k: 'ol', label: '1. 번호', title: '번호 목록', active: ['orderedList'] },
-    { k: 'code', label: '`코드`', title: '인라인 코드', active: ['code'] },
-    { k: 'pre', label: '코드블록', title: '코드 블록', active: ['codeBlock'] },
-    { k: 'link', label: '링크', title: '링크', active: ['link'] },
-    { k: 'image', label: '사진', title: '사진 넣기' },
-    { k: 'hr', label: '구분선', title: '구분선' },
-  ]
-
   function LimMarkdownControl(props) {
     Base.call(this, props)
-    this.state = { palette: false, raw: false, rawAuto: false, tick: 0 }
+    this.state = { rawAuto: false }
     this.editor = null
     this.host = null
-    this.ta = null
     this.lastEmitted = props.value || ''
     this.lastMedia = null
     this.flushTimer = null
+    this.booting = true
+    this.pending = false
 
     this.setHost = this.setHost.bind(this)
-    this.setTa = this.setTa.bind(this)
-    this.onRawInput = this.onRawInput.bind(this)
   }
 
   LimMarkdownControl.prototype = Object.create(Base.prototype)
@@ -225,60 +350,64 @@ function registerWidget(CMS, h) {
 
   const P = LimMarkdownControl.prototype
 
+  /*
+    ⚠ **폭이 잡힌 다음에 만들어야 합니다.**
+
+    Toast 는 만들어질 때 툴바 폭을 한 번 재서, 모자라면 버튼을 "..." 안으로
+    옮깁니다. Decap 이 위젯을 붙이는 시점에는 이 칸의 폭이 아직 0 이라,
+    그대로 만들면 버튼 하나만 남고 나머지가 전부 "..." 로 들어갑니다.
+    (나중에 폭이 생겨도 되돌아 나오지 않습니다.)
+
+    그래서 폭이 생길 때까지 기다렸다 만듭니다.
+  */
   P.setHost = function (el) {
     this.host = el
-    if (el && !this.editor) this.mount(el)
-  }
+    if (!el || this.editor || this.pending) return
 
-  P.setTa = function (el) {
-    this.ta = el
-    if (el) {
-      el.style.height = 'auto'
-      el.style.height = el.scrollHeight + 2 + 'px'
+    if (el.clientWidth > 0) {
+      this.mount(el)
+      return
     }
+
+    this.pending = true
+    const self = this
+    const wait = () => {
+      if (!self.host || self.editor) {
+        self.pending = false
+        return
+      }
+      if (self.host.clientWidth > 0) {
+        self.pending = false
+        self.mount(self.host)
+        return
+      }
+      requestAnimationFrame(wait)
+    }
+    requestAnimationFrame(wait)
   }
 
   P.mount = function (el) {
     const self = this
     const original = this.props.value || ''
+
     this.editor = makeEditor(el, original, {
-      onUpdate() {
-        self.scheduleFlush()
+      onImage: () => self.openMedia(),
+      onChange: () => {
+        if (!self.booting) self.scheduleFlush()
       },
-      onSelectionUpdate() {
-        self.refreshBar()
-      },
-      onTransaction() {
-        self.refreshBar()
-      },
-      onFocus() {
+      onFocus: () => {
         if (self.props.setActiveStyle) self.props.setActiveStyle()
       },
-      onBlur() {
+      onBlur: () => {
         self.flush()
         if (self.props.setInactiveStyle) self.props.setInactiveStyle()
       },
     })
 
-    /*
-      옛 글은 원문 모드로 엽니다.
-
-      티스토리에서 옮겨온 글들은 목록 표시가 `-   ` 세 칸이고 구분선이
-      `* * *` 입니다. 서식 모드로 열었다 저장하면 tiptap 이 자기 방식으로
-      다시 쓰기 때문에, 한 글자만 고쳐도 파일 전체가 바뀐 것으로 남습니다.
-      본문에 `<label>` 같은 글자가 있는 글은 아예 없어지기도 합니다.
-
-      그래서 **열자마자 한 번 되돌려 보고**, 원본과 다르면 원문으로 엽니다.
-      직접 쓴 글은 tiptap 이 만든 그대로라 그대로 서식 모드로 열립니다.
-      바꾸고 싶으면 "서식" 버튼을 누르면 됩니다.
-    */
-    if (
-      original &&
-      normalizeMarkdown(this.editor.getMarkdown()) !== normalizeMarkdown(original)
-    ) {
-      this.lastEmitted = original
-      this.setState({ raw: true, rawAuto: true })
-    }
+    const mode = pickMode(this.editor, original)
+    this.lastEmitted = original
+    this.booting = false
+    if (mode === 'markdown' && original) this.setState({ rawAuto: true })
   }
 
   /*
@@ -301,145 +430,6 @@ function registerWidget(CMS, h) {
     if (md === this.lastEmitted) return
     this.lastEmitted = md
     this.props.onChange(md)
-  }
-
-  /** 툴바의 눌림 표시만 다시 그립니다. 바뀐 게 없으면 아무것도 안 합니다. */
-  P.refreshBar = function () {
-    const sig = this.activeSignature()
-    if (sig === this.lastSig) return
-    this.lastSig = sig
-    this.setState({ tick: this.state.tick + 1 })
-  }
-
-  P.activeSignature = function () {
-    const ed = this.editor
-    if (!ed) return ''
-    return BUTTONS.map((b) =>
-      b.active && ed.isActive.apply(ed, b.active) ? '1' : '0'
-    ).join('')
-  }
-
-  P.run = function (key) {
-    const ed = this.editor
-    if (key === 'raw') {
-      this.toggleRaw()
-      return
-    }
-    if (key === 'image') {
-      this.openMedia()
-      return
-    }
-    if (key === 'color') {
-      this.setState({ palette: !this.state.palette })
-      return
-    }
-    if (!ed) return
-
-    const c = ed.chain().focus()
-    if (key.indexOf('color:') === 0) {
-      const color = key.slice(6)
-      this.setState({ palette: false })
-      if (color === 'none') c.unsetTextColor().run()
-      else c.setTextColor(color).run()
-      return
-    }
-
-    switch (key) {
-      case 'undo':
-        c.undo().run()
-        break
-      case 'redo':
-        c.redo().run()
-        break
-      case 'h2':
-        c.toggleHeading({ level: 2 }).run()
-        break
-      case 'h3':
-        c.toggleHeading({ level: 3 }).run()
-        break
-      case 'bold':
-        c.toggleBold().run()
-        break
-      case 'italic':
-        c.toggleItalic().run()
-        break
-      case 'strike':
-        c.toggleStrike().run()
-        break
-      case 'highlight':
-        c.toggleHighlight().run()
-        break
-      case 'quote':
-        c.toggleBlockquote().run()
-        break
-      case 'ul':
-        c.toggleBulletList().run()
-        break
-      case 'ol':
-        c.toggleOrderedList().run()
-        break
-      case 'code':
-        c.toggleCode().run()
-        break
-      case 'pre':
-        c.toggleCodeBlock().run()
-        break
-      case 'hr':
-        c.setHorizontalRule().run()
-        break
-      case 'link':
-        this.setLink()
-        break
-      default:
-        break
-    }
-  }
-
-  P.setLink = function () {
-    const ed = this.editor
-    if (!ed) return
-    const now = ed.getAttributes('link').href || ''
-    const url = window.prompt('링크 주소', now)
-    if (url === null) return
-    if (url === '') {
-      ed.chain().focus().unsetLink().run()
-      return
-    }
-    ed.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-  }
-
-  /*
-    원문 모드. 마크다운을 그대로 고칩니다.
-
-    두 가지 때문에 남겨 뒀습니다 — 옛 글을 왕복시키면 파일 전체가 다시
-    쓰이는 것, 그리고 tiptap 이 못 다루는 것(직접 쓴 HTML 등)이 들어 있는
-    글입니다. 그런 글은 서식 모드로 열지 말고 여기서 고치세요.
-  */
-  P.toggleRaw = function () {
-    if (!this.state.raw) {
-      this.flush()
-      this.setState({ raw: true, rawAuto: false, palette: false })
-      return
-    }
-    // 원문 → 서식. 텍스트를 tiptap 에 다시 부어 넣습니다.
-    const md = this.ta ? this.ta.value : this.lastEmitted
-    this.lastEmitted = md
-    this.props.onChange(md)
-    this.setState({ raw: false, rawAuto: false }, () => {
-      if (this.editor) {
-        this.editor.commands.setContent(md, { contentType: 'markdown' })
-      }
-    })
-  }
-
-  P.onRawInput = function (e) {
-    const md = e.target.value
-    this.lastEmitted = md
-    this.props.onChange(md)
-    if (this.ta) {
-      this.ta.style.height = 'auto'
-      this.ta.style.height = this.ta.scrollHeight + 2 + 'px'
-    }
   }
 
   P.openMedia = function () {
@@ -475,7 +465,7 @@ function registerWidget(CMS, h) {
       this.lastMedia = picked
       const url = Array.isArray(picked) ? picked[0] : picked
       if (typeof url === 'string' && this.editor) {
-        this.editor.chain().focus().setImage({ src: url, alt: '설명' }).run()
+        this.editor.exec('addImage', { imageUrl: url, altText: '설명' })
         this.flush()
       }
       if (p.onRemoveInsertedMedia) p.onRemoveInsertedMedia(p.forID)
@@ -488,15 +478,16 @@ function registerWidget(CMS, h) {
       갈아끼우면 글자가 깨집니다. 이게 리치 텍스트에서 나던 그 증상입니다.
     */
     const next = p.value || ''
-    if (
-      !this.state.raw &&
-      this.editor &&
-      !this.editor.isFocused &&
-      next !== this.lastEmitted
-    ) {
+    if (this.editor && next !== this.lastEmitted && !this.isFocused()) {
       this.lastEmitted = next
-      this.editor.commands.setContent(next, { contentType: 'markdown' })
+      this.booting = true
+      this.editor.setMarkdown(next)
+      this.booting = false
     }
+  }
+
+  P.isFocused = function () {
+    return !!(this.host && this.host.contains(document.activeElement))
   }
 
   P.componentWillUnmount = function () {
@@ -508,114 +499,19 @@ function registerWidget(CMS, h) {
   }
 
   P.render = function () {
-    const self = this
     const p = this.props
-    const ed = this.editor
-    const raw = this.state.raw
-
-    const buttons = BUTTONS.map((b) => {
-      const on = !raw && b.active && ed && ed.isActive.apply(ed, b.active)
-      return h(
-        'button',
-        {
-          key: b.k,
-          type: 'button',
-          title: b.title,
-          disabled: raw && b.k !== 'raw',
-          className:
-            'lim-md-btn' +
-            (b.mod ? ' is-' + b.mod : '') +
-            (on ? ' is-on' : '') +
-            (b.k === 'color' && self.state.palette ? ' is-open' : ''),
-          // 눌러도 본문에서 포커스가 안 빠지게 — 안 막으면 선택이 풀립니다
-          onMouseDown: (e) => e.preventDefault(),
-          onClick: () => self.run(b.k),
-        },
-        b.label
-      )
-    })
-
-    buttons.push(
-      h(
-        'button',
-        {
-          key: 'raw',
-          type: 'button',
-          title: '마크다운 원문으로 고치기',
-          className: 'lim-md-btn is-raw' + (raw ? ' is-on' : ''),
-          onMouseDown: (e) => e.preventDefault(),
-          onClick: () => self.run('raw'),
-        },
-        raw ? '서식' : '원문'
-      )
-    )
-
-    const palette = this.state.palette
-      ? h(
-          'div',
-          { className: 'lim-md-palette' },
-          COLORS.map((c) =>
-            h(
-              'button',
-              {
-                key: c.k,
-                type: 'button',
-                title: c.label,
-                className: 'lim-md-swatch',
-                style: { backgroundColor: c.swatch },
-                onMouseDown: (e) => e.preventDefault(),
-                onClick: () => self.run('color:' + c.k),
-              },
-              c.label
-            )
-          ).concat([
-            h(
-              'button',
-              {
-                key: 'none',
-                type: 'button',
-                title: '색 빼기',
-                className: 'lim-md-swatch is-none',
-                onMouseDown: (e) => e.preventDefault(),
-                onClick: () => self.run('color:none'),
-              },
-              '색 빼기'
-            ),
-          ])
-        )
-      : null
 
     return h(
       'div',
       { className: (p.classNameWrapper || '') + ' lim-md' },
-      h('div', { className: 'lim-md-bar' }, buttons),
-      palette,
       this.state.rawAuto
         ? h(
             'p',
             { className: 'lim-md-note' },
-            '옛 형식으로 쓰인 글이라 원문으로 열었습니다. 서식으로 고치면 글 전체가 다시 쓰입니다.'
+            '옛 형식으로 쓰인 글이라 원문으로 열었습니다. 위쪽 "WYSIWYG" 로 바꾸면 글 전체가 다시 쓰입니다.'
           )
         : null,
-      // 두 편집기를 같이 두고 하나만 보여 줍니다. tiptap 을 없앴다 다시
-      // 만들면 되돌리기 기록이 날아가서, 원문을 잠깐 보고 온 것뿐인데
-      // ⌘Z 가 안 먹습니다.
-      h('div', {
-        className: 'lim-md-editor' + (raw ? ' is-hidden' : ''),
-        ref: this.setHost,
-      }),
-      raw
-        ? h('textarea', {
-            id: p.forID,
-            className: 'lim-md-ta',
-            defaultValue: this.lastEmitted,
-            onChange: this.onRawInput,
-            ref: this.setTa,
-            spellCheck: false,
-            autoCorrect: 'off',
-            autoCapitalize: 'off',
-          })
-        : null
+      h('div', { id: p.forID, className: 'lim-md-editor', ref: this.setHost })
     )
   }
 

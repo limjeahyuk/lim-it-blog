@@ -2,7 +2,5 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
-# 편집기 시안을 보는 동안만. 고르고 나면 이 줄과 src/pages/preview/ 를 같이 지웁니다.
-Disallow: /preview/
 
 Sitemap: https://lim-it.vercel.app/sitemap-index.xml
