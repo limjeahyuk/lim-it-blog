@@ -326,7 +326,9 @@
         background-color: var(--a-pri) !important;
         color: var(--a-pri-fg) !important;
         border: 0 !important;
-        border-radius: 999px !important;
+        /* 알약이 아니라 둥근 네모입니다 (해/달 단추가 이미 동그라미라
+           나란히 두면 알약과 원이 겹쳐 보였습니다) */
+        border-radius: 10px !important;
         padding: 9px 18px !important;
         box-shadow: none !important;
         font-size: 0 !important;
@@ -475,6 +477,10 @@
         display: flex !important;
         /* ⚠ Decap 은 row-reverse 입니다 — 그대로 두면 flex-end 가 왼쪽이 됩니다 */
         flex-direction: row !important;
+        /* ⚠ 폭도 제 것을 씁니다 (사이드바만큼 짧습니다). 그대로 두면 오른쪽으로
+             붙여도 표 오른쪽 끝보다 278px 앞에서 멈춥니다. */
+        width: 100% !important;
+        max-width: none !important;
         align-items: center !important;
         justify-content: flex-end !important;
         gap: 10px !important;
@@ -494,7 +500,7 @@
         border: 0 !important;
         box-shadow: none !important;
         /* 오른쪽은 삼각형 자리입니다 — 0 으로 두면 글자 위에 겹칩니다 */
-        padding: 0 16px 0 0 !important;
+        padding: 0 20px 0 0 !important;
         font-size: 13px !important;
         color: var(--a-dim) !important;
       }
