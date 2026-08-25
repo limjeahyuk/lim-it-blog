@@ -18,7 +18,7 @@
       ?v= 는 캐시 무효화용입니다. config.yml 은 주소가 늘 같아서 브라우저가
       오래 물고 있습니다. 폼을 고쳤는데 폰에서 안 바뀌면 이 숫자를 올리세요.
     -->
-    <link href="/admin/config.yml?v=8" type="text/yaml" rel="cms-config-url" />
+    <link href="/admin/config.yml?v=9" type="text/yaml" rel="cms-config-url" />
 
     <!--
       본문 편집기(Toast UI)의 CSS. editor.js 를 묶을 때 esbuild 가 같이
@@ -27,43 +27,105 @@
     -->
     <link rel="stylesheet" href="/admin/editor.css?v=2" />
 
+    <!--
+      테마를 그리기 전에 정합니다. 블로그와 같은 열쇠(localStorage 'theme')를
+      쓰기 때문에, 블로그에서 밝게 보고 있었으면 여기도 밝게 열립니다.
+      ⚠ 이 스크립트가 없어도 editor.js 가 같은 일을 하지만, 그건 Decap 이
+        뜬 뒤라 한 번 깜빡입니다.
+    -->
+    <script>
+      ;(function () {
+        var saved = null
+        try {
+          saved = localStorage.getItem('theme')
+        } catch (e) {}
+        document.documentElement.setAttribute(
+          'data-theme',
+          saved ||
+            (window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark')
+        )
+      })()
+    </script>
+
     <style>
       /* ===============================================================
-         1. 블로그와 같은 옷 입히기
+         0. 색
 
-         Decap 은 파란 강조색에 각진 흰 화면입니다. 블로그는 청록 강조색에
-         둥근 카드고, 라이트/다크가 다릅니다. 글 쓰다 목록 보러 나오면
-         전혀 다른 사이트처럼 보여서 값만 맞춰 둡니다.
+         2026-08-25 에 시안(흰 바탕 · 검은 단추 · 초록 상태)에 맞춰 다시
+         잡았습니다. 값은 여전히 limSystem 계열입니다 — src/styles/tokens.css
+         에서 손으로 옮긴 것이라 **원본이 바뀌면 둘 다 고쳐야 합니다.**
 
-         ⚠ 색은 src/styles/tokens.css 에서 손으로 옮긴 것입니다. limSystem
-           원본이 바뀌면 tokens.css 와 여기 둘 다 고쳐야 합니다.
-         ⚠ 블로그는 테마를 직접 고를 수 있지만(html[data-theme]) 여기는
-           Decap 이 만드는 DOM 이라 토글을 붙일 자리가 없습니다. OS 설정
-           (prefers-color-scheme)만 따릅니다.
+         ⚠ 테마는 이제 직접 고릅니다 (머리글의 해/달). 블로그와 같은 방식:
+           html[data-theme] 가 있으면 그것, 없으면 OS.
+           그래서 색은 세 번 적습니다 — 기본(라이트) · OS다크 · 강제다크.
+           **어떤 색도 다크 블록에만 적지 마세요.**
          =============================================================== */
 
       :root {
-        --a-bg: #f1f2f4; /* gray-50   */
-        --a-card: #ffffff; /* white     */
-        --a-surface: #e6e8ea; /* gray-100  */
-        --a-border: #dde0e3; /* gray-200  */
-        --a-text: #181a1b; /* gray-990  */
-        --a-dim: #6d7178; /* gray-700  */
-        --a-accent: #00838a; /* teal-700 — 흰 배경에서 4.6:1 */
+        /* 날짜 고르는 칸·스크롤바 같은 브라우저 기본 부품의 밝기.
+           안 적으면 어두운 화면에서 날짜 아이콘만 흰 사각형으로 남습니다. */
+        color-scheme: light;
+
+        --a-bg: #f6f7f8; /* 바탕 */
+        --a-card: #ffffff; /* 카드·입력칸 */
+        --a-surface: #eef0f1; /* hover·알약 바탕 */
+        --a-border: #e4e7e9; /* 선 */
+        --a-text: #16181d; /* 글자 */
+        --a-dim: #6d7178; /* 보조 글자 */
+        --a-faint: #9298a0; /* 날짜·개수 */
+        --a-pri: #16181d; /* 주 단추 (저장·새 글) */
+        --a-pri-fg: #ffffff;
+        --a-ok: #0f7a34; /* 게시됨 */
+        --a-ok-bg: #e6f5ec;
+        --a-warn: #b24c00; /* 저장 안 됨 */
+        --a-danger: #d13b34; /* 삭제 */
+        --a-accent: #00838a; /* 토글·포커스 (teal-700, 흰 배경 4.6:1) */
         --a-accent-fg: #ffffff;
       }
 
       @media (prefers-color-scheme: dark) {
-        :root {
+        :root:not([data-theme='light']) {
+          color-scheme: dark;
+
           --a-bg: #181a1b; /* gray-990 */
-          --a-card: #292b2d; /* gray-980 */
+          --a-card: #232527;
           --a-surface: #333538; /* gray-950 */
           --a-border: #3c3e44; /* gray-900 */
           --a-text: #f1f2f4; /* gray-50  */
           --a-dim: #b3b7bd; /* gray-400 */
+          --a-faint: #8a8f96;
+          /* 검은 단추는 어두운 바탕에서 안 보입니다 — 밝은 쪽으로 뒤집습니다 */
+          --a-pri: #f1f2f4;
+          --a-pri-fg: #181a1b;
+          --a-ok: #5bc25d;
+          --a-ok-bg: rgba(91, 194, 93, 0.16);
+          --a-warn: #ff9100;
+          --a-danger: #fe6d6d;
           --a-accent: #23c7cd; /* teal-500 */
-          --a-accent-fg: #181a1b; /* 밝은 청록 위에는 어두운 글자 */
+          --a-accent-fg: #181a1b;
         }
+      }
+
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+
+        --a-bg: #181a1b;
+        --a-card: #232527;
+        --a-surface: #333538;
+        --a-border: #3c3e44;
+        --a-text: #f1f2f4;
+        --a-dim: #b3b7bd;
+        --a-faint: #8a8f96;
+        --a-pri: #f1f2f4;
+        --a-pri-fg: #181a1b;
+        --a-ok: #5bc25d;
+        --a-ok-bg: rgba(91, 194, 93, 0.16);
+        --a-warn: #ff9100;
+        --a-danger: #fe6d6d;
+        --a-accent: #23c7cd;
+        --a-accent-fg: #181a1b;
       }
 
       /* 블로그와 같은 폰트.
@@ -88,32 +150,579 @@
           sans-serif !important;
       }
 
-      /* 바탕과 카드 */
+      /* 바탕 */
       body,
       [class*='AppMainContainer'],
       [class*='CollectionContainer'],
       [class*='CollectionMain'],
       [class*='EditorContainer'],
+      [class*='Editor'],
       [class*='ControlPaneContainer'] {
         background-color: var(--a-bg) !important;
+        color: var(--a-text) !important;
+      }
+
+      /* ===============================================================
+         1. 머리글 — lim's World | Admin · 콘텐츠 · 미디어 · 새 글
+
+         "lim's World | Admin" 과 해/달 단추는 Decap 에 없는 것이라
+         admin-src/skin.js 가 만들어 끼웁니다. 여기는 모양만 잡습니다.
+         =============================================================== */
+
+      [class*='AppHeader'] {
+        background-color: var(--a-card) !important;
+        border-bottom: 1px solid var(--a-border) !important;
+        box-shadow: none !important;
+        color: var(--a-text) !important;
+      }
+
+      [class*='AppHeaderContent'] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 18px !important;
+        max-width: 1440px !important;
+        margin: 0 auto !important;
+        padding: 0 20px !important;
+        min-height: 60px !important;
+      }
+
+      .lim-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        white-space: nowrap;
+      }
+      .lim-brand b {
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
         color: var(--a-text);
       }
+      .lim-brand i {
+        display: block;
+        width: 1px;
+        height: 16px;
+        background-color: var(--a-border);
+      }
+      .lim-brand span {
+        font-size: 13px;
+        color: var(--a-faint);
+      }
 
-      [class*='AppHeader'],
-      [class*='EditorToolbar'],
+      [class*='AppHeaderNavList'] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 2px !important;
+        /* Decap 이 밑줄을 하나 깔아 둡니다 — 시안에는 없습니다 */
+        border-bottom: 0 !important;
+      }
+
+      /* 아이콘은 뺍니다 — 시안은 글자만입니다 */
+      [class*='AppHeaderNavLink'] [class*='IconWrapper'],
+      [class*='AppHeaderButton'] [class*='IconWrapper'] {
+        display: none !important;
+      }
+
+      [class*='AppHeaderNavLink'],
+      [class*='AppHeaderButton'] {
+        background-color: transparent !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        padding: 7px 10px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: var(--a-faint) !important;
+        box-shadow: none !important;
+      }
+
+      [class*='AppHeaderNavLink']:hover,
+      [class*='AppHeaderButton']:hover {
+        color: var(--a-text) !important;
+        background-color: var(--a-surface) !important;
+      }
+
+      .header-link-active {
+        color: var(--a-text) !important;
+        font-weight: 800 !important;
+      }
+
+      [class*='AppHeaderActions'] {
+        margin-left: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+      }
+
+      .lim-theme {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border: 1px solid var(--a-border);
+        border-radius: 999px;
+        background-color: transparent;
+        color: var(--a-dim);
+        cursor: pointer;
+      }
+      .lim-theme:hover {
+        color: var(--a-text);
+        background-color: var(--a-surface);
+      }
+
+      /* "빠른 추가" → 검은 "새 글".
+         ⚠ 글자는 CSS 로 갈아 끼웁니다 (font-size: 0 + ::before). 눌렀을 때의
+           동작은 skin.js 가 가로채서 곧장 새 글로 보냅니다. */
+      [class*='QuickNewButton'] {
+        /* ⚠ 이건 button 이 아니라 span[role=button] 입니다 — 폰에서 줄을
+             안 막으면 "새 글" 이 "새 / 글" 로 접혀 잘립니다. */
+        white-space: nowrap !important;
+        background-color: var(--a-pri) !important;
+        color: var(--a-pri-fg) !important;
+        border: 0 !important;
+        border-radius: 999px !important;
+        padding: 9px 18px !important;
+        box-shadow: none !important;
+        font-size: 0 !important;
+      }
+      [class*='QuickNewButton']::before {
+        content: '새 글' !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+      }
+      [class*='QuickNewButton']::after {
+        display: none !important; /* 삼각형 */
+      }
+
+      /* 로그인 아바타. GitHub 사진이 오기 전까지 빈 원이 남습니다. */
+      [class*='AvatarDropdownButton'] > span,
+      [class*='AvatarDropdownButton'] {
+        background-color: var(--a-surface) !important;
+        border-radius: 999px !important;
+        color: var(--a-dim) !important;
+      }
+
+      /* ===============================================================
+         2. 글 목록 — 왼쪽 컬렉션 카드 + 표 네 칸
+
+         Decap 은 한 줄을 `<h2>` 글자 한 덩어리로 그립니다. 네 칸으로 가르는
+         것은 skin.js 가 하고(config.yml 의 summary 를 ` · ` 로 쪼갭니다),
+         여기서는 원래 글자를 감추고(font-size: 0) 새로 담은 칸을 놓습니다.
+         =============================================================== */
+
+      [class*='CollectionContainer'] {
+        max-width: 1440px !important;
+        margin: 0 auto !important;
+        padding: 28px 20px !important;
+        gap: 24px !important;
+      }
+
+      /* ── 왼쪽 컬렉션 카드 ──────────────────────────────────────────
+         Decap 의 차례는 제목 → 검색 → 목록인데 시안은 제목 → 목록 → 검색
+         입니다. order 로 바꿉니다 (DOM 은 그대로 둡니다). */
+      [class*='SidebarContainer'] {
+        display: flex !important;
+        flex-direction: column !important;
+        background-color: var(--a-card) !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 14px !important;
+        padding: 14px !important;
+        box-shadow: none !important;
+        color: var(--a-text) !important;
+      }
+      [class*='SidebarHeading'] {
+        order: 0 !important;
+        margin: 2px 4px 10px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.04em !important;
+        color: var(--a-faint) !important;
+      }
+      [class*='SidebarNavList'] {
+        order: 1 !important;
+      }
+      [class*='SearchContainer'] {
+        order: 2 !important;
+        margin-top: 12px !important;
+        padding-top: 12px !important;
+        border-top: 1px solid var(--a-border) !important;
+      }
+      [class*='SidebarNavLink'] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        padding: 9px 12px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: var(--a-dim) !important;
+      }
+      [class*='SidebarNavLink'] [class*='IconWrapper'] {
+        display: none !important;
+      }
+      [class*='SidebarNavLink']:hover {
+        background-color: var(--a-surface) !important;
+        color: var(--a-text) !important;
+      }
+      .sidebar-active {
+        background-color: var(--a-surface) !important;
+        color: var(--a-text) !important;
+      }
+      /* 글 개수. skin.js 가 세어서 넣습니다 (걸러도 따라 줄어듭니다). */
+      .lim-n {
+        margin-left: auto;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--a-faint);
+      }
+
+      /* ── 목록 머리 ────────────────────────────────────────────────
+         "글" 과 "정렬 기준 · 128개" 를 한 줄에 놓습니다. Decap 은 둘을
+         위아래 두 덩어리로 그려서, 아래 것을 끌어올립니다. */
+      /* 검색결과 머리("글 컬랙션에서 …")도 같은 자리입니다 */
+      [class*='SearchResultContainer'],
+      [class*='CollectionTopContainer'] {
+        background-color: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      [class*='SearchResultHeading'],
+      [class*='CollectionTopHeading'] {
+        font-size: 30px !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em !important;
+        color: var(--a-text) !important;
+      }
+      /* 검색결과는 제목이 아니라 문장입니다 — 30px 은 너무 큽니다 */
+      [class*='SearchResultHeading'] {
+        font-size: 20px !important;
+        margin-bottom: 14px !important;
+      }
+
+      /* 새 글은 머리글의 검은 단추가 대신합니다 (시안) */
+      [class*='CollectionTopNewButton'] {
+        display: none !important;
+      }
+      [class*='CollectionControlsContainer'] {
+        display: flex !important;
+        /* ⚠ Decap 은 row-reverse 입니다 — 그대로 두면 flex-end 가 왼쪽이 됩니다 */
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 10px !important;
+        margin-top: -33px !important;
+        margin-bottom: 16px !important;
+      }
+      /* 격자/줄 바꾸는 단추 — 시안에 없고, 줄 모양만 씁니다 */
+      [class*='ViewControlsSection'] {
+        display: none !important;
+      }
+      .lim-count {
+        font-size: 13px;
+        color: var(--a-faint);
+      }
+      [class*='CollectionControlsContainer'] [class*='StyledDropdownButton'] {
+        background-color: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        /* 오른쪽은 삼각형 자리입니다 — 0 으로 두면 글자 위에 겹칩니다 */
+        padding: 0 16px 0 0 !important;
+        font-size: 13px !important;
+        color: var(--a-dim) !important;
+      }
+
+      /* ── 표 ──────────────────────────────────────────────────────── */
+      .lim-thead,
+      .lim-cells {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 96px 104px 68px;
+        gap: 12px;
+        align-items: center;
+      }
+      .lim-thead {
+        padding: 0 12px 10px;
+        border-bottom: 1px solid var(--a-border);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--a-faint);
+      }
+
+      [class*='CardsGrid'] {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      [class*='ListCard'] {
+        background-color: transparent !important;
+        border: 0 !important;
+        border-bottom: 1px solid var(--a-border) !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: auto !important;
+      }
+      [class*='ListCard']:hover {
+        background-color: var(--a-surface) !important;
+      }
+      [class*='ListCardLink'] {
+        display: block !important;
+        padding: 0 !important;
+      }
+      /*
+        ⚠ 원래 제목 글자를 지우지 않고 감추기만 합니다. 지우면 정렬을
+          바꿨을 때 React 가 화면에 없는 글자 노드에 새 제목을 써서, 줄이
+          안 바뀝니다. font-size: 0 이면 자리도 안 차지합니다.
+      */
+      [class*='ListCardTitle'] {
+        /* ⚠ Decap 은 flex 로 그립니다 — 그대로 두면 새로 담은 네 칸이
+             제 폭을 못 잡고 오른쪽 끝에 몰립니다. */
+        display: block !important;
+        font-size: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      [class*='TitleIcons'] {
+        display: none !important;
+      }
+      .lim-cells {
+        padding: 15px 12px;
+      }
+      .lim-cells span:nth-child(1) {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--a-text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .lim-cells span:nth-child(2),
+      .lim-cells span:nth-child(3) {
+        font-size: 13px;
+        color: var(--a-dim);
+      }
+      .lim-cells .lim-live {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--a-ok);
+      }
+      .lim-cells .lim-draft {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--a-faint);
+      }
+
+      /* ===============================================================
+         3. 글 편집 — 위 띠 + 왼쪽(쓰는 것) / 오른쪽 카드(분류)
+
+         두 열로 가르는 것은 skin.js 가 합니다 (.lim-form / .lim-main /
+         .lim-side). 못 갈랐으면 한 열로 그대로 보입니다 — 아래 규칙은
+         둘 다에서 굴러갑니다.
+         =============================================================== */
+
       [class*='ToolbarContainer'] {
         background-color: var(--a-card) !important;
-        border-color: var(--a-border) !important;
+        border-bottom: 1px solid var(--a-border) !important;
+        box-shadow: none !important;
         color: var(--a-text) !important;
       }
 
-      [class*='SidebarContainer'],
-      [class*='ListCard'],
-      [class*='CardsGrid'] > li,
-      [class*='CollectionTopContainer'] {
-        background-color: var(--a-card) !important;
-        border-radius: 16px !important; /* --radius-card */
+      [class*='ToolbarSectionBackLink'] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        border-right: 0 !important;
+      }
+      [class*='BackArrow'] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 34px !important;
+        height: 34px !important;
+        margin: 0 !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 999px !important;
+        font-size: 15px !important;
         color: var(--a-text) !important;
+      }
+      /* "글 컬랙션에 작성하는 중" → "글 편집" (시안).
+         글자를 지우지 않고 감춘 뒤 위에 얹습니다 — React 가 다시 그려도
+         그대로 남습니다. */
+      [class*='BackCollection'] {
+        font-size: 0 !important;
+      }
+      [class*='BackCollection']::before {
+        content: '글 편집' !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        color: var(--a-text) !important;
+      }
+      [class*='BackStatus'] {
+        background-color: transparent !important;
+        padding: 0 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+      }
+      [class*='BackStatusUnchanged'] {
+        color: var(--a-ok) !important;
+      }
+      [class*='BackStatusChanged'] {
+        color: var(--a-warn) !important;
+      }
+
+      /* 섹션 사이 세로 줄. 시안에는 없습니다. */
+      [class*='ToolbarSectionMeta'] {
+        border-left: 0 !important;
+      }
+
+      [class*='ToolbarSectionMain'] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        border-right: 0 !important;
+      }
+      [class*='ToolbarSubSection'] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+      /* 시안 차례는 [게시됨] [삭제] [저장] 인데 Decap 은 저장이 먼저입니다.
+         ⚠ 저장 단추를 감싼 상자는 글 상태에 따라 이름이 달라집니다
+           (저장된 글에만 ToolbarDropdown 이 붙습니다) — 그래서 이름이
+           안 변하는 삭제 쪽을 앞으로 당깁니다. */
+      [class*='ToolbarSubSection'] > *:has([class*='DeleteButton']) {
+        order: -1 !important;
+      }
+
+      /*
+        지금 상태 알약. Decap 의 "게시" 단추는 누르는 자리라 상태를 안
+        알려 줍니다 — skin.js 가 초안 토글을 읽어서 여기에 씁니다.
+        목록의 "상태" 칸과 같은 값입니다.
+      */
+      .lim-status {
+        padding: 6px 12px;
+        border-radius: 999px;
+        background-color: var(--a-ok-bg);
+        color: var(--a-ok);
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .lim-status.is-draft {
+        background-color: var(--a-surface);
+        color: var(--a-dim);
+      }
+
+      [class*='DeleteButton'] {
+        background-color: transparent !important;
+        border: 1px solid var(--a-danger) !important;
+        border-radius: 999px !important;
+        padding: 8px 16px !important;
+        box-shadow: none !important;
+        font-size: 0 !important;
+      }
+      [class*='DeleteButton']::before {
+        content: '삭제' !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: var(--a-danger) !important;
+      }
+
+      /* 주 단추. simple 모드에서는 이것이 곧 저장입니다. */
+      [class*='ToolbarSectionMain'] [class*='StyledDropdownButton'] {
+        background-color: var(--a-pri) !important;
+        color: var(--a-pri-fg) !important;
+        border: 0 !important;
+        border-radius: 999px !important;
+        padding: 9px 20px !important;
+        box-shadow: none !important;
+        font-size: 0 !important;
+      }
+      [class*='ToolbarSectionMain'] [class*='StyledDropdownButton']::before {
+        content: '저장' !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+      }
+      [class*='ToolbarSectionMain'] [class*='StyledDropdownButton']::after {
+        display: none !important;
+      }
+
+      /* 미리보기를 끈 자리(editor.preview: false)가 흰 판으로 남습니다. */
+      [class*='NoPreviewContainer'],
+      [class*='PreviewPaneContainer'] {
+        background-color: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        color: var(--a-dim) !important;
+      }
+      /* 편집 화면 위쪽의 빈 칸(미리보기 켜고 끄는 자리) */
+      [class*='Editor'] > [class*='ViewControls'] {
+        display: none !important;
+      }
+
+      [class*='ControlPaneContainer'] {
+        max-width: 1240px !important;
+        margin: 0 auto !important;
+        padding: 28px 20px 60px !important;
+      }
+
+      .lim-form {
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+      }
+      .lim-main {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .lim-side {
+        flex: 0 0 340px;
+        width: 340px;
+        padding: 18px;
+        background-color: var(--a-card);
+        border: 1px solid var(--a-border);
+        border-radius: 14px;
+      }
+
+      /* ── 필드 한 칸 ───────────────────────────────────────────────
+         시안은 라벨이 입력칸 **위에 놓인 작은 글자**입니다. Decap 은
+         입력칸에 얹히는 탭 모양 알약이라 풀어 줍니다. */
+      [class*='ControlContainer'] {
+        margin-top: 20px !important;
+      }
+      .lim-main > [class*='ControlContainer']:first-child,
+      .lim-side > [class*='ControlContainer']:first-child {
+        margin-top: 0 !important;
+      }
+      [class*='ControlTopbar'] {
+        background-color: transparent !important;
+        padding: 0 !important;
+        margin-bottom: 7px !important;
+      }
+      [class*='FieldLabel'] {
+        display: block !important;
+        background-color: transparent !important;
+        padding: 0 !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: var(--a-dim) !important;
+      }
+      /* Decap 은 required: false 인 칸마다 라벨 뒤에 "(선택사항)" 을 답니다.
+         네 칸에 같은 말이 붙어서 오른쪽 카드가 그 글자로 찹니다 — 안 채우면
+         비는 것이지 따로 알려 줄 것은 아닙니다. */
+      [class*='FieldLabel'] > span {
+        display: none !important;
+      }
+
+      /* 알약과 입력칸을 잇던 4px 짜리 이음매 */
+      [class*='FieldLabel']::before,
+      [class*='FieldLabel']::after {
+        display: none !important;
       }
 
       /*
@@ -122,29 +731,25 @@
         Decap 의 폼은 필드마다 이 구조입니다:
 
           [ControlContainer]
-            ├ [ControlTopbar]  ← 라벨 (투명)
+            ├ [ControlTopbar]  ← 라벨
             ├ <위젯 상자>       ← 흰색이 박혀 있는 자리
-            └ [ControlHint]    ← 힌트 (투명)
+            └ [ControlHint]    ← 힌트
 
-        예전에는 여기를 `input`, `textarea` 처럼 태그로 골라서 칠했는데,
-        토글·셀렉트·날짜는 상자가 input 이 아니라 div 라 안 칠해졌습니다.
-        바깥 div 는 흰색이고 안쪽만 어두워서 「흰 테두리」처럼 보였습니다.
-        그래서 이름 대신 **구조**로 잡습니다 — 라벨과 힌트를 뺀 직계 자식.
-        emotion 이 만드는 해시(css-83wr9v)에 기대지 않으니 Decap 을 올려도
-        같이 굴러갑니다.
+        이름(input·textarea)이 아니라 **구조**로 잡습니다 — 토글·셀렉트·
+        날짜는 상자가 div 라 태그로는 안 걸립니다. emotion 해시에도 안
+        기대니 Decap 을 올려도 같이 굴러갑니다.
       */
       [class*='ControlContainer']
         > *:not([class*='ControlTopbar']):not([class*='ControlHint']),
       [class*='SearchInput'],
       [class*='InputContainer'] {
         background-color: var(--a-card) !important;
-        border-color: var(--a-border) !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 10px !important;
         color: var(--a-text) !important;
-        border-radius: 8px !important; /* --radius-lg */
+        box-shadow: none !important;
       }
 
-      /* 상자 안쪽에 한 겹 더 있는 것들 — 날짜 위젯의 input, react-select 의
-         `-control` 은 직계 자식이 아니라 손자입니다. */
       [class*='ControlContainer'] input,
       [class*='ControlContainer'] textarea,
       [class*='-control'],
@@ -154,17 +759,54 @@
         color: var(--a-text) !important;
       }
 
-      /*
-        카테고리·프로젝트 값의 첫 글자가 잘리던 것.
+      [class*='ControlContainer'] > input,
+      [class*='ControlContainer'] > textarea {
+        padding: 12px 14px !important;
+        font-size: 16px !important;
+        line-height: 1.5 !important;
+      }
 
+      /* 제목은 크게, 주소는 고정폭 — 시안 */
+      [id^='title-field-'] {
+        font-size: 22px !important;
+        font-weight: 800 !important;
+        padding: 14px !important;
+      }
+      [id^='slug-field-'] {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+        font-size: 15px !important;
+        letter-spacing: 0.01em;
+      }
+
+      /*
         react-select 는 **보이지 않는 입력칸**을 값 글자와 같은 칸에 겹쳐
         둡니다 (둘 다 grid-area 1/1). 폭이 4px 쯤이라 평소엔 티가 안 나는데,
-        위 규칙이 여기에도 배경을 칠하는 바람에 그 4px 이 글자 위에 얹혀서
-        "게임 개발"이 "베임 개발"로, "MineApp"이 "VlineApp"으로 보였습니다.
-        입력칸은 배경 없이 둡니다 — 글자색만 있으면 됩니다.
+        위 규칙이 여기에도 배경을 칠하면 그 4px 이 글자 위에 얹혀서
+        "게임 개발"이 "베임 개발"로 보였습니다. 배경 없이 둡니다.
       */
       [class*='-control'] input {
         background-color: transparent !important;
+      }
+      [class*='-control'] {
+        min-height: 46px !important;
+        border-radius: 10px !important;
+      }
+
+      [class*='ControlHint'] {
+        margin-top: 7px !important;
+        padding: 0 !important;
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+        color: var(--a-faint) !important;
+      }
+
+      /* 날짜 위젯의 "현재시각"·"지우기" */
+      [class*='DateTimeControl'] button {
+        background-color: var(--a-surface) !important;
+        color: var(--a-dim) !important;
+        border-radius: 8px !important;
+        font-size: 12px !important;
       }
 
       /* 켜고 끄는 스위치. 켜짐/꺼짐이 emotion 해시로만 갈려서 클래스로는
@@ -187,22 +829,20 @@
         토글은 상자에서 꺼냅니다.
 
         Decap 은 위젯 종류를 안 가리고 전부 같은 상자에 앉힙니다. 입력칸에는
-        맞는 모양이지만 스위치는 20px 짜리라, 화면 폭을 다 쓰는 59px 상자
-        안에 점 하나가 떠 있게 됩니다. 「초안으로 두기」·「비밀글로 두기」
-        두 개가 나란히 있어서 폰에서는 그만큼 스크롤이 늘어납니다.
-
-        라벨 알약도 같이 풉니다 — 알약은 상자 위에 얹히는 탭 모양이라
-        (모서리가 위만 둥글고, 상자와 잇는 4px 짜리 이음매가 붙습니다)
-        상자를 없애면 혼자 떠 있는 꼬리표가 됩니다.
+        맞는 모양이지만 스위치는 20px 짜리라, 화면 폭을 다 쓰는 상자 안에
+        점 하나가 떠 있게 됩니다.
 
         `:has()` 는 iOS 15.4 부터 됩니다. 안 되는 브라우저에서는 이 규칙이
         통째로 무시돼서 예전 모양 그대로 보입니다.
       */
       [class*='ControlContainer']:has([role='switch']) {
         display: flex !important;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 0 10px;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 0 10px !important;
+      }
+      [class*='ControlContainer']:has([role='switch']) [class*='ControlTopbar'] {
+        margin-bottom: 0 !important;
       }
       [class*='ControlContainer']:has([role='switch'])
         > *:not([class*='ControlTopbar']):not([class*='ControlHint']) {
@@ -212,158 +852,35 @@
         width: auto !important;
       }
       [class*='ControlContainer']:has([role='switch']) [class*='FieldLabel'] {
-        background-color: transparent !important;
-        padding: 0 !important;
         font-size: 14px !important;
         color: var(--a-text) !important;
       }
-      [class*='ControlContainer']:has([role='switch'])
-        [class*='FieldLabel']::before,
-      [class*='ControlContainer']:has([role='switch'])
-        [class*='FieldLabel']::after {
-        display: none !important;
-      }
       /* 힌트는 줄을 바꿔 스위치 아래로 */
       [class*='ControlContainer']:has([role='switch']) [class*='ControlHint'] {
-        flex-basis: 100%;
+        flex-basis: 100% !important;
         margin-top: 2px !important;
       }
 
-      /* 날짜 위젯의 「현재시각」·「지우기」 */
-      [class*='DateTimeControl'] button {
-        background-color: var(--a-surface) !important;
-        color: var(--a-text) !important;
-        border-radius: 6px !important;
-      }
-
-      /* 로그인 아바타 자리. GitHub 사진이 오기 전까지 밝은 원이 남습니다. */
-      [class*='AvatarDropdownButton'] > span {
-        background-color: var(--a-surface) !important;
-      }
-
-      /* 미리보기를 끈 자리(editor.preview: false)가 흰 판으로 남습니다. */
-      [class*='NoPreviewContainer'] {
-        background-color: var(--a-bg) !important;
-        color: var(--a-dim) !important;
-      }
-
-      [class*='FieldLabel'] {
-        background-color: var(--a-surface) !important;
-        color: var(--a-dim) !important;
-      }
-      /* 라벨 알약과 입력칸을 잇는 4px 짜리 이음매. 흰색이 박혀 있어서
-         다크에서 라벨 옆에 흰 조각으로 남습니다. */
-      [class*='FieldLabel']::before,
-      [class*='FieldLabel']::after {
-        background-color: var(--a-surface) !important;
-      }
-
-      [class*='BackArrow'] {
-        color: var(--a-text) !important;
-      }
-
-      [class*='ControlHint'],
-      [class*='-placeholder'] {
-        color: var(--a-dim) !important;
-      }
-
-      /* Decap 이 글자색을 직접 박아 둔 자리들 — 다크에서 배경과 같이 어두워
-         안 보이게 됩니다. */
-      [class*='CollectionTopHeading'],
-      [class*='SidebarHeading'],
-      [class*='BackCollection'],
-      [class*='EntryListing'] h2,
-      [class*='ListCard'] a {
-        color: var(--a-text) !important;
-      }
-
-      [class*='-singleValue'],
-      [class*='-input'] input {
-        color: var(--a-text) !important;
-      }
-
-      /* 강조 — 게시·새 글 같은 주 버튼 */
-      [class*='ToolbarSectionMain'] [class*='StyledDropdownButton'],
-      [class*='AppHeaderQuickNewButton'],
-      [class*='CollectionTopNewButton'] {
-        background-color: var(--a-accent) !important;
-        color: var(--a-accent-fg) !important;
-        border-radius: 999px !important; /* --radius-full */
-      }
-
-      /* Decap 의 파랑(#3a69c7)이 남는 자리 — 글자만 청록으로 */
-      [class*='AppHeaderNavLink'],
-      [class*='CollectionControlsContainer'] [class*='StyledDropdownButton'],
-      [class*='ViewControls'] button {
-        color: var(--a-accent) !important;
-      }
-
-      /*
-        미디어 라이브러리 — 툴바의 「사진」이 여는 창입니다.
-
-        예전에는 CMS 로 사진을 안 올렸기 때문에(§6-2) 이 창이 손도 안 탄
-        Decap 기본값이었습니다. 흰 판에 920px 고정폭이라 폰에서는 화면 밖으로
-        나갑니다. 이제 사진을 여기로 올리므로 같이 맞춥니다.
-      */
-      [class*='StyledModal'] {
-        background-color: var(--a-card) !important;
-        color: var(--a-text) !important;
-        border: 1px solid var(--a-border) !important;
-        border-radius: 16px !important;
-        max-width: calc(100vw - 24px) !important;
-        max-height: calc(100vh - 48px) !important;
-      }
-
-      [class*='LibraryTitle'],
-      [class*='CardText'] {
-        color: var(--a-text) !important;
-      }
-
-      [class*='CardGridContainer'] {
-        overflow-y: auto !important;
-      }
-
-      /* 떠 있는 메뉴 */
-      [class*='DropdownList'],
-      [class*='-menu'] {
-        background-color: var(--a-card) !important;
-        border: 1px solid var(--a-border) !important;
-        border-radius: 12px !important;
-        overflow: hidden !important;
-        color: var(--a-text) !important;
-      }
-
-      [class*='StyledMenuItem'],
-      [class*='-option'] {
-        background-color: transparent !important;
-        color: var(--a-text) !important;
-      }
-
-      [class*='StyledMenuItem']:hover,
-      [class*='-option']:hover,
-      [class*='-option'][class*='focused'] {
-        background-color: var(--a-surface) !important;
-      }
-
       /* ===============================================================
-         2. 본문 편집기 — Toast UI Editor
+         4. 본문 편집기 — Toast UI Editor
 
          Decap 기본 markdown 위젯을 갈아끼운 것입니다. 왜 갈아끼웠고 왜
          Toast 인지는 admin-src/editor.js 맨 위에 적어 뒀습니다.
-         여기는 그 모양만 잡습니다.
 
          ⚠ Toast 의 CSS 는 editor.css 로 따로 나옵니다 (head 의 link).
-           esbuild 가 editor.js 를 묶을 때 같이 뽑습니다.
          =============================================================== */
 
-      .lim-md {
+      /* 본문 칸은 상자를 두르지 않습니다 — Toast 가 자기 상자를 그립니다 */
+      [class*='ControlContainer'] > .lim-md {
+        background-color: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
         padding: 0 !important;
         overflow: visible !important;
       }
 
       .lim-md-editor {
-        /* 상자를 Decap 이 아니라 Toast 가 그립니다 */
-        border-radius: 8px;
+        border-radius: 10px;
         overflow: hidden;
       }
 
@@ -379,27 +896,51 @@
 
       .toastui-editor-defaultUI {
         border-color: var(--a-border) !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
       }
 
       /*
         ⚠ 툴바 칸의 높이를 풀어 줘야 합니다.
 
-          원문 모드에서는 이 칸 안에 "작성/미리보기" 탭 줄과 버튼 줄이 **둘 다**
-          들어가는데, Toast 는 높이를 46px 로 못박아 둡니다. 그대로 두면 버튼
-          줄이 칸 밖으로 흘러나와 본문 위에 겹쳐 그려집니다 — 툴바가 안 보이는
-          것처럼 됩니다 (한참 찾았습니다).
+          원문 모드에서는 이 칸 안에 "마크다운/미리보기" 탭 줄과 버튼 줄이
+          **둘 다** 들어가는데, Toast 는 높이를 46px 로 못박아 둡니다. 그대로
+          두면 버튼 줄이 칸 밖으로 흘러나와 본문 위에 겹쳐 그려집니다 —
+          툴바가 안 보이는 것처럼 됩니다 (한참 찾았습니다).
       */
       .toastui-editor-toolbar {
+        display: flex !important;
+        flex-direction: column;
         height: auto !important;
+      }
+
+      /* 마크다운 ↔ 미리보기 탭을 오른쪽 위로 (시안) */
+      .toastui-editor-md-tab-container {
+        align-self: flex-end;
+        background-color: transparent !important;
+        border: 0 !important;
+        height: auto !important;
+        padding: 6px 8px 0 !important;
+      }
+      .toastui-editor-md-tab-container .tab-item {
+        height: 28px !important;
+        padding: 0 12px !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 999px !important;
+        margin-left: 4px;
+        background-color: transparent !important;
+        color: var(--a-dim) !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+      }
+      .toastui-editor-md-tab-container .tab-item.active {
+        background-color: var(--a-card) !important;
+        color: var(--a-text) !important;
       }
 
       /*
         ⚠ 툴바를 sticky 로 붙이지 마세요. tiptap 때는 붙여 뒀는데, Toast 는
           툴바 칸(.toastui-editor-toolbar)과 실제 버튼 줄이 따로 놀아서
           바깥만 붙고 버튼은 제자리에 남습니다 (재 보고 걷어냈습니다).
-          긴 글 중간에서 버튼을 쓰려면 위로 올라가야 합니다 — 아쉽지만
-          잘못 붙은 툴바보다는 낫습니다.
       */
 
       .toastui-editor-defaultUI-toolbar {
@@ -426,7 +967,7 @@
       }
 
       .toastui-editor-main .ProseMirror {
-        padding: 14px 12px 40px !important;
+        padding: 16px 14px 40px !important;
       }
 
       /*
@@ -441,30 +982,48 @@
 
       /* 이 블로그가 쓰는 것 둘 — 글자 색과 형광펜.
          색을 늘리면 editor.js·global.css·여기 셋을 같이 고쳐야 합니다. */
-      .toastui-editor-contents .c-teal { color: #58dddf; }
-      .toastui-editor-contents .c-blue { color: #429ff5; }
-      .toastui-editor-contents .c-green { color: #5bc25d; }
-      .toastui-editor-contents .c-orange { color: #ff9100; }
-      .toastui-editor-contents .c-red { color: #fe6d6d; }
-
+      .toastui-editor-contents .c-teal {
+        color: #00838a;
+      }
+      .toastui-editor-contents .c-blue {
+        color: #123fa5;
+      }
+      .toastui-editor-contents .c-green {
+        color: #09721a;
+      }
+      .toastui-editor-contents .c-orange {
+        color: #b24c00;
+      }
+      .toastui-editor-contents .c-red {
+        color: #d52525;
+      }
       .toastui-editor-contents mark {
-        background-color: #2b6f70;
-        color: #eef1f5;
+        background-color: #93eaeb;
+        color: #16181d;
         border-radius: 3px;
         padding: 0 2px;
       }
 
-      @media (prefers-color-scheme: light) {
-        .toastui-editor-contents .c-teal { color: #00838a; }
-        .toastui-editor-contents .c-blue { color: #123fa5; }
-        .toastui-editor-contents .c-green { color: #09721a; }
-        .toastui-editor-contents .c-orange { color: #b24c00; }
-        .toastui-editor-contents .c-red { color: #d52525; }
-
-        .toastui-editor-contents mark {
-          background-color: #93eaeb;
-          color: #16181d;
-        }
+      /* 어두운 화면에서는 밝은 쪽으로. Toast 가 자기 어두운 옷을 입을 때
+         붙이는 클래스를 그대로 씁니다 — 테마를 바꾸면 skin.js 가 켰다 끕니다. */
+      .toastui-editor-dark .toastui-editor-contents .c-teal {
+        color: #58dddf;
+      }
+      .toastui-editor-dark .toastui-editor-contents .c-blue {
+        color: #429ff5;
+      }
+      .toastui-editor-dark .toastui-editor-contents .c-green {
+        color: #5bc25d;
+      }
+      .toastui-editor-dark .toastui-editor-contents .c-orange {
+        color: #ff9100;
+      }
+      .toastui-editor-dark .toastui-editor-contents .c-red {
+        color: #fe6d6d;
+      }
+      .toastui-editor-dark .toastui-editor-contents mark {
+        background-color: #2b6f70;
+        color: #eef1f5;
       }
 
       /*
@@ -528,36 +1087,136 @@
         line-height: 1.5;
       }
 
+      /* ===============================================================
+         5. 떠 있는 것들 — 메뉴 · 사진 고르는 창
+         =============================================================== */
+
+      [class*='DropdownList'],
+      [class*='-menu'] {
+        background-color: var(--a-card) !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        color: var(--a-text) !important;
+      }
+
+      [class*='StyledMenuItem'],
+      [class*='-option'] {
+        background-color: transparent !important;
+        color: var(--a-text) !important;
+      }
+
+      [class*='StyledMenuItem']:hover,
+      [class*='-option']:hover,
+      [class*='-option'][class*='focused'] {
+        background-color: var(--a-surface) !important;
+      }
+
+      [class*='-singleValue'],
+      [class*='-input'] input {
+        color: var(--a-text) !important;
+      }
+      [class*='-placeholder'] {
+        color: var(--a-faint) !important;
+      }
+
+      /*
+        미디어 라이브러리 — 툴바의 "사진" 이 여는 창입니다.
+        Decap 기본값이 920px 고정폭이라 폰에서는 화면 밖으로 나갑니다.
+      */
+      [class*='StyledModal'] {
+        background-color: var(--a-card) !important;
+        color: var(--a-text) !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 16px !important;
+        max-width: calc(100vw - 24px) !important;
+        max-height: calc(100vh - 48px) !important;
+      }
+
+      [class*='LibraryTitle'],
+      [class*='CardText'] {
+        color: var(--a-text) !important;
+      }
+
+      [class*='CardGridContainer'] {
+        overflow-y: auto !important;
+      }
 
       /* ===============================================================
-         3. Decap CMS 모바일 대응.
+         6. 좁은 화면
 
-        Decap 은 데스크톱 기준으로 만들어져 있어서 주요 컨테이너에
-        min-width: 800px 이 박혀 있습니다. 폰에서 열면 화면 밖으로 넘쳐
-        오른쪽이 잘립니다.
+         Decap 은 데스크톱 기준으로 만들어져 있어서 주요 컨테이너에
+         min-width: 800px 이 박혀 있습니다. 폰에서 열면 화면 밖으로 넘쳐
+         오른쪽이 잘립니다.
 
-        클래스 이름은 emotion 이 만든 것이라 해시가 붙지만
-        (css-1fehwpo-AppMainContainer) 뒤의 컴포넌트 이름은 유지되므로
-        부분 일치로 잡습니다. Decap 을 올릴 때 이름이 바뀌면 여기도 확인이 필요합니다.
+         클래스 이름은 emotion 이 만든 것이라 해시가 붙지만
+         (css-1fehwpo-AppMainContainer) 뒤의 컴포넌트 이름은 유지되므로
+         부분 일치로 잡습니다. Decap 을 올릴 때 이름이 바뀌면 여기도
+         확인이 필요합니다.
          =============================================================== */
 
       /*
         ⚠ 아래 두 규칙은 **editor.js 가 안 불러와졌을 때만** 쓰입니다.
-          지금은 본문 위젯을 직접 만든 것으로 갈아끼워서 Decap 의 raw 편집기
-          (.cms-editor-raw)가 화면에 아예 안 나옵니다. 그래도 남겨 둡니다 —
-          editor.js 가 죽으면 Decap 기본 편집기로 떨어지는데, 그때 이 규칙이
-          없으면 죽어 있는 툴바가 도로 나오고 편집기가 위 필드를 덮습니다.
-
-        (원래 사연) raw 모드에서는 툴바 버튼 열 개가 전부 disabled 라
-        자리만 차지했습니다. 그런데 편집기가 margin-top: -100px 으로 툴바
-        밑에 끼워져 있어서, 툴바만 지우면 위 필드의 라벨을 덮어버립니다.
-        둘은 항상 같이 갑니다.
+          지금은 본문 위젯을 갈아끼워서 Decap 의 raw 편집기(.cms-editor-raw)가
+          화면에 아예 안 나옵니다. 그래도 남겨 둡니다 — editor.js 가 죽으면
+          Decap 기본 편집기로 떨어지는데, 그때 이 규칙이 없으면 죽어 있는
+          툴바가 도로 나오고 편집기가 위 필드를 덮습니다.
       */
       .cms-editor-raw [class*='EditorControlBar'] {
         display: none !important;
       }
       .cms-editor-raw [contenteditable='true'] {
         margin-top: 0 !important;
+      }
+
+      /* 두 열이 좁아지면 한 열로. 오른쪽 카드가 본문 아래로 갑니다. */
+      @media (max-width: 940px) {
+        .lim-form {
+          flex-direction: column;
+          gap: 20px;
+          /* ⚠ 데스크톱의 flex-start 를 그대로 두면 세로로 쌓았을 때 두 칸이
+               **내용 크기**가 됩니다 — 본문 편집기가 800px 을 밀고 나가서
+               폰에서 오른쪽이 통째로 잘렸습니다. */
+          align-items: stretch;
+        }
+        .lim-main {
+          width: 100%;
+        }
+        .lim-side {
+          flex: 1 1 auto;
+          width: 100%;
+        }
+        .lim-main > [class*='ControlContainer']:first-child {
+          margin-top: 0 !important;
+        }
+      }
+
+      /* 목록 표는 좁아지면 제목과 날짜만 남깁니다 —
+         네 칸을 다 욱여넣으면 제목이 두세 글자만 보입니다. */
+      @media (max-width: 700px) {
+        .lim-thead,
+        .lim-cells {
+          /* 날짜(2026-08-25)가 한 줄에 들어가는 최소 폭입니다 —
+             더 좁히면 연도와 일자가 두 줄로 접힙니다 */
+          grid-template-columns: minmax(0, 1fr) 74px;
+          gap: 8px;
+        }
+        .lim-thead span:nth-child(2),
+        .lim-cells span:nth-child(2),
+        .lim-thead span:nth-child(4),
+        .lim-cells span:nth-child(4) {
+          display: none;
+        }
+        .lim-cells span:nth-child(1) {
+          font-size: 14px;
+        }
+        .lim-cells span:nth-child(3) {
+          font-size: 12px;
+          text-align: right;
+        }
+        .lim-thead span:nth-child(3) {
+          text-align: right;
+        }
       }
 
       @media (max-width: 799px) {
@@ -569,15 +1228,52 @@
           width: 100% !important;
         }
 
+        /*
+          폰에서는 머리글 한 줄에 이름·메뉴 둘·해달·새 글·아바타가 다
+          들어가야 합니다. 데스크톱 간격 그대로 두면 375px 에서 25px 이
+          넘쳐서 아바타(로그아웃 자리)가 화면 밖으로 잘립니다.
+        */
+        [class*='AppHeaderContent'] {
+          gap: 6px !important;
+          padding: 0 10px !important;
+        }
+        [class*='AppHeaderActions'] {
+          gap: 6px !important;
+        }
+        [class*='AppHeaderNavLink'],
+        [class*='AppHeaderButton'] {
+          padding: 7px 6px !important;
+        }
+        [class*='QuickNewButton'] {
+          padding: 8px 14px !important;
+        }
+        [class*='AvatarDropdownButton'],
+        [class*='AvatarDropdownButton'] > span,
+        [class*='AvatarDropdownButton'] svg {
+          width: 30px !important;
+          height: 30px !important;
+        }
+        .lim-theme {
+          width: 30px;
+          height: 30px;
+        }
+        .lim-brand b {
+          font-size: 15px;
+        }
+        .lim-brand i,
+        .lim-brand span {
+          display: none; /* "| Admin" 은 폰에서 자리만 먹습니다 */
+        }
+
         [class*='ToolbarSectionMain'],
         [class*='ToolbarSectionBackLink'] {
           min-width: 0 !important;
         }
 
-        [class*='PreviewPaneContainer'],
+        [class*='CollectionContainer'],
         [class*='ControlPaneContainer'] {
-          padding-left: 10px !important;
-          padding-right: 10px !important;
+          padding-left: 12px !important;
+          padding-right: 12px !important;
         }
 
         /* 아이폰 노치·홈바 영역 확보 */
@@ -598,76 +1294,72 @@
 
         /* ── 2. 글 목록에서 검색을 살립니다 ──────────────────────────
            검색창이 사이드바 안에 들어 있어서, 사이드바를 통째로 숨기던
-           예전 규칙이 검색까지 같이 지우고 있었습니다. 글이 117개라
+           예전 규칙이 검색까지 같이 지우고 있었습니다. 글이 128편이라
            검색 없이는 고칠 글을 찾을 수가 없습니다.
-           컬렉션 목록(「글」 하나뿐)만 숨기고 검색창은 위에 남깁니다. */
+           컬렉션 목록("글" 하나뿐)만 숨기고 검색창은 위에 남깁니다. */
+        /* 목록만 남기고 상자를 벗깁니다 — 검색칸이 이미 제 테두리를
+           들고 있어서 카드까지 두르면 테두리가 두 겹입니다. */
         [class*='SidebarContainer'] {
           position: static !important;
           width: auto !important;
           max-width: none !important;
-          margin: 0 0 12px !important;
-          padding: 12px !important;
+          margin: 0 0 4px !important;
+          padding: 0 !important;
+          background-color: transparent !important;
+          border: 0 !important;
         }
         [class*='SidebarHeading'],
         [class*='SidebarNavList'] {
           display: none !important;
         }
+        [class*='SearchContainer'] {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+          border-top: 0 !important;
+        }
         [class*='CollectionMain'] {
           padding-left: 0 !important;
         }
+        [class*='CollectionTopHeading'] {
+          font-size: 24px !important;
+        }
 
         /* ── 3. 폼을 짧게 ────────────────────────────────────────────
-           필드 간격이 36px 이라 열 개 늘어놓으면 스크롤이 한참입니다. */
+           필드 간격이 넓으면 열 개 늘어놓았을 때 스크롤이 한참입니다. */
         [class*='ControlContainer'] {
-          margin-top: 18px !important;
+          margin-top: 16px !important;
         }
-        [class*='ControlHint'] {
-          margin-top: 2px !important;
-          line-height: 1.4 !important;
-        }
-
-        /* ── 4. 본문이 화면을 차지하게 ───────────────────────────────
-           기본 높이가 300px 이라 폰에서는 대여섯 줄 쓰면 끝까지 차고,
-           그때부터 작은 창 안에서 스크롤하며 쓰게 됩니다. */
-        .lim-md-ta,
-        .cms-editor-raw [contenteditable='true'] {
-          min-height: 60vh !important;
-          line-height: 1.7 !important;
+        .lim-side {
+          padding: 14px;
         }
 
-        /* 툴바가 두세 줄로 접히므로 조금 더 촘촘하게 */
-        .lim-md-bar {
-          gap: 3px;
-          padding: 5px;
+        /*
+          위 띠는 한 줄뿐입니다 (Decap 이 높이를 66px 로 못박아 두고
+          position: absolute 로 띄웁니다 — 두 줄로 만들면 아래 폼을 덮습니다).
+          그래서 폰에서는 상태 알약을 뺍니다. 왼쪽 "변경사항 저장됨" 이
+          같은 자리에 있고, 초안 여부는 바로 아래 토글에서 보입니다.
+        */
+        .lim-status {
+          display: none;
         }
-        .lim-md-btn {
-          padding: 0 8px;
-          font-size: 12px;
-        }
-        /* 툴바가 접힌 만큼 색 줄도 내려옵니다 */
-        .lim-md-palette {
-          top: 128px;
+        [class*='DeleteButton'],
+        [class*='ToolbarSectionMain'] [class*='StyledDropdownButton'] {
+          padding: 8px 14px !important;
         }
 
-        /* ── 5. 상단 메뉴·날짜 버튼 글자가 반으로 접히던 것 ───────────
-           「콘텐 츠」「미디 어」「빠른 추 가」「현재시 각」처럼 두 줄로
-           꺾여서 읽히지 않았습니다. */
+        /* ── 4. 상단 메뉴·날짜 버튼 글자가 반으로 접히던 것 ───────────
+           "콘텐 츠""미디 어""현재시 각" 처럼 두 줄로 꺾여서 읽히지
+           않았습니다. */
         [class*='AppHeader'] a,
         [class*='AppHeader'] button,
         [class*='DateControl'] button,
         [class*='ControlContainer'] button {
           white-space: nowrap !important;
         }
-        [class*='AppHeaderNavLink'],
-        [class*='AppHeaderButton'] {
-          padding-left: 8px !important;
-          padding-right: 8px !important;
-        }
 
-        /* ── 6. 드롭다운이 화면을 덮던 것 ────────────────────────────
-           카테고리 select 는 항목 하나가 78px 이라, 열면 300px 짜리
-           메뉴가 아래를 통째로 가렸습니다. 키보드까지 올라오면 화면이
-           덮입니다. 줄 높이를 반으로 줄이고 높이를 화면의 40%로 묶습니다. */
+        /* ── 5. 드롭다운이 화면을 덮던 것 ────────────────────────────
+           항목 하나가 78px 이라, 열면 300px 짜리 메뉴가 아래를 통째로
+           가렸습니다. 키보드까지 올라오면 화면이 덮입니다. */
         [class*='-menu'] {
           max-height: min(40vh, 264px) !important;
         }
@@ -680,7 +1372,7 @@
           line-height: 1.4 !important;
         }
 
-        /* ── 7. 사진 고르는 창이 화면 밖으로 나가던 것 ────────────────
+        /* ── 6. 사진 고르는 창이 화면 밖으로 나가던 것 ────────────────
            920×576 이 박혀 있어서 폰에서는 오른쪽이 잘리고, 아래쪽 버튼도
            안 보였습니다. */
         [class*='StyledModal'] {
@@ -689,7 +1381,7 @@
           min-width: 0 !important;
         }
         /* 창 안쪽 줄들이 400px 로 박혀 있어서, 창만 줄이면 내용이 넘칩니다.
-           검색창·「업로드」 버튼이 오른쪽으로 잘려 나갔습니다. */
+           검색창·"업로드" 버튼이 오른쪽으로 잘려 나갔습니다. */
         [class*='LibraryTop'],
         [class*='RowContainer'],
         [class*='SearchContainer'],
@@ -701,9 +1393,8 @@
           gap: 8px !important;
         }
 
-        /* 「게시」 메뉴는 버튼 왼쪽에 붙어서 열리는데 폭이 176px 이라
-           오른쪽 끝 버튼에서 열면 화면 밖으로 나가 잘렸습니다.
-           오른쪽 정렬로 바꾸고 화면 안쪽으로 묶습니다. */
+        /* "저장" 메뉴는 버튼 왼쪽에 붙어서 열리는데 폭이 176px 이라
+           오른쪽 끝 버튼에서 열면 화면 밖으로 나가 잘렸습니다. */
         [class*='DropdownList'] {
           left: auto !important;
           right: 0 !important;
@@ -718,7 +1409,7 @@
         목록을 최신 글부터 보여줍니다.
 
         Decap 3.9 는 config.yml 에서 기본 정렬을 못 정합니다 — sortable_fields
-        에 default 를 넣으면 「must be an array」로 설정이 통째로 안 읽힙니다.
+        에 default 를 넣으면 "must be an array"로 설정이 통째로 안 읽힙니다.
         대신 Decap 이 정렬 상태를 담아두는 localStorage 키를 처음 한 번만
         채워 둡니다. 목록에서 정렬을 바꾸면 Decap 이 이 값을 덮어쓰고,
         그다음부터 여기는 손대지 않습니다.
@@ -738,10 +1429,11 @@
     </script>
     <script src="https://unpkg.com/decap-cms@3.9.0/dist/decap-cms.js"></script>
     <!--
-      본문 편집기를 갈아끼웁니다. Decap 이 먼저 떠 있어야 window.CMS 가
-      생기므로 순서를 바꾸지 마세요. ?v= 는 config.yml 과 같은 이유로
-      캐시 무효화용입니다 — 고쳤는데 폰에서 안 바뀌면 숫자를 올리세요.
+      본문 편집기를 갈아끼우고 화면을 시안 모양으로 고칩니다. Decap 이 먼저
+      떠 있어야 window.CMS 가 생기므로 순서를 바꾸지 마세요. ?v= 는
+      config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
+      바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=5"></script>
+    <script src="/admin/editor.js?v=6"></script>
   </body>
 </html>

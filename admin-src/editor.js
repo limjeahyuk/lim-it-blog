@@ -242,6 +242,16 @@ function limToolbarGroup(ref, onImage) {
   ]
 }
 
+/** 지금 어두운 화면인지. node(왕복 검사)에서는 항상 밝은 쪽입니다. */
+function isDark() {
+  if (typeof document === 'undefined') return false
+  const picked = document.documentElement.getAttribute('data-theme')
+  if (picked) return picked === 'dark'
+  return !!(
+    window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  )
+}
+
 /** 글 하나를 여는 편집기. 왕복 검사(scripts/check-md-roundtrip.mjs)도 씁니다. */
 export function makeEditor(el, markdown, { onImage, onChange, onFocus, onBlur } = {}) {
   /* ⚠ 값이 undefined 인 채로 넘기면 Toast 가 그걸 부르려다 터집니다 */
@@ -269,17 +279,24 @@ export function makeEditor(el, markdown, { onImage, onChange, onFocus, onBlur } 
     initialValue: markdown || '',
     usageStatistics: false,
     hideModeSwitch: false,
-    theme:
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'default',
+    /* 테마는 <html data-theme> 를 먼저 봅니다 — 머리글의 해/달 단추가
+       거기에 씁니다 (admin-src/skin.js). 고른 적이 없으면 OS 를 따릅니다.
+       ⚠ 나중에 테마를 바꾸면 편집기를 다시 만들지 않고 skin.js 가
+         `toastui-editor-dark` 클래스만 켰다 끕니다. */
+    theme: isDark() ? 'dark' : 'default',
+    /*
+      ⚠ 순서가 곧 살아남는 차례입니다. Toast 는 폭이 모자라면 **뒤에서부터**
+        "..." 안으로 밀어 넣습니다. 2026-08-25 에 편집 화면이 두 열이 되면서
+        본문 칸이 좁아졌고, 그때 "사진" 이 "..." 안으로 들어갔습니다 —
+        사진은 이 블로그에서 제일 자주 쓰는 버튼이라(§6-2) 앞으로 당겼습니다.
+      ⚠ indent·outdent 는 뺐습니다. 자리를 둘 차지하는데 목록 안에서
+        Tab / Shift+Tab 이 같은 일을 합니다.
+    */
     toolbarItems: [
       ['heading', 'bold', 'italic', 'strike'],
-      ['hr', 'quote'],
-      ['ul', 'ol', 'task', 'indent', 'outdent'],
       limToolbarGroup(ref, onImage),
+      ['hr', 'quote'],
+      ['ul', 'ol', 'task'],
       ['table', 'link'],
       ['code', 'codeblock'],
     ],

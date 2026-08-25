@@ -8,6 +8,9 @@
     `.css` import 를 못 읽어서, CSS 가 editor.js 안에 있으면 그 검사가
     아예 안 돌아갑니다.
 
+  `./skin.js` 는 Decap 화면을 시안 모양으로 고쳐 앉히는 것입니다 —
+  브라우저 DOM 만 만지므로 여기서만 부릅니다.
+
   esbuild 가 이 파일을 묶으면 `public/admin/editor.js` 와
   `public/admin/editor.css` 두 개가 나옵니다. **둘 다 커밋합니다.**
 */
@@ -16,3 +19,4 @@ import '@toast-ui/editor/dist/theme/toastui-editor-dark.css'
 import '@toast-ui/editor-plugin-table-merged-cell/dist/toastui-editor-plugin-table-merged-cell.css'
 
 import './editor.js'
+import './skin.js'
