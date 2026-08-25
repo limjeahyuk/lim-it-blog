@@ -113,31 +113,33 @@ const panes = [
       </div>
     </header>
 
-    {
-      panes.map((p) => (
-        <section class="pane" id={p.id}>
-          <header class="pane-head">
-            <h2>
-              {p.name}
-              {p.now && <span class="now">지금</span>}
-            </h2>
-            <span class="made">{p.made}</span>
-          </header>
+    <div class="panes">
+      {
+        panes.map((p) => (
+          <section class="pane" id={p.id}>
+            <header class="pane-head">
+              <h2>
+                {p.name}
+                {p.now && <span class="now">지금</span>}
+              </h2>
+              <span class="made">{p.made}</span>
+            </header>
 
-          <p class="note">{p.note}</p>
-          <p class="diff" id={`diff-${p.id}`}>왕복 검사 중…</p>
+            <p class="note">{p.note}</p>
+            <p class="diff" id={`diff-${p.id}`}>왕복 검사 중…</p>
 
-          <div class="host" id={`host-${p.id}`} />
+            <div class="host" id={`host-${p.id}`} />
 
-          <div class="out">
-            <button type="button" data-md={p.id}>마크다운 보기</button>
-            <button type="button" data-reset={p.id}>처음으로 되돌리기</button>
-            <span class="count" id={`n-${p.id}`} />
-            <pre id={`md-${p.id}`} hidden />
-          </div>
-        </section>
-      ))
-    }
+            <div class="out">
+              <button type="button" data-md={p.id}>마크다운 보기</button>
+              <button type="button" data-reset={p.id}>처음으로 되돌리기</button>
+              <span class="count" id={`n-${p.id}`} />
+              <pre id={`md-${p.id}`} hidden />
+            </div>
+          </section>
+        ))
+      }
+    </div>
   </div>
 </BaseLayout>
 
@@ -474,10 +476,12 @@ const panes = [
 </style>
 
 <style>
+  /*
+    ⚠ 여기는 지면이 아니라 작업대입니다 — 다른 페이지처럼 가운데로 모으지
+      않고 화면 폭을 다 씁니다. 편집기가 좁으면 비교가 안 됩니다.
+  */
   .wrap {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 2rem 1.25rem 4rem;
+    padding: 2rem clamp(1.25rem, 3vw, 3rem) 4rem;
   }
 
   .head h1 {
@@ -541,11 +545,31 @@ const panes = [
 
   /* ── 편집기 한 칸 ─────────────────────────────────────── */
 
+  .panes {
+    display: grid;
+    gap: 3.5rem;
+  }
+
   .pane {
-    margin-top: 3.5rem;
     padding-top: 2rem;
     border-top: 1px solid var(--border);
     scroll-margin-top: 4rem;
+  }
+
+  /* 넓은 화면에서는 셋을 나란히 놓습니다 — 스크롤 없이 견줍니다 */
+  @media (min-width: 1500px) {
+    .panes {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2rem;
+    }
+
+    .pane-head h2 {
+      font-size: 1.125rem;
+    }
+
+    .made {
+      font-size: 0.6875rem;
+    }
   }
 
   .pane-head {
