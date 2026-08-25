@@ -176,6 +176,17 @@
         color: var(--a-text) !important;
       }
 
+      /*
+        ⚠ Decap 은 밑줄을 **세 겹**으로 깝니다 — 머리띠(AppHeader) 말고도
+          안쪽 내용(AppHeaderContent)과 오른쪽 묶음(AppHeaderActions)이
+          각자 border-bottom 을 들고 있습니다. 셋의 높이가 달라서 오른쪽
+          끝에만 짧은 선이 하나 더 그어져 보였습니다. 머리띠 것만 남깁니다.
+      */
+      [class*='AppHeaderContent'],
+      [class*='AppHeaderActions'] {
+        border-bottom: 0 !important;
+      }
+
       [class*='AppHeaderContent'] {
         display: flex !important;
         align-items: center !important;
@@ -952,6 +963,14 @@
         display: flex !important;
         flex-direction: column;
         height: auto !important;
+        /*
+          ⚠ 탭 줄(편집하기/미리보기)과 버튼 줄이 이 칸 안에 같이 들어갑니다.
+            탭 줄만 흰 바탕으로 두면 안내문과 툴바 사이에 흰 띠가 하나 뜬
+            것처럼 보입니다 — 칸 전체를 툴바 색으로 깔아서 한 덩어리로
+            읽히게 합니다.
+        */
+        background-color: var(--a-surface) !important;
+        border-bottom: 1px solid var(--a-border) !important;
       }
 
       /* 마크다운 ↔ 미리보기 탭을 오른쪽 위로 (시안) */
@@ -960,7 +979,7 @@
         background-color: transparent !important;
         border: 0 !important;
         height: auto !important;
-        padding: 6px 8px 0 !important;
+        padding: 6px 8px 2px !important;
       }
       .toastui-editor-md-tab-container .tab-item {
         display: inline-flex !important;
@@ -989,6 +1008,7 @@
       */
 
       .toastui-editor-defaultUI-toolbar {
+        border-bottom: 0 !important;
         /*
           ⚠ 폭을 못박아야 합니다. 이 칸이 내용 크기로 줄어들면 Toast 가
             "폭이 모자라다"고 보고 버튼을 "..." 안으로 옮기는데, 그러면 칸이
