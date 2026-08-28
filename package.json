@@ -28,6 +28,7 @@
     "@toast-ui/editor": "^3.2.2",
     "@toast-ui/editor-plugin-table-merged-cell": "^3.1.0",
     "esbuild": "^0.28.2",
-    "jsdom": "^29.1.1"
+    "jsdom": "^29.1.1",
+    "prosemirror-keymap": "^1.2.3"
   }
 }

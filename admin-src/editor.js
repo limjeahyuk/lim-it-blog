@@ -29,6 +29,7 @@
 import Editor from '@toast-ui/editor'
 import '@toast-ui/editor/dist/i18n/ko-kr'
 import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell'
+import { keymap } from 'prosemirror-keymap'
 
 /* -------------------------------------------------------------------
    글자 색.
@@ -62,6 +63,51 @@ function htmlInlineTag(name) {
         ? { type: 'openTag', tagName: name, attributes: node.attrs }
         : { type: 'closeTag', tagName: name },
   }
+}
+
+/* -------------------------------------------------------------------
+   위지윅에서 Enter 한 번이 빈 줄까지 만들게 합니다.
+
+   Toast 는 **원문 한 줄 = 블록 하나**로 잡습니다. 빈 줄도 빈 문단 하나로
+   들고 있어서, Enter 를 한 번 누르면 마크다운에는 줄바꿈 하나(`\n`)만
+   들어갑니다. 그런데 이 블로그는 remark-breaks 를 안 쓰기 때문에(§2)
+   그 줄바꿈은 화면에서 앞 줄에 그대로 이어 붙습니다 — **편집기에서는 두
+   줄인데 올라간 글은 한 줄**이 됩니다.
+
+   그래서 문단을 가를 때 사이에 빈 문단을 하나 더 둡니다. 빈 문단이 곧
+   마크다운의 빈 줄이라, 본 대로 나옵니다.
+
+   ⚠ 최상위 문단에서만 합니다. 목록·인용문·표·코드블록·제목 안에서는
+     false 를 돌려주고 Toast 기본 동작에 맡깁니다 — 거기서는 줄이 이어
+     붙지 않고, Enter 가 항목을 늘리는 등 따로 할 일이 있습니다.
+   ⚠ **Shift+Enter 는 그대로 둡니다.** 앞 줄에 이어 붙이고 싶을 때 쓸 수
+     있는 유일한 방법입니다 (티스토리에서 옮겨온 116편이 그 모양입니다).
+   ⚠ **원문 모드에는 안 겁니다.** 거기서는 마크다운 소스를 직접 보고
+     고치는 것이라 Enter 가 줄바꿈 하나인 것이 맞습니다.
+   ------------------------------------------------------------------- */
+function splitWithBlankLine(state, dispatch) {
+  const { $from, $to, empty } = state.selection
+  /* 최상위(doc > paragraph)가 아니면 손대지 않습니다 */
+  if ($from.depth !== 1 || $to.depth !== 1) return false
+  if ($from.parent.type.name !== 'paragraph') return false
+  if (!dispatch) return true
+
+  const tr = state.tr
+  if (!empty) tr.deleteSelection()
+
+  const pos = tr.selection.from
+  const before = tr.steps.length
+  try {
+    tr.split(pos)
+    /* 첫 split 로 밀린 자리에서 한 번 더 — 가운데에 빈 문단이 남습니다.
+       커서는 ProseMirror 가 알아서 따라와 세 번째 문단에 놓입니다. */
+    tr.split(tr.mapping.slice(before).map(pos))
+  } catch (err) {
+    return false
+  }
+
+  dispatch(tr)
+  return true
 }
 
 /** 선택한 글자를 태그로 감쌉니다 — 원문 모드에서는 글자를 그대로 끼워 넣습니다. */
@@ -151,6 +197,11 @@ export function limPlugin() {
       toHTMLRenderers: {
         htmlInline: Object.assign({}, htmlInlineTag('span'), htmlInlineTag('mark')),
       },
+
+      /* ⚠ 여기 넣은 것이 Toast 자기 keymap 보다 **먼저** 걸립니다
+           (WysiwygEditor.createPlugins 가 플러그인 것을 앞에 놓습니다).
+           그래서 목록·표에서는 반드시 false 를 돌려줘야 합니다. */
+      wysiwygPlugins: [() => keymap({ Enter: splitWithBlankLine })],
     }
   }
 }
