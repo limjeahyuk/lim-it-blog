@@ -18,7 +18,7 @@
       ?v= 는 캐시 무효화용입니다. config.yml 은 주소가 늘 같아서 브라우저가
       오래 물고 있습니다. 폼을 고쳤는데 폰에서 안 바뀌면 이 숫자를 올리세요.
     -->
-    <link href="/admin/config.yml?v=10" type="text/yaml" rel="cms-config-url" />
+    <link href="/admin/config.yml?v=11" type="text/yaml" rel="cms-config-url" />
 
     <!--
       본문 편집기의 CSS. editor.js 를 묶을 때 esbuild 가 같이
@@ -586,11 +586,11 @@
       }
 
       /* ===============================================================
-         3. 글 편집 — 위 띠 + 왼쪽(쓰는 것) / 오른쪽 카드(분류)
+         3. 글 편집 — 위 띠 + 한 열(쓰는 차례) + 발행 설정
 
-         두 열로 가르는 것은 skin.js 가 합니다 (.lim-form / .lim-main /
-         .lim-side). 못 갈랐으면 한 열로 그대로 보입니다 — 아래 규칙은
-         둘 다에서 굴러갑니다.
+         차례대로 세우는 것은 skin.js 가 합니다 (.lim-form / .lim-main /
+         .lim-meta). 못 세웠으면 config.yml 의 차례 그대로 한 줄로 보입니다
+         — 아래 규칙은 둘 다에서 굴러갑니다.
          =============================================================== */
 
       [class*='ToolbarContainer'] {
@@ -623,6 +623,9 @@
          그대로 남습니다. */
       [class*='BackCollection'] {
         font-size: 0 !important;
+      }
+      html[data-lim-route='new'] [class*='BackCollection']::before {
+        content: '새 글 작성' !important;
       }
       [class*='BackCollection']::before {
         content: '글 편집' !important;
@@ -705,10 +708,13 @@
         color: var(--a-danger) !important;
       }
 
-      /* 주 단추. simple 모드에서는 이것이 곧 저장입니다. */
+      /* 주 단추. simple 모드에서는 이것이 곧 저장입니다.
+         ⚠ 시안의 「검수 요청」 자리인데 글자는 「저장」 그대로입니다 —
+           이 블로그에는 검수도 승인도 없습니다 (혼자 쓰는 저장소, §0).
+           색만 시안의 초록(강조색)을 씁니다. */
       [class*='ToolbarSectionMain'] [class*='StyledDropdownButton'] {
-        background-color: var(--a-pri) !important;
-        color: var(--a-pri-fg) !important;
+        background-color: var(--a-accent) !important;
+        color: var(--a-accent-fg) !important;
         border: 0 !important;
         border-radius: 999px !important;
         padding: 9px 20px !important;
@@ -744,22 +750,96 @@
         padding: 28px 20px 60px !important;
       }
 
+      /*
+        시안은 **한 열**입니다. 2026-08-25 에는 왼쪽(쓰는 것)/오른쪽 카드
+        (분류)로 갈라 놨었는데, 시안이 쓰는 차례를 위에서 아래로 한 줄로
+        세우고 분류는 본문 뒤로 내립니다 — 글을 쓰는 동안 눈이 좌우로
+        오갈 일이 없습니다.
+      */
       .lim-form {
-        display: flex;
-        align-items: flex-start;
-        gap: 24px;
+        max-width: 760px;
+        margin: 0 auto;
       }
       .lim-main {
-        flex: 1 1 auto;
         min-width: 0;
       }
-      .lim-side {
-        flex: 0 0 340px;
-        width: 340px;
-        padding: 18px;
+
+      /* 본문 뒤로 내린 것들 — 작성일·프로젝트·토글 둘 */
+      .lim-meta {
+        margin-top: 36px;
+        padding: 20px;
         background-color: var(--a-card);
         border: 1px solid var(--a-border);
         border-radius: 14px;
+      }
+      .lim-meta > h3 {
+        margin: 0 0 4px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--a-faint);
+      }
+      /* 날짜·프로젝트는 나란히, 토글 둘은 각자 한 줄 */
+      .lim-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 18px;
+      }
+      .lim-meta-grid > [data-field='draft'],
+      .lim-meta-grid > [data-field='secret'] {
+        grid-column: 1 / -1;
+      }
+
+      /* ── EDITOR 알약 (저자) ───────────────────────────────────────
+         skin.js 가 select 위젯을 갈아끼워 그립니다. 못 갈아끼웠으면
+         Decap 의 목록이 그대로 나옵니다. */
+      .lim-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .lim-pill {
+        appearance: none;
+        padding: 9px 18px;
+        border: 1px solid var(--a-border);
+        border-radius: 999px;
+        background-color: var(--a-card);
+        color: var(--a-dim);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.2;
+        cursor: pointer;
+      }
+      .lim-pill:hover {
+        color: var(--a-text);
+        border-color: var(--a-dim);
+      }
+      /* 고른 것. 글자색은 배경에 맞춰 뒤집습니다 — 두 테마 모두 대비가
+         나오는 짝입니다 (라이트 검정 위 흰 글자, 다크 흰 판 위 검정). */
+      .lim-pill.is-on {
+        background-color: var(--a-pri);
+        border-color: var(--a-pri);
+        color: var(--a-pri-fg);
+      }
+
+      /* ── 본문 아래 한 줄 — 글자 수 · 저장 여부 ───────────────── */
+      .lim-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--a-faint);
+        font-variant-numeric: tabular-nums;
+      }
+      .lim-saved {
+        font-weight: 700;
+        color: var(--a-ok);
+      }
+      .lim-saved.is-dirty {
+        color: var(--a-warn);
       }
 
       /* ── 필드 한 칸 ───────────────────────────────────────────────
@@ -769,8 +849,13 @@
         margin-top: 20px !important;
       }
       .lim-main > [class*='ControlContainer']:first-child,
-      .lim-side > [class*='ControlContainer']:first-child {
+      .lim-meta-grid > [class*='ControlContainer']:first-child,
+      .lim-meta-grid > [class*='ControlContainer']:nth-child(2) {
         margin-top: 0 !important;
+      }
+      /* 본문은 앞뒤로 더 띄웁니다 — 여기가 지면의 중심입니다 */
+      .lim-main > [data-field='body'] {
+        margin-top: 30px !important;
       }
       [class*='ControlTopbar'] {
         background-color: transparent !important;
@@ -812,8 +897,12 @@
         날짜는 상자가 div 라 태그로는 안 걸립니다. emotion 해시에도 안
         기대니 Decap 을 올려도 같이 굴러갑니다.
       */
+      /* ⚠ .lim-pills · .lim-foot 는 skin.js 가 끼워 넣은 것입니다. 여기서
+         빼지 않으면 알약 줄과 글자 수 줄에도 카드 배경과 테두리가 칠해집니다. */
       [class*='ControlContainer']
-        > *:not([class*='ControlTopbar']):not([class*='ControlHint']),
+        > *:not([class*='ControlTopbar']):not([class*='ControlHint']):not(
+          .lim-pills
+        ):not(.lim-foot),
       [class*='SearchInput'],
       [class*='InputContainer'] {
         background-color: var(--a-card) !important;
@@ -1055,25 +1144,20 @@
         margin-top: 0 !important;
       }
 
-      /* 두 열이 좁아지면 한 열로. 오른쪽 카드가 본문 아래로 갑니다. */
+      /* 좁아지면 가운데 폭 제한을 풀고 발행 설정도 한 줄씩 */
       @media (max-width: 940px) {
         .lim-form {
-          flex-direction: column;
-          gap: 20px;
-          /* ⚠ 데스크톱의 flex-start 를 그대로 두면 세로로 쌓았을 때 두 칸이
-               **내용 크기**가 됩니다 — 본문 편집기가 800px 을 밀고 나가서
-               폰에서 오른쪽이 통째로 잘렸습니다. */
-          align-items: stretch;
+          max-width: none;
         }
         .lim-main {
           width: 100%;
         }
-        .lim-side {
-          flex: 1 1 auto;
-          width: 100%;
+        /* 날짜·프로젝트도 한 줄씩 — 나란히 두면 둘 다 글자가 잘립니다 */
+        .lim-meta-grid {
+          grid-template-columns: minmax(0, 1fr);
         }
-        .lim-main > [class*='ControlContainer']:first-child {
-          margin-top: 0 !important;
+        .lim-meta-grid > [class*='ControlContainer']:nth-child(2) {
+          margin-top: 16px !important;
         }
       }
 
@@ -1215,8 +1299,13 @@
         [class*='ControlContainer'] {
           margin-top: 16px !important;
         }
-        .lim-side {
-          padding: 14px;
+        .lim-meta {
+          margin-top: 28px;
+          padding: 16px;
+        }
+        .lim-pill {
+          padding: 8px 15px;
+          font-size: 13px;
         }
 
         /*

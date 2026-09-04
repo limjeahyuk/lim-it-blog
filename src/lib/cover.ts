@@ -40,8 +40,9 @@ export type Cover =
   | { kind: 'none' }
 
 export function coverOf(post: Post): Cover {
+  /* heroImage 도 public/ 의 공개 경로입니다 — 본문에서 찾아낸 것과 같습니다 */
   if (post.data.heroImage) {
-    return { kind: 'asset', src: post.data.heroImage }
+    return { kind: 'file', src: post.data.heroImage }
   }
   if (!post.data.secret) {
     const found = firstBodyImage(post.body)

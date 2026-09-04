@@ -1,13 +1,13 @@
 ---
 import '../styles/global.css'
-import type { ImageMetadata } from 'astro'
 import { Font } from 'astro:assets'
 import { OWNER, SITE_DESCRIPTION, SITE_TITLE } from '../consts'
 
 interface Props {
   title: string
   description: string
-  image?: ImageMetadata
+  /** 공유 카드 사진. `/images/…` 공개 경로입니다 (content.config.ts 의 heroImage). */
+  image?: string
   type?: 'website' | 'article'
   pubDate?: Date
   updatedDate?: Date
@@ -29,7 +29,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 const fullTitle = title === SITE_TITLE ? title : `${title} — ${SITE_TITLE}`
 
 // 글에 heroImage 가 없을 때 공유 카드가 텅 비지 않게 프로필 이미지를 씁니다.
-const ogImage = new URL(image?.src ?? '/avatar-512.png', Astro.site)
+const ogImage = new URL(image ?? '/avatar-512.png', Astro.site)
 
 /**
  * 구조화 데이터. 구글이 이 페이지가 "글"인지 "사이트"인지 알아보게 합니다.

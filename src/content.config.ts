@@ -16,7 +16,7 @@ const blankAsUndefined = <T extends z.ZodTypeAny>(schema: T) =>
 
 const posts = defineCollection({
   loader: glob({ base: './src/content/posts', pattern: '**/*.{md,mdx}' }),
-  schema: ({ image }) =>
+  schema: () =>
     z.object({
       title: z.string(),
 
@@ -49,7 +49,16 @@ const posts = defineCollection({
        */
       secret: z.boolean().default(false),
 
-      heroImage: z.optional(image()),
+      /**
+       * 커버 사진. `public/images/<주소>/…` 를 가리키는 **공개 경로**입니다.
+       *
+       * ⚠ Astro 자산(`image()`)이 아닙니다. /admin 의 사진 고르는 창이
+       *   `/images/<주소>/파일명` 을 적어 주는데, `image()` 는 그런 공개
+       *   경로를 못 읽고 빌드를 멈춥니다 (`ImageNotFound`). 사진 425장이
+       *   이미 다 `public/` 에 있어서 자산 쪽으로 옮길 수도 없습니다.
+       * ⚠ 그래서 **크기별로 뽑히지 않습니다.** 본문 사진과 같은 사정입니다 (§4).
+       */
+      heroImage: blankAsUndefined(z.string().optional()),
     }),
 })
 

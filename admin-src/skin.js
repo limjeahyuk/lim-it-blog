@@ -255,15 +255,38 @@ function decorateList() {
      왼쪽(본문 쪽)에 남습니다.
    ------------------------------------------------------------------- */
 
-const MAIN_FIELDS = ['title', 'slug', 'body']
+/*
+  시안 차례. 위에서부터 이대로 세웁니다.
+  ⚠ config.yml 에 필드를 더하면 **여기에도 넣으세요.** 안 적힌 것은 아래
+    「발행 설정」 묶음으로 갑니다 — 빠뜨려도 사라지지는 않습니다.
+*/
+const WRITE_FIELDS = [
+  'author',
+  'title',
+  'slug',
+  'description',
+  'heroImage',
+  'body',
+]
 
+/*
+  이 칸이 어느 필드인가.
+
+  ⚠ 라벨의 `for` 를 먼저 봅니다. 입력칸의 id 로 찾으면 **사진 위젯을 놓칩니다**
+    — 그건 input 을 안 그려서 `<이름>-field-N` id 가 어디에도 없고, 그래서
+    커버 사진 칸이 「발행 설정」으로 떨어졌습니다. 라벨은 위젯 종류를 안 가리고
+    언제나 `for="<이름>-field-N"` 을 답니다.
+*/
 function fieldName(box) {
-  const node = box.querySelector('[id*="-field-"]')
-  if (!node) return null
-  return node.id.replace(/-field-\d+$/, '')
+  const label = box.querySelector('label[for*="-field-"]')
+  const from = label
+    ? label.getAttribute('for')
+    : (box.querySelector('[id*="-field-"]') || {}).id
+  if (!from) return null
+  return from.replace(/-field-\d+$/, '')
 }
 
-function splitForm() {
+function layoutForm() {
   /*
     ⚠ ControlPaneContainer 라는 이름이 두 겹입니다 — 바깥
       (PreviewPaneContainer-ControlPaneContainer)과 필드를 담은 안쪽.
@@ -280,7 +303,7 @@ function splitForm() {
     }
     if (pane) break
   }
-  if (!pane || pane.getAttribute('data-lim') === 'split') return
+  if (!pane || pane.getAttribute('data-lim') === 'laid') return
 
   const boxes = []
   for (const c of pane.children) {
@@ -292,18 +315,85 @@ function splitForm() {
 
   const form = el('div', 'lim-form')
   const main = el('div', 'lim-main')
-  const side = el('div', 'lim-side')
+  const meta = el('section', 'lim-meta')
+  meta.appendChild(el('h3', null, '발행 설정'))
+  const grid = el('div', 'lim-meta-grid')
+  meta.appendChild(grid)
   form.appendChild(main)
-  form.appendChild(side)
+  form.appendChild(meta)
   pane.appendChild(form)
 
+  const byName = new Map()
   for (const box of boxes) {
     const name = fieldName(box)
     if (name) box.setAttribute('data-field', name)
-    ;(name && MAIN_FIELDS.indexOf(name) < 0 ? side : main).appendChild(box)
+    byName.set(name, box)
   }
 
-  pane.setAttribute('data-lim', 'split')
+  for (const name of WRITE_FIELDS) {
+    const box = byName.get(name)
+    if (box) {
+      main.appendChild(box)
+      byName.delete(name)
+    }
+  }
+  /* 남은 것 — 작성일·프로젝트·토글 둘 */
+  for (const box of byName.values()) grid.appendChild(box)
+
+  pane.setAttribute('data-lim', 'laid')
+}
+
+/*
+  본문 아래 한 줄 — 글자 수와 저장 여부.
+
+  긴 글을 쓰다 보면 위 띠가 화면 밖으로 나가서 저장이 됐는지 안 됐는지
+  안 보입니다. Decap 이 위에 적어 두는 그 글자를 그대로 읽어서 아래에도
+  놓습니다 — 두 곳이 어긋날 일이 없습니다.
+
+  ⚠ 편집기 알맹이(tiptap·textarea)를 이름으로 찾지 않습니다. 본문 칸 안의
+    `contenteditable` 이나 `textarea` 아무거나 잡습니다 — 편집기를 갈아끼워도
+    (지금까지 두 번 갈았습니다) 이 줄은 그대로 굴러갑니다.
+*/
+function editorFoot() {
+  const box = document.querySelector('[data-field="body"]')
+  if (!box) return
+
+  let foot = box.querySelector('.lim-foot')
+  if (!foot) {
+    foot = el('div', 'lim-foot')
+    foot.appendChild(el('span', 'lim-chars'))
+    foot.appendChild(el('span', 'lim-saved'))
+    box.appendChild(foot)
+  }
+
+  const area = box.querySelector('[contenteditable="true"], textarea')
+  let text = ''
+  if (area) text = area.value != null ? area.value : area.innerText || ''
+  const chars = text.trim().length + '자'
+  const charBox = foot.firstChild
+  if (charBox.textContent !== chars) charBox.textContent = chars
+
+  /* 위 띠의 "변경사항 저장됨 / 저장되지 않음" 을 그대로 씁니다 */
+  const status = document.querySelector("[class*='BackStatus']")
+  const dirty =
+    !!status && String(status.className).indexOf('BackStatusChanged') >= 0
+  const word = !status ? '' : dirty ? '저장 안 됨' : '저장됨'
+  const saved = foot.lastChild
+  if (saved.textContent !== word) saved.textContent = word
+  saved.className = 'lim-saved' + (dirty ? ' is-dirty' : '')
+}
+
+/*
+  위 띠의 이름. Decap 은 새 글도 옛 글도 "글 컬랙션에 작성하는 중" 하나로
+  적습니다 — 시안처럼 갈라 놓습니다. 글자는 index.html 의 ::before 가
+  넣고, 여기서는 어느 쪽인지만 알려 줍니다.
+*/
+function routeFlag() {
+  const isNew = /#\/collections\/[^/]+\/new/.test(window.location.hash)
+  const now = isNew ? 'new' : 'edit'
+  if (document.documentElement.getAttribute('data-lim-route') !== now) {
+    document.documentElement.setAttribute('data-lim-route', now)
+  }
 }
 
 /*
@@ -347,14 +437,97 @@ let queued = false
 
 function pass() {
   try {
+    routeFlag()
     decorateHeader()
     decorateList()
-    splitForm()
+    layoutForm()
     statusPill()
+    editorFoot()
   } catch (e) {
     /* 화면 하나가 안 고쳐지는 것보다 CMS 가 죽는 게 나쁩니다 */
     if (window.console) console.warn('[lim admin skin]', e)
   }
+}
+
+/* -------------------------------------------------------------------
+   EDITOR 알약 — 저자 고르기
+
+   Decap 의 select 는 눌러야 펴지는 목록(react-select)입니다. 저자가 둘뿐이라
+   "눌러서 펴고 → 고르고 → 접힘" 이 매번 세 동작이 됩니다. 시안처럼 알약을
+   늘어놓고 한 번에 고르게 바꿉니다.
+
+   ⚠ 등록 이름은 **select 그대로**입니다. config.yml 에 없는 위젯 이름을 적으면
+     이 파일이 안 떴을 때 폼이 통째로 깨집니다 (주소 칸과 같은 이유 — §6-2).
+     이름이 `author` 일 때만 알약으로 그리고 나머지(프로젝트)는 Decap 것을
+     그대로 돌려줍니다.
+
+   ⚠ 알약을 감싼 div 에 `id={forID}` 를 그대로 답니다. layoutForm() 이 필드
+     이름을 `<이름>-field-N` 에서 뽑기 때문에, 이걸 빼면 저자 칸이 「발행 설정」
+     으로 떨어집니다.
+   ------------------------------------------------------------------- */
+
+/** `study Lim — 배운 것` 에서 이름만. 알약은 좁아서 뒷말이 들어갈 자리가 없습니다. */
+function pillLabel(text) {
+  return String(text).split(' — ')[0]
+}
+
+function fieldOptions(field) {
+  const raw = field && field.get ? field.get('options') : null
+  if (!raw) return []
+  const list = raw.toJS ? raw.toJS() : raw
+  return list.map((o) =>
+    o && typeof o === 'object' ? o : { label: String(o), value: o },
+  )
+}
+
+function registerAuthorPills(CMS, h) {
+  const selectWidget = CMS.getWidget('select')
+  if (!selectWidget || !selectWidget.control) return
+
+  /* React.Component. Decap 이 React 를 밖으로 안 내보내서 이미 등록된 위젯
+     컨트롤의 부모 클래스에서 꺼냅니다 (editor.js 와 같은 방법). */
+  const Base = Object.getPrototypeOf(selectWidget.control)
+  if (!Base || !Base.prototype || !Base.prototype.setState) return
+
+  const Original = selectWidget.control
+
+  function LimSelectControl(props) {
+    Base.call(this, props)
+  }
+
+  LimSelectControl.prototype = Object.create(Base.prototype)
+  LimSelectControl.prototype.constructor = LimSelectControl
+
+  LimSelectControl.prototype.render = function () {
+    const p = this.props
+    const name = p.field && p.field.get ? p.field.get('name') : null
+    if (name !== 'author') return h(Original, p)
+
+    const options = fieldOptions(p.field)
+    if (!options.length) return h(Original, p)
+
+    return h(
+      'div',
+      { className: 'lim-pills', id: p.forID },
+      options.map((o) =>
+        h(
+          'button',
+          {
+            key: o.value,
+            type: 'button',
+            className: 'lim-pill' + (p.value === o.value ? ' is-on' : ''),
+            title: o.label,
+            /* 고른 것을 다시 누르면 비웁니다 — 저자는 required: false 라
+               "안 고름" 도 값입니다. 목록 없이는 되돌릴 방법이 없습니다. */
+            onClick: () => p.onChange(p.value === o.value ? '' : o.value),
+          },
+          pillLabel(o.label),
+        ),
+      ),
+    )
+  }
+
+  CMS.registerWidget('select', LimSelectControl, selectWidget.preview)
 }
 
 export function startSkin() {
@@ -405,6 +578,15 @@ export function startSkin() {
   window.addEventListener('hashchange', () => setTimeout(pass, 0))
 
   pass()
+}
+
+if (typeof window !== 'undefined' && window.CMS && window.h) {
+  try {
+    registerAuthorPills(window.CMS, window.h)
+  } catch (e) {
+    /* 못 갈아끼우면 Decap 의 목록이 그대로 나옵니다 — 고를 수는 있습니다 */
+    if (window.console) console.warn('[lim admin skin] author pills', e)
+  }
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
