@@ -763,6 +763,12 @@
       .lim-main {
         min-width: 0;
       }
+      /* 그리기는 그대로, 화면에서만 빼는 자리 — 지금은 작성일 하나입니다.
+         ⚠ 안 그리면 새 글의 작성일이 `{{now}}` 글자 그대로 저장됩니다
+           (자세한 것은 skin.js 의 HIDDEN_FIELDS). */
+      .lim-hidden {
+        display: none;
+      }
 
       /* ── 「발행 설정」 모달 ───────────────────────────────────────
          작성일·프로젝트·초안·비밀글은 글을 쓰는 동안 볼 일이 없고 저장하기
@@ -1529,6 +1535,6 @@
       config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
       바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=10"></script>
+    <script src="/admin/editor.js?v=11"></script>
   </body>
 </html>

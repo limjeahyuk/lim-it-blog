@@ -271,6 +271,26 @@ const WRITE_FIELDS = [
 ]
 
 /*
+  화면에서 감추는 칸. **지우는 것이 아니라 감추기만 합니다.**
+
+  `pubDate` 는 손으로 고를 일이 없습니다 — 새 글이면 `config.yml` 의
+  `default: '{{now}}'` 가 지금 시각을 넣고, 옛 글이면 파일에 적힌 값이
+  그대로 있습니다. 물어봐야 할 것이 아니라서 「발행 설정」에서 뺐습니다.
+
+  ⚠ **React 가 그린 칸을 없애면 안 됩니다.** `{{now}}` 를 실제 시각으로
+    바꿔 주는 것은 Decap 의 DateTime 위젯이고, 그 일은 위젯이 **mount 될 때**
+    일어납니다 (`componentDidMount` 에서 값이 `{{now}}` 면 지금으로 바꿉니다).
+    칸을 안 그리면 새 글의 작성일이 `{{now}}` 라는 **글자 그대로** 저장되고,
+    `pubDate: z.coerce.date()` 가 그걸 못 읽어 빌드가 깨집니다.
+    그래서 그리기는 그대로 그리고 `display: none` 인 자리로 옮겨만 둡니다.
+
+  ⚠ **"저장할 때마다 지금 시각으로" 로 바꾸지 마세요.** 옛 글의 오타 하나를
+    고쳐도 날짜가 오늘로 바뀌어서 서고·홈·RSS 맨 위로 올라옵니다. 티스토리에서
+    옮겨온 116편은 2022~2026 의 원본 날짜입니다 (§5-2).
+*/
+const HIDDEN_FIELDS = ['pubDate']
+
+/*
   이 칸이 어느 필드인가.
 
   ⚠ 라벨의 `for` 를 먼저 봅니다. 입력칸의 id 로 찾으면 **사진 위젯을 놓칩니다**
@@ -316,10 +336,12 @@ function layoutForm() {
 
   const form = el('div', 'lim-form')
   const main = el('div', 'lim-main')
+  const stash = el('div', 'lim-hidden')
   const meta = el('section', 'lim-meta')
   const grid = el('div', 'lim-meta-grid')
   meta.appendChild(grid)
   form.appendChild(main)
+  form.appendChild(stash)
   pane.appendChild(form)
   pane.appendChild(buildSaveModal(meta))
 
@@ -337,7 +359,16 @@ function layoutForm() {
       byName.delete(name)
     }
   }
-  /* 남은 것 — 작성일·프로젝트·토글 둘. 전부 「발행 설정」 모달로 갑니다 */
+  /* 감추는 것 — 그리기는 그대로, 자리만 안 보이는 곳으로 */
+  for (const name of HIDDEN_FIELDS) {
+    const box = byName.get(name)
+    if (box) {
+      stash.appendChild(box)
+      byName.delete(name)
+    }
+  }
+
+  /* 남은 것 — 프로젝트·토글 둘. 전부 「발행 설정」 모달로 갑니다 */
   for (const box of byName.values()) grid.appendChild(box)
 
   pane.setAttribute('data-lim', 'laid')
