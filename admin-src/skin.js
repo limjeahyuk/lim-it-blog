@@ -363,7 +363,9 @@ function editorFoot() {
     foot = el('div', 'lim-foot')
     foot.appendChild(el('span', 'lim-chars'))
     foot.appendChild(el('span', 'lim-saved'))
-    box.appendChild(foot)
+    /* 힌트 **위**, 편집기 바로 밑입니다 — 세는 것이 무엇인지 붙어 있어야
+       읽힙니다. 힌트가 없으면 맨 뒤로 갑니다. */
+    box.insertBefore(foot, box.querySelector("[class*='ControlHint']") || null)
   }
 
   const area = box.querySelector('[contenteditable="true"], textarea')
@@ -381,6 +383,30 @@ function editorFoot() {
   const saved = foot.lastChild
   if (saved.textContent !== word) saved.textContent = word
   saved.className = 'lim-saved' + (dirty ? ' is-dirty' : '')
+}
+
+/*
+  빈 칸 안내글.
+
+  Decap 은 placeholder 를 안 붙입니다 — 라벨만 있고 칸은 텅 비어 있어서,
+  시안처럼 "무엇을 적는 칸인지" 가 칸 안에서 안 읽힙니다.
+
+  ⚠ 값이 아니라 속성이라 리덕스와 부딪히지 않습니다. React 가 다시 그려도
+    없어지지 않게 손질할 때마다 확인합니다.
+*/
+const PLACEHOLDER = {
+  title: '제목을 입력하세요',
+  description: '목록에서 제목 아래 보이는 한 문장',
+}
+
+function placeholders() {
+  for (const name in PLACEHOLDER) {
+    const node = document.querySelector('[id^="' + name + '-field-"]')
+    if (!node) continue
+    if (node.tagName !== 'INPUT' && node.tagName !== 'TEXTAREA') continue
+    if (node.placeholder === PLACEHOLDER[name]) continue
+    node.placeholder = PLACEHOLDER[name]
+  }
 }
 
 /*
@@ -443,6 +469,7 @@ function pass() {
     layoutForm()
     statusPill()
     editorFoot()
+    placeholders()
   } catch (e) {
     /* 화면 하나가 안 고쳐지는 것보다 CMS 가 죽는 게 나쁩니다 */
     if (window.console) console.warn('[lim admin skin]', e)
