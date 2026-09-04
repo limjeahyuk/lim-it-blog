@@ -823,6 +823,37 @@
         color: var(--a-pri-fg);
       }
 
+      /* ── 커버 사진 — 끌어다 놓는 자리 ─────────────────────────────
+         Decap 은 「이미지 선택」 단추 하나만 그립니다. 시안처럼 점선 판으로
+         키우고 규격을 판 안에 적습니다 (아래 힌트는 어디에 쓰이는지).
+
+         ⚠ 아래 「위젯 상자」 규칙이 `border` 한 줄(!important)로 덮어씁니다 —
+           그쪽이 :not() 을 넷 달아 특이도가 높고 순서도 뒤입니다. 같은 :not()
+           을 달고 [class*='ControlContainer'] 를 앞에 붙여서 넘어섭니다. */
+      [class*='ControlContainer'][data-field='heroImage']
+        > *:not([class*='ControlTopbar']):not([class*='ControlHint']):not(
+          .lim-pills
+        ):not(.lim-foot) {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 26px 20px !important;
+        border-style: dashed !important;
+        border-width: 1.5px !important;
+        text-align: center;
+      }
+      [class*='ControlContainer'][data-field='heroImage']
+        > *:not([class*='ControlTopbar']):not([class*='ControlHint']):not(
+          .lim-pills
+        ):not(.lim-foot)::before {
+        content: '3:2 비율 · JPG / PNG · 최대 5MB\A 끌어다 놓거나 아래에서 고르세요';
+        white-space: pre-line;
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--a-faint);
+      }
+
       /* ── 본문 아래 한 줄 — 글자 수 · 저장 여부 ───────────────── */
       .lim-foot {
         display: flex;
@@ -947,12 +978,15 @@
       }
 
       /* 제목은 크게, 주소는 고정폭 — 시안 */
-      [id^='title-field-'] {
-        font-size: 22px !important;
+      /* ⚠ 부모를 하나 붙여야 합니다. 위의 `> input` 규칙이 태그를 하나 더
+           들고 있어 특이도가 높습니다 — 그냥 [id^=] 로 두면 16px 로 눌립니다. */
+      [class*='ControlContainer'] > [id^='title-field-'] {
+        font-size: 24px !important;
         font-weight: 800 !important;
+        line-height: 1.4 !important;
         padding: 14px !important;
       }
-      [id^='slug-field-'] {
+      [class*='ControlContainer'] > [id^='slug-field-'] {
         font-family:
           ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
         font-size: 15px !important;
