@@ -353,6 +353,11 @@ function layoutForm() {
   ⚠ 편집기 알맹이(tiptap·textarea)를 이름으로 찾지 않습니다. 본문 칸 안의
     `contenteditable` 이나 `textarea` 아무거나 잡습니다 — 편집기를 갈아끼워도
     (지금까지 두 번 갈았습니다) 이 줄은 그대로 굴러갑니다.
+
+  ⚠ 다만 **보이는 쪽**을 잡아야 합니다. 원문 모드에서는 tiptap 이 화면에서
+    빠지고 textarea 만 남는데, 문서 차례로는 tiptap 이 먼저라 그냥 첫 번째를
+    잡으면 **안 보이는 쪽의 글자 수**가 나옵니다. 옛 글은 원문으로 열리므로
+    (128편 중 119편) 거의 늘 틀린 수가 됩니다.
 */
 function editorFoot() {
   const box = document.querySelector('[data-field="body"]')
@@ -368,7 +373,31 @@ function editorFoot() {
     box.insertBefore(foot, box.querySelector("[class*='ControlHint']") || null)
   }
 
-  const area = box.querySelector('[contenteditable="true"], textarea')
+  /* textarea 는 글자를 쳐도 DOM 이 안 바뀌어서 위의 MutationObserver 가
+     안 깨어납니다 — 원문 모드에서 글자 수가 멈춰 있던 이유입니다.
+     본문 칸에 한 번만 걸어 둡니다. */
+  if (!box.dataset.limFoot) {
+    box.dataset.limFoot = '1'
+    box.addEventListener('input', () => {
+      try {
+        editorFoot()
+      } catch (e) {
+        /* 세는 줄 하나 때문에 글쓰기를 막지 않습니다 */
+      }
+    })
+  }
+
+  const areas = box.querySelectorAll('[contenteditable="true"], textarea')
+  let area = null
+  for (let i = 0; i < areas.length; i++) {
+    /* display:none 이면 offsetParent 가 없습니다 */
+    if (areas[i].offsetParent) {
+      area = areas[i]
+      break
+    }
+  }
+  if (!area) area = areas[0] || null
+
   let text = ''
   if (area) text = area.value != null ? area.value : area.innerText || ''
   const chars = text.trim().length + '자'

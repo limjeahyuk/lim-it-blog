@@ -68,11 +68,6 @@ const TextColor = Mark.create({
         parseHTML: (el) => (el.getAttribute('class') || '').replace(/^c-/, ''),
         renderHTML: (attrs) => ({ class: 'c-' + attrs.color }),
       },
-
-      /* ⚠ 여기 넣은 것이 Toast 자기 keymap 보다 **먼저** 걸립니다
-           (WysiwygEditor.createPlugins 가 플러그인 것을 앞에 놓습니다).
-           그래서 목록·표에서는 반드시 false 를 돌려줘야 합니다. */
-      wysiwygPlugins: [() => keymap({ Enter: splitWithBlankLine })],
     }
   },
 
@@ -380,6 +375,21 @@ function registerWidget(CMS, h) {
       clearTimeout(this.flushTimer)
       this.flushTimer = null
     }
+
+    /*
+      ⚠ 원문 모드에서는 아무것도 하지 않습니다.
+
+      원문 모드일 때 tiptap 이 들고 있는 것은 **파일에 있던 글이 아니라 그것을
+      tiptap 이 다시 쓴 것**입니다 (옛 글은 그래서 원문으로 엽니다 — 위
+      `mount` 의 `isRoundTripSafe`). 여기서 그걸 꺼내 보내면 손으로 고친
+      원문이 tiptap 판으로 덮입니다. 원문 모드의 값은 `onRawInput` 이 칠
+      때마다 바로 보내고 있어서 모아 보낼 것도 없습니다.
+
+      ⚠ **`toggleRaw` 의 서식→원문 쪽은 아직 `state.raw` 가 false 라 그대로
+        흘러갑니다.** 그쪽은 화면에 보이던 것이 곧 tiptap 의 것이라 맞습니다.
+    */
+    if (this.state.raw) return
+
     if (!this.editor) return
     const md = this.editor.getMarkdown()
     if (md === this.lastEmitted) return
