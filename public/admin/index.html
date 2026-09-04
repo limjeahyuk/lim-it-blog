@@ -764,31 +764,87 @@
         min-width: 0;
       }
 
-      /* 본문 뒤로 내린 것들 — 작성일·프로젝트·토글 둘 */
-      .lim-meta {
-        margin-top: 36px;
-        padding: 20px;
-        background-color: var(--a-card);
-        border: 1px solid var(--a-border);
-        border-radius: 14px;
+      /* ── 「발행 설정」 모달 ───────────────────────────────────────
+         작성일·프로젝트·초안·비밀글은 글을 쓰는 동안 볼 일이 없고 저장하기
+         직전에만 정합니다. 그래서 본문 아래에 펼쳐 두지 않고 「저장」을
+         누를 때 묻습니다 (가로채는 것은 skin.js).
+
+         ⚠ 판은 `pane` **안에** 있습니다 (자리는 fixed). 밖으로 옮기면 글
+           화면이 닫힐 때 React 가 걷어가지 못해 유령이 남습니다. */
+      .lim-modal {
+        display: none;
       }
-      .lim-meta > h3 {
-        margin: 0 0 4px;
+      .lim-modal.is-open {
+        display: block;
+      }
+      .lim-modal-back {
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        background-color: rgba(0, 0, 0, 0.45);
+      }
+      .lim-modal-card {
+        position: fixed;
+        z-index: 9999;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(460px, calc(100vw - 32px));
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 22px;
+        background-color: var(--a-bg);
+        border: 1px solid var(--a-border);
+        border-radius: 16px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      }
+      .lim-modal-card:focus {
+        outline: none;
+      }
+      .lim-modal-title {
+        margin: 0 0 14px;
         font-size: 11px;
         font-weight: 800;
         letter-spacing: 0.12em;
         text-transform: uppercase;
         color: var(--a-faint);
       }
-      /* 날짜·프로젝트는 나란히, 토글 둘은 각자 한 줄 */
+      /* 판이 이미 카드라, 안쪽은 테두리 없이 칸만 늘어놓습니다 */
+      .lim-meta {
+        min-width: 0;
+      }
+      /* 판이 좁아서 한 열입니다 — 본문 아래 두 열로 놓던 때와 다릅니다 */
       .lim-meta-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0 18px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
       }
-      .lim-meta-grid > [data-field='draft'],
-      .lim-meta-grid > [data-field='secret'] {
-        grid-column: 1 / -1;
+      .lim-modal-foot {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 18px;
+      }
+      .lim-modal-foot > button {
+        appearance: none;
+        padding: 10px 20px;
+        border-radius: 999px;
+        border: 1px solid var(--a-border);
+        background-color: transparent;
+        color: var(--a-dim);
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .lim-modal-cancel:hover {
+        color: var(--a-text);
+        border-color: var(--a-dim);
+      }
+      /* 위 띠의 「저장」과 같은 초록입니다 — 같은 일을 하는 단추입니다 */
+      .lim-modal-save {
+        background-color: var(--a-accent) !important;
+        border-color: var(--a-accent) !important;
+        color: var(--a-accent-fg) !important;
       }
 
       /* ── EDITOR 알약 (저자) ───────────────────────────────────────
@@ -821,6 +877,44 @@
         background-color: var(--a-pri);
         border-color: var(--a-pri);
         color: var(--a-pri-fg);
+      }
+
+      /* ── 프로젝트 라디오 ─────────────────────────────────────────
+         맨 아래 「없음」은 skin.js 가 붙이는 칸입니다 (config.yml 의 options
+         에는 없습니다). 라디오는 눌러서 끄는 것이 없어서, 그 칸이 없으면
+         한 번 고른 뒤로 영영 못 비웁니다. */
+      .lim-radios {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .lim-radio {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: 10px;
+        color: var(--a-dim);
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.2;
+        cursor: pointer;
+      }
+      .lim-radio:hover {
+        background-color: var(--a-surface);
+        color: var(--a-text);
+      }
+      .lim-radio.is-on {
+        color: var(--a-text);
+      }
+      /* 동그라미는 브라우저 것을 그대로 쓰되 색만 맞춥니다 — 직접 그리면
+         테마마다 대비를 다시 재야 합니다. */
+      .lim-radio > input {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        flex: none;
+        accent-color: var(--a-accent);
       }
 
       /* ── 커버 사진 — 끌어다 놓는 자리 ─────────────────────────────
@@ -880,8 +974,7 @@
         margin-top: 20px !important;
       }
       .lim-main > [class*='ControlContainer']:first-child,
-      .lim-meta-grid > [class*='ControlContainer']:first-child,
-      .lim-meta-grid > [class*='ControlContainer']:nth-child(2) {
+      .lim-meta-grid > [class*='ControlContainer']:first-child {
         margin-top: 0 !important;
       }
       /* 본문은 앞뒤로 더 띄웁니다 — 여기가 지면의 중심입니다 */
@@ -928,12 +1021,13 @@
         날짜는 상자가 div 라 태그로는 안 걸립니다. emotion 해시에도 안
         기대니 Decap 을 올려도 같이 굴러갑니다.
       */
-      /* ⚠ .lim-pills · .lim-foot 는 skin.js 가 끼워 넣은 것입니다. 여기서
-         빼지 않으면 알약 줄과 글자 수 줄에도 카드 배경과 테두리가 칠해집니다. */
+      /* ⚠ .lim-pills · .lim-radios · .lim-foot 는 skin.js 가 끼워 넣은
+         것입니다. 여기서 빼지 않으면 알약 줄·라디오 줄·글자 수 줄에도 카드
+         배경과 테두리가 칠해집니다. */
       [class*='ControlContainer']
         > *:not([class*='ControlTopbar']):not([class*='ControlHint']):not(
           .lim-pills
-        ):not(.lim-foot),
+        ):not(.lim-radios):not(.lim-foot),
       [class*='SearchInput'],
       [class*='InputContainer'] {
         background-color: var(--a-card) !important;
@@ -1178,20 +1272,13 @@
         margin-top: 0 !important;
       }
 
-      /* 좁아지면 가운데 폭 제한을 풀고 발행 설정도 한 줄씩 */
+      /* 좁아지면 가운데 폭 제한을 풉니다 */
       @media (max-width: 940px) {
         .lim-form {
           max-width: none;
         }
         .lim-main {
           width: 100%;
-        }
-        /* 날짜·프로젝트도 한 줄씩 — 나란히 두면 둘 다 글자가 잘립니다 */
-        .lim-meta-grid {
-          grid-template-columns: minmax(0, 1fr);
-        }
-        .lim-meta-grid > [class*='ControlContainer']:nth-child(2) {
-          margin-top: 16px !important;
         }
       }
 
@@ -1333,9 +1420,8 @@
         [class*='ControlContainer'] {
           margin-top: 16px !important;
         }
-        .lim-meta {
-          margin-top: 28px;
-          padding: 16px;
+        .lim-modal-card {
+          padding: 18px;
         }
         .lim-pill {
           padding: 8px 15px;
@@ -1443,6 +1529,6 @@
       config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
       바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=9"></script>
+    <script src="/admin/editor.js?v=10"></script>
   </body>
 </html>

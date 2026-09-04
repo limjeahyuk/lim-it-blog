@@ -247,18 +247,19 @@ function decorateList() {
 }
 
 /* -------------------------------------------------------------------
-   글 편집 — 왼쪽(쓰는 것) / 오른쪽 카드(분류)
+   글 편집 — 쓰는 것은 한 열로, 「발행 설정」은 저장할 때 묻습니다
 
    ⚠ 나누는 기준은 필드 이름입니다. Decap 이 입력칸마다 `<이름>-field-N`
      으로 id 를 주기 때문에 emotion 해시나 순서에 기대지 않습니다.
      config.yml 에 필드를 더하면 **여기 목록에도 넣으세요** — 빠진 것은
-     왼쪽(본문 쪽)에 남습니다.
+     「발행 설정」 모달로 갑니다.
    ------------------------------------------------------------------- */
 
 /*
   시안 차례. 위에서부터 이대로 세웁니다.
-  ⚠ config.yml 에 필드를 더하면 **여기에도 넣으세요.** 안 적힌 것은 아래
-    「발행 설정」 묶음으로 갑니다 — 빠뜨려도 사라지지는 않습니다.
+  ⚠ config.yml 에 필드를 더하면 **여기에도 넣으세요.** 안 적힌 것은
+    「발행 설정」 모달로 갑니다 — 빠뜨려도 사라지지는 않지만, 글을 쓰는
+    동안에는 화면에서 안 보이게 됩니다.
 */
 const WRITE_FIELDS = [
   'author',
@@ -316,12 +317,11 @@ function layoutForm() {
   const form = el('div', 'lim-form')
   const main = el('div', 'lim-main')
   const meta = el('section', 'lim-meta')
-  meta.appendChild(el('h3', null, '발행 설정'))
   const grid = el('div', 'lim-meta-grid')
   meta.appendChild(grid)
   form.appendChild(main)
-  form.appendChild(meta)
   pane.appendChild(form)
+  pane.appendChild(buildSaveModal(meta))
 
   const byName = new Map()
   for (const box of boxes) {
@@ -337,10 +337,141 @@ function layoutForm() {
       byName.delete(name)
     }
   }
-  /* 남은 것 — 작성일·프로젝트·토글 둘 */
+  /* 남은 것 — 작성일·프로젝트·토글 둘. 전부 「발행 설정」 모달로 갑니다 */
   for (const box of byName.values()) grid.appendChild(box)
 
   pane.setAttribute('data-lim', 'laid')
+}
+
+/* -------------------------------------------------------------------
+   「발행 설정」 모달 — 저장을 누르면 묻습니다
+
+   왜 모달이냐: 작성일·프로젝트·초안·비밀글은 **글을 쓰는 동안에는 볼 일이
+   없고, 저장하기 직전에만 정하는 것들**입니다. 본문 아래에 늘 펼쳐 두면
+   폰에서 스크롤만 길어지고, 정작 저장할 때는 위 띠만 보고 눌러서 초안
+   토글을 그냥 지나칩니다.
+
+   Decap 의 「저장」은 사실 **드롭다운**입니다 (`PublishButton`). 눌러야
+   메뉴가 열리고 거기서 "지금 게시" 를 한 번 더 눌러야 합니다. 그 첫 번째
+   누름을 가로채 모달을 열고, 모달의 「저장」이 원래 순서(단추 → 첫 메뉴
+   항목)를 대신 밟습니다.
+
+   ⚠ **`PublishButton` 일 때만 가로챕니다.** 고칠 것이 없는 글에서는 같은
+     자리가 `PublishedToolbarButton`(메뉴에 「복제」뿐)이라, 그때까지
+     가로채면 복제를 못 하게 됩니다. 두 이름은 서로 부분문자열이 아닙니다.
+   ⚠ **`document` 의 캡처 단계에서 잡습니다.** React 는 루트 컨테이너에
+     듣기 때문에 그보다 먼저 걸립니다 — 여기서 stopPropagation 을 해야
+     드롭다운이 안 열립니다.
+   ⚠ **모달은 `pane` 안에 둡니다** (자리는 `position: fixed`). 밖으로 옮기면
+     글 화면이 언마운트될 때 React 가 `pane` 만 걷어가고 모달은 남습니다 —
+     안에 든 것이 React 가 그린 필드 칸이라 유령이 됩니다.
+
+   ⚠ **드롭다운의 나머지 둘(「게시하고 새로 만들기」·「게시하고 복제」)은
+     이제 못 누릅니다.** 혼자 쓰는 저장소에서 쓸 일이 없다고 보고 버렸습니다.
+     되살리려면 모달 아래에 줄로 다세요 — 가로채기를 푸는 쪽은 안 됩니다.
+   ------------------------------------------------------------------- */
+
+const SAVE_BUTTON = "[class*='ToolbarSectionMain'] [class*='PublishButton']"
+
+/** 모달을 거치지 않고 통과시키는 동안만 켭니다 (모달의 「저장」이 켭니다). */
+let passingThrough = false
+
+function buildSaveModal(meta) {
+  const back = el('div', 'lim-modal-back')
+  back.addEventListener('click', closeSaveModal)
+
+  const card = el('div', 'lim-modal-card')
+  card.setAttribute('role', 'dialog')
+  card.setAttribute('aria-modal', 'true')
+  card.setAttribute('aria-label', '발행 설정')
+  card.setAttribute('tabindex', '-1')
+  card.appendChild(el('h3', 'lim-modal-title', '발행 설정'))
+  card.appendChild(meta)
+
+  const foot = el('div', 'lim-modal-foot')
+  const cancel = el('button', 'lim-modal-cancel', '취소')
+  cancel.type = 'button'
+  cancel.addEventListener('click', closeSaveModal)
+  const save = el('button', 'lim-modal-save', '저장')
+  save.type = 'button'
+  save.addEventListener('click', confirmSave)
+  foot.appendChild(cancel)
+  foot.appendChild(save)
+  card.appendChild(foot)
+
+  const modal = el('div', 'lim-modal')
+  modal.appendChild(back)
+  modal.appendChild(card)
+  return modal
+}
+
+function openSaveModal() {
+  const modal = document.querySelector('.lim-modal')
+  if (!modal) return false
+  modal.classList.add('is-open')
+  const card = modal.querySelector('.lim-modal-card')
+  if (card) card.focus()
+  return true
+}
+
+function closeSaveModal() {
+  const modal = document.querySelector('.lim-modal')
+  if (modal) modal.classList.remove('is-open')
+  /* 눌렀던 자리로 초점을 돌려줍니다 — 키보드로 다니는 사람이 길을 잃습니다 */
+  const btn = document.querySelector(SAVE_BUTTON)
+  if (btn && btn.focus) btn.focus()
+}
+
+/*
+  모달의 「저장」. 원래 순서를 대신 밟습니다 — 단추를 눌러 드롭다운을 열고,
+  첫 항목(「지금 게시」)을 누릅니다.
+
+  ⚠ 메뉴는 React 가 그리고 나서야 생깁니다. 한 번 보고 없으면 잠깐씩 더
+    봅니다 — 그래도 없으면 **메뉴를 열어 둔 채 손을 뗍니다.** 저장이 안 된
+    것을 됐다고 알리는 것보다, 사용자가 한 번 더 누르는 편이 낫습니다.
+*/
+function confirmSave() {
+  const btn = document.querySelector(SAVE_BUTTON)
+  if (!btn) return
+  closeSaveModal()
+
+  passingThrough = true
+  btn.click()
+  passingThrough = false
+
+  let tries = 0
+  const pick = () => {
+    const item = document.querySelector("[class*='DropdownList'] [role='menuitem']")
+    if (item) {
+      item.click()
+      return
+    }
+    if (++tries < 12) {
+      setTimeout(pick, 30)
+      return
+    }
+    if (window.console) {
+      console.warn('[lim admin skin] 저장 메뉴를 못 찾았습니다 — 직접 골라 주세요')
+    }
+  }
+  setTimeout(pick, 0)
+}
+
+function onSaveIntent(e) {
+  if (passingThrough) return
+  const target = e.target && e.target.closest ? e.target.closest(SAVE_BUTTON) : null
+  if (!target) return
+  if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return
+  if (!document.querySelector('.lim-modal')) return /* 못 세웠으면 Decap 것 그대로 */
+  e.preventDefault()
+  e.stopPropagation()
+  openSaveModal()
+}
+
+function onEscape(e) {
+  if (e.key !== 'Escape') return
+  const modal = document.querySelector('.lim-modal.is-open')
+  if (modal) closeSaveModal()
 }
 
 /*
@@ -506,20 +637,27 @@ function pass() {
 }
 
 /* -------------------------------------------------------------------
-   EDITOR 알약 — 저자 고르기
+   고르는 칸 둘 — 저자(알약) · 프로젝트(라디오)
 
-   Decap 의 select 는 눌러야 펴지는 목록(react-select)입니다. 저자가 둘뿐이라
-   "눌러서 펴고 → 고르고 → 접힘" 이 매번 세 동작이 됩니다. 시안처럼 알약을
-   늘어놓고 한 번에 고르게 바꿉니다.
+   Decap 의 select 는 눌러야 펴지는 목록(react-select)입니다. 저자가 둘,
+   프로젝트가 셋뿐이라 "눌러서 펴고 → 고르고 → 접힘" 이 매번 세 동작이
+   됩니다. 늘어놓고 한 번에 고르게 바꿉니다.
+
+   | 이름 | 모양 | 비우는 법 |
+   |---|---|---|
+   | `author` | 알약 | 고른 것을 다시 누릅니다 |
+   | `project` | 라디오 | 「없음」을 고릅니다 |
+
+   ⚠ **둘 다 `required: false` 라 "안 고름" 도 값입니다.** 되돌릴 길이 없으면
+     한 번 고른 뒤로는 영영 못 비웁니다. 알약은 다시 누르기로, 라디오는
+     「없음」 칸으로 그 길을 냅니다 — 라디오는 눌러서 끄는 것이 없습니다.
 
    ⚠ 등록 이름은 **select 그대로**입니다. config.yml 에 없는 위젯 이름을 적으면
      이 파일이 안 떴을 때 폼이 통째로 깨집니다 (주소 칸과 같은 이유 — §6-2).
-     이름이 `author` 일 때만 알약으로 그리고 나머지(프로젝트)는 Decap 것을
-     그대로 돌려줍니다.
+     아는 이름이 아니면 Decap 것을 그대로 돌려줍니다.
 
-   ⚠ 알약을 감싼 div 에 `id={forID}` 를 그대로 답니다. layoutForm() 이 필드
-     이름을 `<이름>-field-N` 에서 뽑기 때문에, 이걸 빼면 저자 칸이 「발행 설정」
-     으로 떨어집니다.
+   ⚠ 감싼 div 에 `id={forID}` 를 그대로 답니다. layoutForm() 이 필드 이름을
+     `<이름>-field-N` 에서 뽑기 때문에, 이걸 빼면 그 칸이 갈 곳을 잃습니다.
    ------------------------------------------------------------------- */
 
 /** `study Lim — 배운 것` 에서 이름만. 알약은 좁아서 뒷말이 들어갈 자리가 없습니다. */
@@ -533,6 +671,45 @@ function fieldOptions(field) {
   const list = raw.toJS ? raw.toJS() : raw
   return list.map((o) =>
     o && typeof o === 'object' ? o : { label: String(o), value: o },
+  )
+}
+
+/*
+  프로젝트 라디오.
+
+  ⚠ 「없음」이 맨 뒤에 하나 더 붙습니다 — config.yml 의 options 에는 없는,
+    여기서만 만드는 칸입니다. 값은 빈 문자열이고 스키마가 그걸 "값 없음"
+    으로 봅니다 (content.config.ts 의 blankAsUndefined, §3). options 에
+    넣지 않는 이유는 **`project: ''` 가 파일에 남는 것과 키가 아예 없는 것을
+    구분하지 않기 때문**입니다 — 굳이 고를 수 있는 값처럼 보일 필요가 없습니다.
+
+  ⚠ `name` 은 `forID` 를 씁니다. 라디오는 name 이 같은 것끼리 한 묶음이라,
+    고정 문자열을 주면 폼에 프로젝트 칸이 둘 이상 뜰 때 서로를 끕니다.
+*/
+function renderRadios(h, p, options) {
+  const rows = options.concat([{ label: '없음', value: '' }])
+  return h(
+    'div',
+    { className: 'lim-radios', id: p.forID },
+    rows.map((o) =>
+      h(
+        'label',
+        {
+          key: o.value || '__none',
+          className: 'lim-radio' + (p.value === o.value ? ' is-on' : ''),
+        },
+        h('input', {
+          type: 'radio',
+          name: p.forID,
+          value: o.value,
+          /* 빈 값일 때 undefined·null 도 「없음」으로 봅니다 — 손으로 쓴 글에는
+             project 키가 아예 없습니다 */
+          checked: (p.value || '') === o.value,
+          onChange: () => p.onChange(o.value),
+        }),
+        h('span', null, o.label),
+      ),
+    ),
   )
 }
 
@@ -557,10 +734,12 @@ function registerAuthorPills(CMS, h) {
   LimSelectControl.prototype.render = function () {
     const p = this.props
     const name = p.field && p.field.get ? p.field.get('name') : null
-    if (name !== 'author') return h(Original, p)
+    if (name !== 'author' && name !== 'project') return h(Original, p)
 
     const options = fieldOptions(p.field)
     if (!options.length) return h(Original, p)
+
+    if (name === 'project') return renderRadios(h, p, options)
 
     return h(
       'div',
@@ -632,6 +811,12 @@ export function startSkin() {
 
   /* 주소가 바뀌는 것(목록 ↔ 글 ↔ 검색결과)도 따로 챙깁니다 */
   window.addEventListener('hashchange', () => setTimeout(pass, 0))
+
+  /* 「저장」을 가로채 발행 설정을 먼저 묻습니다 — 캡처 단계여야 React 보다
+     먼저 걸립니다. 모달이 없으면 아무것도 안 하고 지나갑니다. */
+  document.addEventListener('click', onSaveIntent, true)
+  document.addEventListener('keydown', onSaveIntent, true)
+  document.addEventListener('keydown', onEscape, true)
 
   pass()
 }
