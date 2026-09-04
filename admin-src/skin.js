@@ -87,14 +87,10 @@ function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme)
   paintThemeButton(theme)
   /*
-    Toast 는 만들 때 정한 테마를 클래스로 들고 있습니다 — 나중에 바꾸려면
-    그 클래스를 직접 켰다 꺼야 합니다. (편집기를 다시 만들면 커서와 되돌리기
-    기록이 날아갑니다.)
+    편집기는 손댈 것이 없습니다 — 색을 전부 `--a-*` 토큰과
+    `html[data-theme]` 로 받기 때문에 루트 속성만 바꾸면 따라옵니다.
+    (Toast 를 쓰던 동안에는 여기서 클래스를 켰다 꺼야 했습니다.)
   */
-  const dark = theme === 'dark'
-  document.querySelectorAll('.toastui-editor-defaultUI').forEach((el) => {
-    el.classList.toggle('toastui-editor-dark', dark)
-  })
 }
 
 function toggleTheme() {

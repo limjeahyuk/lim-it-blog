@@ -25,10 +25,14 @@
     "sharp": "^0.35.0"
   },
   "devDependencies": {
-    "@toast-ui/editor": "^3.2.2",
-    "@toast-ui/editor-plugin-table-merged-cell": "^3.1.0",
+    "@tiptap/core": "^3.31.2",
+    "@tiptap/extension-image": "^3.31.2",
+    "@tiptap/extension-list": "^3.31.2",
+    "@tiptap/extension-table": "^3.31.2",
+    "@tiptap/markdown": "^3.31.2",
+    "@tiptap/pm": "^3.31.2",
+    "@tiptap/starter-kit": "^3.31.2",
     "esbuild": "^0.28.2",
-    "jsdom": "^29.1.1",
-    "prosemirror-keymap": "^1.2.3"
+    "jsdom": "^29.1.1"
   }
 }

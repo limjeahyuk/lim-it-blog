@@ -21,11 +21,11 @@
     <link href="/admin/config.yml?v=10" type="text/yaml" rel="cms-config-url" />
 
     <!--
-      본문 편집기(Toast UI)의 CSS. editor.js 를 묶을 때 esbuild 가 같이
+      본문 편집기의 CSS. editor.js 를 묶을 때 esbuild 가 같이
       뽑아 놓습니다 — 둘 다 저장소에 커밋합니다 (Vercel 이 astro build 를
       직접 부르면 npm run admin 이 안 돌기 때문입니다).
     -->
-    <link rel="stylesheet" href="/admin/editor.css?v=2" />
+    <link rel="stylesheet" href="/admin/editor.css?v=4" />
 
     <!--
       테마를 그리기 전에 정합니다. 블로그와 같은 열쇠(localStorage 'theme')를
@@ -953,242 +953,24 @@
       }
 
       /* ===============================================================
-         4. 본문 편집기 — Toast UI Editor
+         4. 본문 편집기 — tiptap
 
          Decap 기본 markdown 위젯을 갈아끼운 것입니다. 왜 갈아끼웠고 왜
-         Toast 인지는 admin-src/editor.js 맨 위에 적어 뒀습니다.
+         tiptap 인지는 admin-src/editor.js 맨 위에 적어 뒀습니다.
 
-         ⚠ Toast 의 CSS 는 editor.css 로 따로 나옵니다 (head 의 link).
+         ⚠ **편집기 모양은 여기 없습니다.** `admin-src/editor.css` 에 있고
+           `editor.css` 로 나옵니다 (head 의 link). 본문 안쪽은 블로그
+           `.prose` 를 그대로 옮긴 것이라 한곳에 모아 둔 편이 낫습니다.
+           여기 남긴 것은 **Decap 이 씌우는 상자를 벗기는 것**뿐입니다.
          =============================================================== */
 
-      /* 본문 칸은 상자를 두르지 않습니다 — Toast 가 자기 상자를 그립니다 */
+      /* 본문 칸은 Decap 상자를 두르지 않습니다 — 편집기가 자기 상자를 그립니다 */
       [class*='ControlContainer'] > .lim-md {
         background-color: transparent !important;
         border: 0 !important;
         border-radius: 0 !important;
         padding: 0 !important;
         overflow: visible !important;
-      }
-
-      .lim-md-editor {
-        border-radius: 10px;
-        overflow: hidden;
-      }
-
-      /* Toast 는 자기 폰트를 씁니다 — 블로그 폰트로 맞춥니다 */
-      .toastui-editor-defaultUI,
-      .toastui-editor-contents,
-      .toastui-editor-defaultUI textarea,
-      .toastui-editor-defaultUI input {
-        font-family:
-          'Pretendard', -apple-system, BlinkMacSystemFont, system-ui,
-          sans-serif !important;
-      }
-
-      .toastui-editor-defaultUI {
-        border-color: var(--a-border) !important;
-        border-radius: 10px !important;
-      }
-
-      /*
-        ⚠ 툴바 칸의 높이를 풀어 줘야 합니다.
-
-          원문 모드에서는 이 칸 안에 "마크다운/미리보기" 탭 줄과 버튼 줄이
-          **둘 다** 들어가는데, Toast 는 높이를 46px 로 못박아 둡니다. 그대로
-          두면 버튼 줄이 칸 밖으로 흘러나와 본문 위에 겹쳐 그려집니다 —
-          툴바가 안 보이는 것처럼 됩니다 (한참 찾았습니다).
-      */
-      .toastui-editor-toolbar {
-        display: flex !important;
-        flex-direction: column;
-        height: auto !important;
-        /*
-          ⚠ 탭 줄(편집하기/미리보기)과 버튼 줄이 이 칸 안에 같이 들어갑니다.
-            탭 줄만 흰 바탕으로 두면 안내문과 툴바 사이에 흰 띠가 하나 뜬
-            것처럼 보입니다 — 칸 전체를 툴바 색으로 깔아서 한 덩어리로
-            읽히게 합니다.
-        */
-        background-color: var(--a-surface) !important;
-        border-bottom: 1px solid var(--a-border) !important;
-      }
-
-      /* 마크다운 ↔ 미리보기 탭을 오른쪽 위로 (시안) */
-      .toastui-editor-md-tab-container {
-        align-self: flex-end;
-        background-color: transparent !important;
-        border: 0 !important;
-        height: auto !important;
-        padding: 6px 8px 2px !important;
-      }
-      .toastui-editor-md-tab-container .tab-item {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        line-height: 1 !important;
-        height: 28px !important;
-        padding: 0 12px !important;
-        border: 1px solid var(--a-border) !important;
-        border-radius: 999px !important;
-        margin-left: 4px;
-        background-color: transparent !important;
-        color: var(--a-dim) !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-      }
-      .toastui-editor-md-tab-container .tab-item.active {
-        background-color: var(--a-card) !important;
-        color: var(--a-text) !important;
-      }
-
-      /*
-        ⚠ 툴바를 sticky 로 붙이지 마세요. tiptap 때는 붙여 뒀는데, Toast 는
-          툴바 칸(.toastui-editor-toolbar)과 실제 버튼 줄이 따로 놀아서
-          바깥만 붙고 버튼은 제자리에 남습니다 (재 보고 걷어냈습니다).
-      */
-
-      .toastui-editor-defaultUI-toolbar {
-        border-bottom: 0 !important;
-        /*
-          ⚠ 폭을 못박아야 합니다. 이 칸이 내용 크기로 줄어들면 Toast 가
-            "폭이 모자라다"고 보고 버튼을 "..." 안으로 옮기는데, 그러면 칸이
-            더 줄어들고 또 옮깁니다 — 두 개만 남을 때까지 되풀이됩니다.
-            (Toast 는 이 칸의 clientWidth 를 ResizeObserver 로 봅니다.)
-        */
-        width: 100% !important;
-        background-color: var(--a-surface) !important;
-        border-color: var(--a-border) !important;
-      }
-
-      /*
-        ⚠ 본문 글자는 16px 아래로 내리지 마세요. iOS 사파리는 16px 미만
-          입력칸을 탭하면 화면을 확대합니다 — 글을 쓸 때마다 확대됩니다.
-      */
-      .toastui-editor-contents,
-      .toastui-editor-md-container .toastui-editor,
-      .toastui-editor-md-container .ProseMirror {
-        font-size: 16px !important;
-        line-height: 1.75 !important;
-      }
-
-      .toastui-editor-main .ProseMirror {
-        padding: 16px 14px 40px !important;
-      }
-
-      /*
-        ⚠ Toast 의 minHeight 옵션은 vh 를 못 받습니다 (px 만). 기본 높이로
-          두면 대여섯 줄 만에 차고, 그때부터 작은 창 안에서 스크롤하며 쓰게
-          됩니다 — 여기서 화면 높이로 잡아 줍니다.
-      */
-      .toastui-editor-main .ProseMirror,
-      .toastui-editor-md-container .toastui-editor {
-        min-height: 55vh !important;
-      }
-
-      /* 이 블로그가 쓰는 것 둘 — 글자 색과 형광펜.
-         색을 늘리면 editor.js·global.css·여기 셋을 같이 고쳐야 합니다. */
-      .toastui-editor-contents .c-teal {
-        color: #00838a;
-      }
-      .toastui-editor-contents .c-blue {
-        color: #123fa5;
-      }
-      .toastui-editor-contents .c-green {
-        color: #09721a;
-      }
-      .toastui-editor-contents .c-orange {
-        color: #b24c00;
-      }
-      .toastui-editor-contents .c-red {
-        color: #d52525;
-      }
-      .toastui-editor-contents mark {
-        background-color: #93eaeb;
-        color: #16181d;
-        border-radius: 3px;
-        padding: 0 2px;
-      }
-
-      /* 어두운 화면에서는 밝은 쪽으로. Toast 가 자기 어두운 옷을 입을 때
-         붙이는 클래스를 그대로 씁니다 — 테마를 바꾸면 skin.js 가 켰다 끕니다. */
-      .toastui-editor-dark .toastui-editor-contents .c-teal {
-        color: #58dddf;
-      }
-      .toastui-editor-dark .toastui-editor-contents .c-blue {
-        color: #429ff5;
-      }
-      .toastui-editor-dark .toastui-editor-contents .c-green {
-        color: #5bc25d;
-      }
-      .toastui-editor-dark .toastui-editor-contents .c-orange {
-        color: #ff9100;
-      }
-      .toastui-editor-dark .toastui-editor-contents .c-red {
-        color: #fe6d6d;
-      }
-      .toastui-editor-dark .toastui-editor-contents mark {
-        background-color: #2b6f70;
-        color: #eef1f5;
-      }
-
-      /*
-        직접 넣은 툴바 버튼(색·형광·사진)은 글자입니다. Toast 의 아이콘
-        버튼은 배경 그림으로 그려지므로, 같은 칸에 앉히되 그림만 뺍니다.
-      */
-      .toastui-editor-toolbar-icons.lim-tb {
-        background-image: none !important;
-        width: auto !important;
-        min-width: 32px;
-        padding: 0 6px !important;
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--a-dim);
-      }
-
-      .toastui-editor-toolbar-icons.lim-tb:hover {
-        color: var(--a-text);
-      }
-
-      .lim-palette {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-        padding: 10px;
-      }
-
-      .lim-swatch {
-        width: 24px;
-        height: 24px;
-        border: 0;
-        border-radius: 50%;
-        font-size: 0;
-        cursor: pointer;
-      }
-
-      .lim-swatch.is-none {
-        width: auto;
-        height: 24px;
-        padding: 0 10px;
-        border: 1px solid var(--a-border);
-        border-radius: 999px;
-        background: transparent;
-        color: var(--a-dim);
-        font-size: 12px;
-      }
-
-      .lim-popup .toastui-editor-popup-body {
-        padding: 0 !important;
-      }
-
-      /* 옛 글을 원문으로 열었을 때 위에 붙는 한 줄 */
-      .lim-md-note {
-        margin: 0 0 8px;
-        padding: 8px 10px;
-        border-radius: 8px;
-        background-color: var(--a-surface);
-        color: var(--a-dim);
-        font-size: 13px;
-        line-height: 1.5;
       }
 
       /* ===============================================================
@@ -1538,6 +1320,6 @@
       config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
       바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=6"></script>
+    <script src="/admin/editor.js?v=8"></script>
   </body>
 </html>

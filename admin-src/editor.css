@@ -1,0 +1,360 @@
+/*
+  /admin 본문 편집기의 모양.
+
+  ⚠ **본문 안쪽은 블로그 `.prose`(src/styles/global.css)를 그대로 옮긴
+    것입니다.** 편집기에서 보이는 모양과 올라간 글이 다르면 게시해 봐야
+    확인이 되고, 그게 위지윅을 쓰는 이유를 없앱니다. `.prose` 를 고치면
+    여기도 같이 고치세요.
+
+  값이 `--a-*` 인 것은 /admin 이 블로그 토큰을 손으로 옮겨 둔 것입니다
+  (admin/index.html). `--surface-2` 에 해당하는 칸이 없어서 인용문·표
+  머리는 `--a-surface` 를 씁니다.
+*/
+
+/* ── 도구 띠 ─────────────────────────────────────────── */
+
+.lim-md {
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/*
+  ⚠ **줄바꿈합니다.** 넘치는 단추를 "..." 안으로 숨기지 마세요 — Toast 를
+    쓰던 동안 제일 자주 쓰는 「사진」이 거기 숨어서 매번 두 번 눌렀습니다.
+*/
+.lim-md-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  padding: 6px;
+  border: 1px solid var(--a-border);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background-color: var(--a-surface);
+}
+
+/* 묶음 사이에만 획을 하나 긋습니다 — 단추가 열넷이라 덩어리가 안 보이면 못 찾습니다 */
+.lim-md-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding-right: 6px;
+  border-right: 1px solid var(--a-border);
+}
+
+.lim-md-group.is-last {
+  margin-left: auto;
+  padding-right: 0;
+  border-right: 0;
+}
+
+.lim-md-btn {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--a-dim);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lim-md-btn:hover:not(:disabled) {
+  background-color: var(--a-card);
+  color: var(--a-text);
+}
+
+.lim-md-btn.is-on {
+  background-color: var(--a-accent);
+  border-color: var(--a-accent);
+  color: var(--a-accent-fg);
+}
+
+.lim-md-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* 단추 모양이 곧 하는 일입니다 — B 는 굵게, I 는 기울임 */
+.lim-md-btn.is-bold { font-weight: 900; }
+.lim-md-btn.is-italic { font-style: italic; }
+.lim-md-btn.is-strike { text-decoration: line-through; }
+
+.lim-md-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border-inline: 1px solid var(--a-border);
+  background-color: var(--a-surface);
+}
+
+.lim-md-swatch {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  font-size: 0;
+  cursor: pointer;
+}
+
+.lim-md-swatch.is-none {
+  width: auto;
+  padding: 0 10px;
+  border: 1px solid var(--a-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--a-dim);
+  font-size: 12px;
+}
+
+/* 옛 글을 원문으로 열었을 때 위에 붙는 한 줄 */
+.lim-md-note {
+  margin: 0;
+  padding: 8px 10px;
+  border-inline: 1px solid var(--a-border);
+  background-color: var(--a-surface);
+  color: var(--a-dim);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── 본문 칸 ─────────────────────────────────────────── */
+
+.lim-md-editor.is-hidden {
+  display: none;
+}
+
+.lim-md-editor .ProseMirror,
+.lim-md-ta {
+  min-height: 55vh;
+  padding: 16px 14px 40px;
+  border: 1px solid var(--a-border);
+  border-radius: 0 0 8px 8px;
+  background-color: var(--a-card);
+  color: var(--a-text);
+  outline: none;
+}
+
+.lim-md-ta {
+  display: block;
+  width: 100%;
+  resize: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* ⚠ 16px 아래로 내리지 마세요. iOS 사파리는 16px 미만 입력칸을 탭하면
+       화면을 확대합니다 — 글을 쓸 때마다 확대됩니다. */
+  font-size: 16px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/*
+  ⚠ **Decap 은 `h1…h6, p` 에 글자색을 전역으로 깝니다.** 물려받는 색은 직접
+    적힌 색을 못 이겨서, 이것이 없으면 어두운 배경에 어두운 글자가 됩니다
+    (재 보니 `rgb(49,61,62)` 였습니다). 편집기 안에서 도로 물려받게 합니다.
+*/
+.lim-md-editor .ProseMirror :where(p, h1, h2, h3, h4, h5, h6, li, th, td, figcaption) {
+  color: inherit;
+}
+
+/* ── 여기부터는 블로그 `.prose` 를 옮긴 것입니다 ─────── */
+
+.lim-md-editor .ProseMirror {
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+.lim-md-editor .ProseMirror > * + * {
+  margin-top: 1.25em;
+}
+
+.lim-md-editor .ProseMirror h2 {
+  margin: 2.5em 0 0.7em;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid var(--a-border);
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.lim-md-editor .ProseMirror h3 {
+  margin: 2em 0 0.5em;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.lim-md-editor .ProseMirror h4 {
+  margin: 1.7em 0 0.4em;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--a-dim);
+}
+
+.lim-md-editor .ProseMirror h4,
+.lim-md-editor .ProseMirror blockquote,
+.lim-md-editor .ProseMirror blockquote :where(p, li) {
+  color: var(--a-dim);
+}
+
+.lim-md-editor .ProseMirror p {
+  margin: 0;
+}
+
+.lim-md-editor .ProseMirror ul,
+.lim-md-editor .ProseMirror ol {
+  padding-left: 1.35em;
+  margin: 0;
+}
+
+.lim-md-editor .ProseMirror li + li {
+  margin-top: 0.4em;
+}
+
+.lim-md-editor .ProseMirror li > p {
+  margin: 0;
+}
+
+.lim-md-editor .ProseMirror blockquote {
+  margin: 0;
+  padding: 0.6em 1.1em;
+  border-radius: 8px;
+  border-left: 3px solid var(--a-accent);
+  background-color: var(--a-surface);
+  color: var(--a-dim);
+}
+
+.lim-md-editor .ProseMirror a {
+  color: var(--a-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lim-md-editor .ProseMirror strong {
+  font-weight: 700;
+  color: var(--a-text);
+}
+
+.lim-md-editor .ProseMirror :not(pre) > code {
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+  background-color: var(--a-surface);
+  font-size: 0.875em;
+}
+
+.lim-md-editor .ProseMirror pre {
+  padding: 1rem 1.15rem;
+  border-radius: 8px;
+  background-color: var(--a-surface);
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+.lim-md-editor .ProseMirror pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.lim-md-editor .ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.lim-md-editor .ProseMirror :where(th, td) {
+  border: 1px solid var(--a-border);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.lim-md-editor .ProseMirror th {
+  background-color: var(--a-surface);
+  font-weight: 600;
+}
+
+.lim-md-editor .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.lim-md-editor .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid var(--a-accent);
+}
+
+.lim-md-editor .ProseMirror hr {
+  margin: 2.5em 0;
+  border: 0;
+  border-top: 1px solid var(--a-border);
+}
+
+/* 할 일 목록 — 마크다운의 `- [ ]` 입니다 */
+.lim-md-editor .ProseMirror ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0.2em;
+}
+
+.lim-md-editor .ProseMirror ul[data-type='taskList'] li {
+  display: flex;
+  gap: 0.5em;
+}
+
+/* 이 블로그가 쓰는 것 둘 — 글자 색과 형광펜.
+   색을 늘리면 editor.js 의 COLORS, global.css 의 `.prose .c-*`, 여기 셋을
+   같이 고쳐야 합니다. */
+.lim-md-editor .ProseMirror .c-teal { color: #58dddf; }
+.lim-md-editor .ProseMirror .c-blue { color: #429ff5; }
+.lim-md-editor .ProseMirror .c-green { color: #5bc25d; }
+.lim-md-editor .ProseMirror .c-orange { color: #ff9100; }
+.lim-md-editor .ProseMirror .c-red { color: #fe6d6d; }
+
+.lim-md-editor .ProseMirror mark {
+  background-color: #2b6f70;
+  color: #eef1f5;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+@media (prefers-color-scheme: light) {
+  .lim-md-editor .ProseMirror .c-teal { color: #00838a; }
+  .lim-md-editor .ProseMirror .c-blue { color: #123fa5; }
+  .lim-md-editor .ProseMirror .c-green { color: #09721a; }
+  .lim-md-editor .ProseMirror .c-orange { color: #b24c00; }
+  .lim-md-editor .ProseMirror .c-red { color: #d52525; }
+
+  .lim-md-editor .ProseMirror mark {
+    background-color: #93eaeb;
+    color: #16181d;
+  }
+}
+
+/*
+  ⚠ 테마를 손으로 고르면 html[data-theme] 이 붙습니다 (admin/index.html).
+    위의 라이트 규칙은 OS 설정만 보기 때문에, 강제로 고른 쪽을 여기서 한 번
+    더 적어 줍니다 — 안 적으면 OS 다크 + 라이트 선택에서 색이 안 바뀝니다.
+*/
+html[data-theme='light'] .lim-md-editor .ProseMirror .c-teal { color: #00838a; }
+html[data-theme='light'] .lim-md-editor .ProseMirror .c-blue { color: #123fa5; }
+html[data-theme='light'] .lim-md-editor .ProseMirror .c-green { color: #09721a; }
+html[data-theme='light'] .lim-md-editor .ProseMirror .c-orange { color: #b24c00; }
+html[data-theme='light'] .lim-md-editor .ProseMirror .c-red { color: #d52525; }
+html[data-theme='light'] .lim-md-editor .ProseMirror mark {
+  background-color: #93eaeb;
+  color: #16181d;
+}
+
+html[data-theme='dark'] .lim-md-editor .ProseMirror .c-teal { color: #58dddf; }
+html[data-theme='dark'] .lim-md-editor .ProseMirror .c-blue { color: #429ff5; }
+html[data-theme='dark'] .lim-md-editor .ProseMirror .c-green { color: #5bc25d; }
+html[data-theme='dark'] .lim-md-editor .ProseMirror .c-orange { color: #ff9100; }
+html[data-theme='dark'] .lim-md-editor .ProseMirror .c-red { color: #fe6d6d; }
+html[data-theme='dark'] .lim-md-editor .ProseMirror mark {
+  background-color: #2b6f70;
+  color: #eef1f5;
+}

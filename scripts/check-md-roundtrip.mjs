@@ -1,80 +1,49 @@
 /*
   마크다운 왕복 검사.
 
-  /admin 의 편집기(Toast UI)는 글을 **서식(위지윅) 모드**로 열 때 마크다운을
-  문서로 바꾸고, 저장할 때 다시 마크다운으로 되돌립니다. 이 왕복에서 글자가
-  바뀌면 옛 글을 한 번 열었다 저장하는 것만으로 파일이 통째로 다시 쓰입니다.
+  /admin 의 편집기(tiptap)는 글을 **서식 모드**로 열 때 마크다운을 문서로
+  바꾸고, 저장할 때 다시 마크다운으로 되돌립니다. 이 왕복에서 글자가 바뀌면
+  옛 글을 한 번 열었다 저장하는 것만으로 파일이 통째로 다시 쓰입니다.
 
   그래서 글 전체를 미리 돌려 보고 **어떤 글이 안 돌아오는지** 세어 둡니다.
   편집기도 글을 열 때 같은 검사를 해서, 안 돌아오는 글은 원문 모드로 엽니다
-  (admin-src/editor.js 의 pickMode).
+  (admin-src/editor.js 의 isRoundTripSafe).
 
     node scripts/check-md-roundtrip.mjs           # 요약
     node scripts/check-md-roundtrip.mjs --diff    # 달라진 줄까지
 
-  ⚠ Toast 는 브라우저용이라 jsdom 위에서 돌립니다. jsdom 에는 레이아웃이
-    없어서 ProseMirror 가 좌표를 물어보면 터집니다 — 아래에서 0 을 돌려주는
-    가짜를 끼워 넣습니다. 이게 없으면 첫 글에서 멈춥니다.
+  ⚠ 편집기와 **같은 확장 묶음**을 씁니다. 여기서만 다른 것을 쓰면 검사는
+    통과인데 폰에서는 원문으로 열리는 일이 생깁니다.
 */
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { JSDOM } from 'jsdom'
 
-const dom = new JSDOM('<!doctype html><html><body><div id="host"></div></body></html>', {
-  pretendToBeVisual: true,
-})
-
-for (const k of [
-  'window',
-  'document',
-  'DOMParser',
-  'Node',
-  'Element',
-  'HTMLElement',
-  'Range',
-  'getComputedStyle',
-  'MutationObserver',
-  'requestAnimationFrame',
-  'cancelAnimationFrame',
-]) {
-  globalThis[k] = dom.window[k]
-}
+const dom = new JSDOM('<!doctype html><html><body></body></html>')
+globalThis.window = dom.window
+globalThis.document = dom.window.document
 // node 25 의 navigator 는 getter 라 그냥 못 덮습니다.
 Object.defineProperty(globalThis, 'navigator', {
   value: dom.window.navigator,
   configurable: true,
 })
+globalThis.DOMParser = dom.window.DOMParser
+globalThis.Node = dom.window.Node
+globalThis.Element = dom.window.Element
+globalThis.HTMLElement = dom.window.HTMLElement
 
-globalThis.ResizeObserver = class {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-dom.window.ResizeObserver = globalThis.ResizeObserver
-
-const zeroRect = () => ({
-  top: 0,
-  left: 0,
-  bottom: 0,
-  right: 0,
-  width: 0,
-  height: 0,
-  x: 0,
-  y: 0,
-})
-const zeroRects = () => Object.assign([zeroRect()], { item: () => zeroRect() })
-dom.window.Range.prototype.getClientRects = zeroRects
-dom.window.Range.prototype.getBoundingClientRect = zeroRect
-dom.window.Element.prototype.getClientRects = zeroRects
-dom.window.Element.prototype.getBoundingClientRect = zeroRect
-dom.window.document.elementFromPoint = () => null
-
-const { makeEditor, normalizeMarkdown } = await import('../admin-src/editor.js')
+const { Editor } = await import('@tiptap/core')
+const { EXTENSIONS, normalizeMarkdown } = await import('../admin-src/editor.js')
 
 const DIR = 'src/content/posts'
 const showDiff = process.argv.includes('--diff')
 
-const editor = makeEditor(document.querySelector('#host'), '')
+const editor = new Editor({
+  element: document.createElement('div'),
+  extensions: EXTENSIONS,
+  content: '',
+  contentType: 'markdown',
+})
 
 /** frontmatter 를 떼고 본문만 돌려줍니다. */
 function bodyOf(raw) {
@@ -109,10 +78,8 @@ for (const file of files) {
   const body = bodyOf(readFileSync(join(DIR, file), 'utf8'))
   let out
   try {
-    /* 원문 → 서식 → 다시 마크다운. 편집기가 글을 열 때 하는 것과 같습니다. */
-    editor.changeMode('markdown', true)
-    editor.setMarkdown(body)
-    editor.changeMode('wysiwyg', true)
+    /* 마크다운 → 문서 → 다시 마크다운. 편집기가 글을 열 때 하는 것과 같습니다. */
+    editor.commands.setContent(body, { contentType: 'markdown' })
     out = editor.getMarkdown()
   } catch (err) {
     changed.push({ file, lines: -1, err: err.message })
