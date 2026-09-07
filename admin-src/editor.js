@@ -30,6 +30,7 @@ import { Editor, Mark } from '@tiptap/core'
 import { Markdown } from '@tiptap/markdown'
 import Image from '@tiptap/extension-image'
 import { TableKit } from '@tiptap/extension-table'
+import { TableGrips } from './table.js'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
 import StarterKit from '@tiptap/starter-kit'
 import { BLOCKS, blockAt, setBlock } from './blocks.js'
@@ -214,6 +215,7 @@ export function makeExtensions({ pickImage, pickLink, upload } = {}) {
     }),
     LimImage,
     TableKit,
+    TableGrips,
     TaskList,
     TaskItem.configure({ nested: true }),
     Highlight,
@@ -336,14 +338,18 @@ const GROUPS = [
   ⚠ **도구 띠에 상시로 두지 않습니다.** 표를 안 쓰는 동안에는 쓸 일이 없는
     단추 일곱 개가 늘 보이게 됩니다 — 사진 크기·코드 언어와 같은 자리입니다.
 */
+/*
+  표 줄의 단추.
+
+  ⚠ **행·열을 넣고 지우는 것은 여기 없습니다.** 표에 직접 붙은 손잡이가
+    합니다 (`admin-src/table.js`) — 여기 있던 `행+ 행↑ 행− 열+ 열← 열−` 여섯
+    개는 표에서 멀리 떨어진 작은 글자라 어느 줄을 가리키는지 알 수 없었습니다.
+
+  ⚠ **「합치기」를 뺐습니다.** GFM 표에는 `colspan` 을 적을 자리가 없어서
+    편집기에서만 합쳐지고 저장하면 도로 갈라집니다 (재현해서 확인 —
+    `<th colspan="2">` 가 `| 가 | |` 로 나갔습니다). 다시 넣지 마세요.
+*/
 const TABLE_ACTIONS = [
-  { k: 'rowAfter', label: '행+', title: '아래에 행 넣기' },
-  { k: 'rowBefore', label: '행↑', title: '위에 행 넣기' },
-  { k: 'rowDelete', label: '행−', title: '이 행 지우기' },
-  { k: 'colAfter', label: '열+', title: '오른쪽에 열 넣기' },
-  { k: 'colBefore', label: '열←', title: '왼쪽에 열 넣기' },
-  { k: 'colDelete', label: '열−', title: '이 열 지우기' },
-  { k: 'merge', label: '합치기', title: '고른 칸 합치기 / 다시 나누기' },
   { k: 'headerRow', label: '머리행', title: '첫 행을 머리로 켜고 끄기' },
   { k: 'delete', label: '표 지우기', title: '표를 통째로 지웁니다', danger: true },
 ]
@@ -692,14 +698,6 @@ function registerWidget(CMS, h) {
     if (!ed) return
     const c = ed.chain().focus()
     switch (what) {
-      case 'rowAfter': c.addRowAfter().run(); break
-      case 'rowBefore': c.addRowBefore().run(); break
-      case 'rowDelete': c.deleteRow().run(); break
-      case 'colAfter': c.addColumnAfter().run(); break
-      case 'colBefore': c.addColumnBefore().run(); break
-      case 'colDelete': c.deleteColumn().run(); break
-      /* 합치기와 나누기는 한 단추입니다 — 고른 것에 따라 tiptap 이 고릅니다. */
-      case 'merge': c.mergeOrSplit().run(); break
       case 'headerRow': c.toggleHeaderRow().run(); break
       case 'delete': c.deleteTable().run(); break
       default: break

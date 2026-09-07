@@ -185,10 +185,19 @@
   display: none;
 }
 
+/* 표 손잡이 판(.lim-tbl)이 이 안에 절대 배치로 얹힙니다 (table.js). */
+.lim-md-editor {
+  position: relative;
+}
+
+/*
+  ⚠ 좌우·위 여백은 표 손잡이가 설 자리이기도 합니다 (14px 손잡이 + 4px 간격).
+    22px 아래로 줄이면 손잡이가 편집기 테두리 밖으로 삐져나옵니다.
+*/
 .lim-md-editor .ProseMirror,
 .lim-md-ta {
   min-height: 55vh;
-  padding: 16px 14px 40px;
+  padding: 22px 22px 40px;
   border: 1px solid var(--a-border);
   border-radius: 0 0 8px 8px;
   background-color: var(--a-card);
@@ -459,4 +468,85 @@ html[data-theme='dark'] .lim-md-editor .ProseMirror .c-red { color: #fe6d6d; }
 html[data-theme='dark'] .lim-md-editor .ProseMirror mark {
   background-color: #2b6f70;
   color: #eef1f5;
+}
+
+/* ── 표 손잡이 (노션식) ──────────────────────────────────
+   admin-src/table.js 가 그립니다. 문서가 아니라 표 위에 겹쳐 놓는 판이라,
+   저장되는 마크다운에는 아무 흔적도 안 남습니다.
+
+   ⚠ 판 자체는 `pointer-events: none` 이어야 합니다. 안 그러면 표를 덮어서
+     칸을 눌러도 커서가 안 들어갑니다. 손잡이만 다시 켭니다.
+*/
+.lim-tbl {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.lim-tbl-grip,
+.lim-tbl-plus {
+  position: absolute;
+  pointer-events: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background-color: var(--a-surface);
+  color: var(--a-text-dim);
+  cursor: pointer;
+  transition: background-color 0.12s;
+}
+
+.lim-tbl-grip:hover,
+.lim-tbl-plus:hover {
+  background-color: var(--a-accent);
+}
+
+.lim-tbl-plus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+.lim-tbl-plus:hover {
+  opacity: 1;
+  color: var(--a-accent-fg);
+}
+
+.lim-tbl-menu {
+  position: absolute;
+  pointer-events: auto;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  min-width: 132px;
+  padding: 4px;
+  border: 1px solid var(--a-border);
+  border-radius: 8px;
+  background-color: var(--a-card);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
+}
+
+.lim-tbl-item {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--a-text);
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lim-tbl-item:hover {
+  background-color: var(--a-surface);
+}
+
+.lim-tbl-item.is-danger {
+  color: var(--a-danger, #fe6d6d);
 }
