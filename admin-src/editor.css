@@ -493,7 +493,7 @@ html[data-theme='dark'] .lim-md-editor .ProseMirror mark {
   border: 0;
   border-radius: 3px;
   background-color: var(--a-surface);
-  color: var(--a-text-dim);
+  color: var(--a-dim);
   cursor: pointer;
   transition: background-color 0.12s;
 }

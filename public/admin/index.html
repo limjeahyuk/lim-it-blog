@@ -25,7 +25,7 @@
       뽑아 놓습니다 — 둘 다 저장소에 커밋합니다 (Vercel 이 astro build 를
       직접 부르면 npm run admin 이 안 돌기 때문입니다).
     -->
-    <link rel="stylesheet" href="/admin/editor.css?v=7" />
+    <link rel="stylesheet" href="/admin/editor.css?v=8" />
 
     <!--
       테마를 그리기 전에 정합니다. 블로그와 같은 열쇠(localStorage 'theme')를
@@ -828,7 +828,7 @@
         color: inherit !important;
       }
       .Toastify__close-button {
-        color: var(--a-text-dim) !important;
+        color: var(--a-dim) !important;
         opacity: 1 !important;
       }
       .Toastify__progress-bar {
@@ -1005,9 +1005,10 @@
            그쪽이 :not() 을 넷 달아 특이도가 높고 순서도 뒤입니다. 같은 :not()
            을 달고 [class*='ControlContainer'] 를 앞에 붙여서 넘어섭니다. */
       [class*='ControlContainer'][data-field='heroImage']
+        > .lim-cover-drop
         > *:not([class*='ControlTopbar']):not([class*='ControlHint']):not(
           .lim-pills
-        ):not(.lim-foot) {
+        ):not(.lim-foot):not(.lim-cover-note) {
         display: flex !important;
         flex-direction: column;
         align-items: center;
@@ -1018,9 +1019,10 @@
         text-align: center;
       }
       [class*='ControlContainer'][data-field='heroImage']
+        > .lim-cover-drop
         > *:not([class*='ControlTopbar']):not([class*='ControlHint']):not(
           .lim-pills
-        ):not(.lim-foot)::before {
+        ):not(.lim-foot):not(.lim-cover-note)::before {
         content: '3:2 비율 · JPG / PNG · 최대 5MB\A 끌어다 놓거나 아래에서 고르세요';
         white-space: pre-line;
         font-size: 12px;
@@ -1028,17 +1030,35 @@
         color: var(--a-faint);
       }
 
-      /* 끌어다 놓는 동안 · 올리는 동안 (editor.js 의 LimImageControl) */
-      .lim-cover-drop.is-over
-        [class*='ControlContainer'][data-field='heroImage']
-        *,
-      [data-field='heroImage'] .lim-cover-drop.is-over > * {
-        border-color: var(--a-accent) !important;
+      /* 커버 칸을 감싸는 판 (editor.js 의 LimImageControl — 떨어뜨리기를
+         받으려고 한 겹 더 씌운 것입니다).
+
+         ⚠ **아무것도 안 그립니다.** 이 판이 생기면서 예전에 「바로 밑
+           자식」이던 Decap 위젯이 한 칸 안으로 들어갔습니다. 점선 판과
+           카드 배경 규칙에 `> .lim-cover-drop >` 를 한 칸 더 뚫어 뒀으니
+           (위·아래), 여기에 배경이나 테두리를 주면 상자가 두 겹이 됩니다. */
+      .lim-cover-drop {
+        background: none !important;
+        border: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
-      .lim-cover-drop.is-over {
-        outline: 2px solid var(--a-accent);
-        outline-offset: 2px;
-        border-radius: 10px;
+      /* 끌고 있는 동안.
+
+         ⚠ **`border-color` 를 쓰지 마세요 — 이 자리에서는 안 먹습니다.**
+           `!important` 를 붙이고 특이도를 (0,8,0)까지 올려도 점선 색이 그대로
+           였습니다 (재 보고 확인). 같은 규칙 안의 `background-color` 는 먹는데
+           테두리 색만 안 바뀝니다. `outline` 은 특이도를 낮춰도 그대로 먹어서
+           그쪽을 씁니다 — 어차피 "여기에 놓으세요" 를 그리는 데는 outline 이
+           맞습니다 (선을 덧그리지 않고 밖에 두르니까요). */
+      [class*='ControlContainer'][data-field='heroImage']
+        > .lim-cover-drop.is-over
+        > *:not([class*='ControlTopbar']):not([class*='ControlHint']):not(
+          .lim-pills
+        ):not(.lim-foot):not(.lim-cover-note) {
+        outline: 2px solid var(--a-accent) !important;
+        outline-offset: -2px !important;
+        background-color: color-mix(in srgb, var(--a-accent) 8%, var(--a-card)) !important;
       }
       .lim-cover-drop.is-busy {
         opacity: 0.7;
@@ -1132,7 +1152,8 @@
       [class*='ControlContainer']
         > *:not([class*='ControlTopbar']):not([class*='ControlHint']):not(
           .lim-pills
-        ):not(.lim-radios):not(.lim-foot),
+        ):not(.lim-radios):not(.lim-foot):not(.lim-cover-drop),
+      [class*='ControlContainer'] > .lim-cover-drop > *:not(.lim-cover-note),
       [class*='SearchInput'],
       [class*='InputContainer'] {
         background-color: var(--a-card) !important;
