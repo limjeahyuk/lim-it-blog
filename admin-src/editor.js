@@ -503,15 +503,16 @@ function registerWidget(CMS, h) {
     const p = this.props
 
     /*
-      사진은 public/images/<주소>/ 로 올라갑니다 (config.yml 의 media_folder).
-      주소가 비어 있으면 갈 곳이 없어 public/images 바닥에 떨어집니다 —
-      나중에 어느 글 사진인지 알 수가 없으니 여기서 막습니다.
+      2026-09-07 부터 사진은 Cloudinary 로 올라갑니다 (config.yml 의
+      media_library). 저장소를 안 거치니 **주소(slug)가 필요 없습니다.**
+
+      전에는 여기서 주소가 비었으면 막았습니다 — media_folder 가
+      public/images/{{fields.slug}} 라, 비어 있으면 사진이 public/images
+      바닥에 떨어져서 나중에 어느 글 것인지 알 수가 없었습니다.
+
+      ⚠ config.yml 에서 media_library 를 걷어내면 그 가드를 되살리세요.
+        안 그러면 사진이 바닥에 쌓입니다.
     */
-    const slug = p.entry && p.entry.getIn ? p.entry.getIn(['data', 'slug']) : null
-    if (!slug) {
-      window.alert('"주소"를 먼저 적어 주세요.\n사진이 /images/<주소>/ 안에 올라갑니다.')
-      return
-    }
 
     p.onOpenMediaLibrary({
       controlID: p.forID,
@@ -689,10 +690,12 @@ function registerWidget(CMS, h) {
      주소(slug) 칸을 미리 채웁니다.
 
      비워두면 폰에서 한글로 글을 쓰다 말고 영문 자판으로 바꿔서
-     주소를 쳐야 합니다. 그런데 이 값은 저장할 때만 쓰이는 게 아니라
-     **사진을 넣는 순간** 필요합니다 — config.yml 의 media_folder 가
-     public/images/{{fields.slug}} 라, 비어 있으면 openMedia() 가
-     막습니다. 그래서 저장 시점에 제목에서 뽑는 방식으로는 늦습니다.
+     주소를 쳐야 합니다. 게다가 이 칸은 필수라, 비어 있으면 저장이
+     막힙니다. 그래서 저장 시점에 제목에서 뽑는 방식으로는 늦습니다.
+
+     ⚠ 2026-09-07 이전에는 **사진을 넣는 순간**에도 필요했습니다 —
+       media_folder 가 public/images/{{fields.slug}} 였습니다. 지금은
+       사진이 Cloudinary 로 가서 그 이유는 없어졌습니다.
 
      ⚠ 제목에서 뽑지 않습니다. 한글 제목이 그대로 파일명이 되면
        주소가 %EB%B8%94… 로 나갑니다. ASCII 만 남기면 한글 제목은

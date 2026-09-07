@@ -14,6 +14,44 @@ publish_mode: simple
 media_folder: public/uploads
 public_folder: /uploads
 
+# 사진은 저장소가 아니라 Cloudinary 로 올라갑니다 (2026-09-07).
+#
+# 왜: GitHub 백엔드는 사진 한 장을 base64 커밋으로 올립니다. 폰 원본이
+#     3~5MB 라 폰에서 느리고, 올린 만큼 .git 이 계속 불어납니다
+#     (public/images 54MB · .git 68MB). Cloudinary 는 올린 자리에서 바로
+#     CDN 주소를 돌려줍니다.
+#
+# ⚠ <script> 를 더 걸지 마세요. decap-cms 3.9 번들에 이미 들어 있습니다
+#   (번들에서 registerMediaLibrary(cloudinary) 를 확인했습니다). 위젯 본체만
+#   열 때 media-library.cloudinary.com 에서 받아옵니다.
+#
+# ⚠ cloud_name·api_key 는 브라우저에 나가는 값이라 공개돼도 됩니다 —
+#   올리려면 Cloudinary 로그인이 따로 필요합니다. **api_secret 은 절대
+#   여기 적지 마세요.** 저장소가 공개이고 이 파일은 그대로 배포됩니다.
+#
+# ⚠ 이걸 켜면 저장소 안의 사진 429장은 고르는 창에 안 나옵니다. 이미 본문에
+#   박혀 있는 주소라 화면에는 그대로 뜨고, 다시 골라 넣을 수만 없습니다.
+#
+# 돌려받는 주소는 전체 https 주소입니다 (번들에서 확인한 기본값 —
+# use_secure_url: true · use_transformations: true · output_filename_only: false).
+# 그 주소를 커버로도 쓰려고 src/lib/cover.ts 에 이 호스트를 뚫어 뒀습니다.
+media_library:
+  name: cloudinary
+  config:
+    # TODO Cloudinary → Settings → Product environment 에서 그대로 옮겨 적으세요.
+    #      api_key 는 숫자만 있어서 따옴표를 빼면 YAML 이 숫자로 읽습니다.
+    cloud_name: CLOUD_NAME_HERE
+    api_key: 'API_KEY_HERE'
+    # 폰 원본(3~5MB)을 그대로 본문에 걸지 않습니다. 긴 변 1600px 로 줄이고
+    # (crop: limit — 작은 사진은 안 늘립니다) 화질·형식은 브라우저에 맞춰
+    # 자동으로 고릅니다. 여기서 나온 주소가 본문에 들어갑니다.
+    default_transformations:
+      - - width: 1600
+          crop: limit
+          quality: auto
+          fetch_format: auto
+    multiple: false
+
 locale: ko
 
 collections:
@@ -40,6 +78,10 @@ collections:
     # Decap 3.9 는 배열만 받습니다 (기본 정렬 지정은 안 됩니다 — 넣으면 설정이 통째로 깨집니다).
     sortable_fields: ['pubDate', 'title']
 
+    # ⚠ 지금은 안 쓰입니다. 위의 media_library(Cloudinary)가 켜져 있는 동안
+    #   사진은 저장소를 안 거칩니다. Cloudinary 를 걷어내면 이 두 줄이
+    #   그대로 되살아납니다 — 그래서 지우지 않고 둡니다.
+    #
     # 사진은 글마다 제 폴더로 들어갑니다 — public/images/<주소>/.
     # 티스토리에서 옮겨온 404장이 쓰고 있는 규칙과 같은 자리입니다.
     # 앞의 / 는 "저장소 뿌리 기준"이라는 뜻입니다. 빼면 이 컬렉션 폴더

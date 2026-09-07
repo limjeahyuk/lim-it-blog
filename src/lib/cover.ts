@@ -20,6 +20,22 @@ import type { Post } from './posts'
 const MD_IMAGE = /!\[[^\]]*\]\(\s*([^)\s]+)/
 const HTML_IMAGE = /<img[^>]+src\s*=\s*["']([^"']+)["']/i
 
+/**
+ * 커버로 쓸 수 있는 바깥 주소.
+ *
+ * 바깥 주소를 전부 막아 뒀던 이유는 **티스토리 CDN** 입니다 — 서명이 붙은
+ * 주소라 `expires` 가 지나면 통째로 404 가 됩니다 (§5-2). 그래서 404장을
+ * 받아서 `public/images/` 에 넣었습니다.
+ *
+ * Cloudinary 는 사정이 다릅니다. 우리 계정의 저장소이고 주소에 만료가
+ * 없습니다. 2026-09-07 부터 `/admin` 이 사진을 여기로 올립니다.
+ *
+ * ⚠ 아무 바깥 주소나 열지 마세요. **우리가 올리는 곳 하나만** 뚫습니다 —
+ *   여기를 `startsWith('http')` 로 넓히면 티스토리 주소가 도로 커버로
+ *   올라옵니다 (그 글이 116편입니다).
+ */
+const ALLOWED_HOSTS = ['https://res.cloudinary.com/']
+
 export function firstBodyImage(body: string | undefined): string | undefined {
   if (!body) return undefined
 
@@ -29,8 +45,8 @@ export function firstBodyImage(body: string | undefined): string | undefined {
   const url = MD_IMAGE.exec(text)?.[1] ?? HTML_IMAGE.exec(text)?.[1]
   if (!url) return undefined
 
-  // 바깥 주소는 안 씁니다 — 티스토리 CDN 주소는 만료되면 404 입니다 (§5-2).
-  return url.startsWith('/') ? url : undefined
+  if (url.startsWith('/')) return url
+  return ALLOWED_HOSTS.some((host) => url.startsWith(host)) ? url : undefined
 }
 
 export type Cover =
