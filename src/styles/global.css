@@ -513,6 +513,26 @@ html[data-theme='light'] {
   color: var(--c-red);
 }
 
+/*
+  문단 정렬. `/admin` 이 `<div class="ta-center">…</div>` 로 감싸서 내보냅니다
+  (admin-src/align.js). 마크다운에는 정렬을 적을 자리가 없어서, 정렬을 준
+  덩어리만 HTML 로 나갑니다.
+
+  ⚠ **편집기(admin-src/editor.css)에도 같은 규칙이 있습니다.** 한쪽만 고치면
+    쓸 때와 올린 뒤가 갈라집니다.
+*/
+.prose .ta-center {
+  text-align: center;
+}
+.prose .ta-right {
+  text-align: right;
+}
+/* 감싼 덩어리도 문단 사이 간격을 그대로 씁니다 */
+.prose .ta-center > :first-child,
+.prose .ta-right > :first-child {
+  margin-top: 0;
+}
+
 .prose mark {
   background-color: var(--hl-bg);
   color: var(--hl-fg);

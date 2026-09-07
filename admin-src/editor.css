@@ -132,6 +132,12 @@
   font-weight: 700;
 }
 
+/* 표 지우기 — 되돌리기 어려운 것이라 혼자 붉게 둡니다 */
+.lim-md-ctx .lim-md-btn.is-danger {
+  margin-left: auto;
+  color: var(--a-danger, #fe6d6d);
+}
+
 /* 숫자가 바뀔 때 줄이 흔들리지 않게 자리를 잡아 둡니다 */
 .lim-md-ctx-val {
   min-width: 3em;
@@ -235,6 +241,18 @@
 }
 
 /* ── 여기부터는 블로그 `.prose` 를 옮긴 것입니다 ─────── */
+
+/* ⚠ 블로그 global.css 의 `.prose .ta-*` 와 같은 값이어야 합니다 */
+.lim-md-editor .ProseMirror .ta-center {
+  text-align: center;
+}
+.lim-md-editor .ProseMirror .ta-right {
+  text-align: right;
+}
+.lim-md-editor .ProseMirror .ta-center > :first-child,
+.lim-md-editor .ProseMirror .ta-right > :first-child {
+  margin-top: 0;
+}
 
 .lim-md-editor .ProseMirror {
   font-size: 16px;

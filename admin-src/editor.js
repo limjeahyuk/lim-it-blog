@@ -34,6 +34,7 @@ import { TaskItem, TaskList } from '@tiptap/extension-list'
 import StarterKit from '@tiptap/starter-kit'
 import { BLOCKS, blockAt, setBlock } from './blocks.js'
 import { BlockShortcuts, ImeShortcuts, ToolShortcuts } from './shortcuts.js'
+import { ALIGNS, Align, setAlignExtensions } from './align.js'
 import { ImageUpload, imagesIn, readCloudinary, uploadImage } from './upload.js'
 
 /* -------------------------------------------------------------------
@@ -205,7 +206,7 @@ export const EXTENSIONS = makeExtensions()
  *   넣어야 합니다.
  */
 export function makeExtensions({ pickImage, pickLink, upload } = {}) {
-  return [
+  const list = [
     StarterKit.configure({
       // 밑줄은 마크다운에 없습니다. 넣어 주면 <u> 가 본문에 박힙니다.
       underline: false,
@@ -227,8 +228,13 @@ export function makeExtensions({ pickImage, pickLink, upload } = {}) {
     /* 떨어뜨리기·붙여넣기로 들어온 사진을 Cloudinary 로 올립니다.
        `upload` 가 없으면 아무 일도 안 합니다 (왕복 검사가 그 경우). */
     ImageUpload.configure({ upload: upload || null }),
+    Align,
     Markdown,
   ]
+
+  /* 정렬한 덩어리의 안쪽을 HTML 로 바꿀 때 이 묶음을 씁니다 (align.js). */
+  setAlignExtensions(list)
+  return list
 }
 
 /**
@@ -308,6 +314,13 @@ const GROUPS = [
     { k: 'ol', label: '1. 번호', title: '번호 목록 ⌘⇧7', active: ['orderedList'] },
     { k: 'task', label: '☑ 할 일', title: '할 일 목록 ⌘⇧9', active: ['taskList'] },
   ],
+  ALIGNS.map((a) => ({
+    k: 'align:' + a.k,
+    label: a.label,
+    title: a.k === 'left' ? '왼쪽으로 (정렬 풀기)' : a.label + ' 정렬',
+    /* 왼쪽은 "감싼 것을 푸는 것"이라 눌림 표시가 없습니다. */
+    active: a.k === 'left' ? null : ['align', { align: a.k }],
+  })),
   [
     { k: 'pre', label: '코드블록', title: '코드 블록 ⌘⌥C', active: ['codeBlock'] },
     { k: 'table', label: '표', title: '표 넣기' },
@@ -315,6 +328,24 @@ const GROUPS = [
     { k: 'link', label: '링크', title: '링크 ⌘K', active: ['link'] },
     { k: 'image', label: '사진', title: '사진 넣기 ⌘⌥P' },
   ],
+]
+
+/*
+  표 안에 커서가 있을 때만 도구 띠 아래에 뜨는 것들.
+
+  ⚠ **도구 띠에 상시로 두지 않습니다.** 표를 안 쓰는 동안에는 쓸 일이 없는
+    단추 일곱 개가 늘 보이게 됩니다 — 사진 크기·코드 언어와 같은 자리입니다.
+*/
+const TABLE_ACTIONS = [
+  { k: 'rowAfter', label: '행+', title: '아래에 행 넣기' },
+  { k: 'rowBefore', label: '행↑', title: '위에 행 넣기' },
+  { k: 'rowDelete', label: '행−', title: '이 행 지우기' },
+  { k: 'colAfter', label: '열+', title: '오른쪽에 열 넣기' },
+  { k: 'colBefore', label: '열←', title: '왼쪽에 열 넣기' },
+  { k: 'colDelete', label: '열−', title: '이 열 지우기' },
+  { k: 'merge', label: '합치기', title: '고른 칸 합치기 / 다시 나누기' },
+  { k: 'headerRow', label: '머리행', title: '첫 행을 머리로 켜고 끄기' },
+  { k: 'delete', label: '표 지우기', title: '표를 통째로 지웁니다', danger: true },
 ]
 
 /** 위 표를 한 줄로 편 것 — 눌림 표시를 만들 때 씁니다. */
@@ -611,6 +642,14 @@ function registerWidget(CMS, h) {
       setBlock(ed, key.slice(6))
       return
     }
+    if (key.indexOf('align:') === 0) {
+      ed.commands.setAlign(key.slice(6))
+      return
+    }
+    if (key.indexOf('table:') === 0) {
+      this.runTable(key.slice(6))
+      return
+    }
     if (key.indexOf('color:') === 0) {
       const color = key.slice(6)
       this.setState({ palette: false })
@@ -638,6 +677,31 @@ function registerWidget(CMS, h) {
       case 'hr': c.setHorizontalRule().run(); break
       case 'table': c.insertTable({ rows: 3, cols: 2, withHeaderRow: true }).run(); break
       case 'link': this.setLink(); break
+      default: break
+    }
+  }
+
+  /*
+    표 조작.
+
+    ⚠ **`focus()` 를 먼저 겁니다.** 단추는 `onMouseDown` 을 막아서 커서가
+      표 안에 남아 있는데, 그래도 명령이 도는 자리를 확실히 해 둡니다.
+  */
+  P.runTable = function (what) {
+    const ed = this.editor
+    if (!ed) return
+    const c = ed.chain().focus()
+    switch (what) {
+      case 'rowAfter': c.addRowAfter().run(); break
+      case 'rowBefore': c.addRowBefore().run(); break
+      case 'rowDelete': c.deleteRow().run(); break
+      case 'colAfter': c.addColumnAfter().run(); break
+      case 'colBefore': c.addColumnBefore().run(); break
+      case 'colDelete': c.deleteColumn().run(); break
+      /* 합치기와 나누기는 한 단추입니다 — 고른 것에 따라 tiptap 이 고릅니다. */
+      case 'merge': c.mergeOrSplit().run(); break
+      case 'headerRow': c.toggleHeaderRow().run(); break
+      case 'delete': c.deleteTable().run(); break
       default: break
     }
   }
@@ -759,6 +823,29 @@ function registerWidget(CMS, h) {
     const self = this
     const ed = this.editor
     if (!ed || this.state.raw) return null
+
+    if (ed.isActive('table')) {
+      return h(
+        'div',
+        { className: 'lim-md-ctx' },
+        h('span', { className: 'lim-md-ctx-label' }, '표'),
+        TABLE_ACTIONS.map((a) =>
+          h(
+            'button',
+            {
+              key: a.k,
+              type: 'button',
+              className: 'lim-md-btn' + (a.danger ? ' is-danger' : ''),
+              title: a.title,
+              'aria-label': a.title,
+              onMouseDown: (e) => e.preventDefault(),
+              onClick: () => self.runTable(a.k),
+            },
+            a.label
+          )
+        )
+      )
+    }
 
     if (ed.isActive('image')) {
       const percent = this.imagePercent()
