@@ -13,7 +13,66 @@
   보이는데 저장하면 사라집니다.
 */
 import { Extension } from '@tiptap/core'
+import { Plugin } from '@tiptap/pm/state'
 import { BLOCKS, setBlock } from './blocks.js'
+
+/**
+ * 한글을 치는 중에도 단축키가 먹게 합니다.
+ *
+ * ⚠ **이게 없으면 단축키가 거의 안 듣습니다.** ProseMirror 는 조합(IME) 중에
+ *   들어온 키를 통째로 무시합니다 (`inOrNearComposition` → keydown 을 그대로
+ *   반환). 한글은 마지막 글자가 **거의 항상 조합 중**이라, "제목" 을 치고 바로
+ *   ⌘⌥1 을 누르면 아무 일도 안 일어납니다. 스페이스나 방향키로 조합을 끊은
+ *   뒤에야 들었습니다 — 영문으로 쓸 때만 멀쩡해 보이던 이유입니다.
+ *
+ * `handleDOMEvents.keydown` 은 ProseMirror 자신의 keydown(조합 검사가 들어
+ * 있는 그것)보다 **먼저** 불립니다. 여기서 조합을 끝내 놓고 `false` 를
+ * 돌려주면, 뒤이어 평소 경로로 단축키가 그대로 실행됩니다.
+ *
+ * ⚠ **⌘·Ctrl 이 눌린 키만 건드립니다.** Enter·Backspace 까지 조합을 끊으면
+ *   한글 입력이 망가집니다 — 그 둘은 IME 가 직접 써야 하는 키입니다.
+ */
+export const ImeShortcuts = Extension.create({
+  name: 'imeShortcuts',
+  priority: 10000,
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        props: {
+          handleDOMEvents: {
+            keydown: (view, event) => {
+              if (!view.composing) return false
+              if (!event.metaKey && !event.ctrlKey) return false
+
+              try {
+                // 조합 중이던 글자를 먼저 문서에 반영합니다
+                view.domObserver.forceFlush()
+
+                const input = view.input
+                if (input) {
+                  input.composing = false
+                  input.compositionNode = null
+                  /* ⚠ 사파리는 "조합이 끝난 지 500ms 안" 인 키도 무시합니다.
+                     지금 시각을 넣으면 바로 그 경우가 되니, ProseMirror 가
+                     "한참 전" 을 뜻할 때 쓰는 값을 그대로 넣습니다. */
+                  input.compositionEndedAt = -2e8
+                  if (typeof input.compositionID === 'number') input.compositionID++
+                }
+              } catch (e) {
+                /* 내부 구조가 바뀌면 조합 중 단축키만 다시 안 듣게 됩니다 —
+                   나머지는 그대로 굴러갑니다. tiptap 을 올리면 여기부터. */
+                if (typeof console !== 'undefined') console.warn('[lim editor] ime', e)
+              }
+
+              return false
+            },
+          },
+        },
+      }),
+    ]
+  },
+})
 
 /**
  * 문단 종류 단축키 (⌘⌥1~3 · ⌘⌥0).

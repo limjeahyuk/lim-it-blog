@@ -368,7 +368,55 @@ a.pill:hover {
   font-size: 0.875em;
 }
 
+/*
+  코드 블록 — 노션처럼 위에 언어 이름과 「복사」가 붙습니다.
+  감싸는 `figure.code` 와 머리 줄은 astro.config.mjs 의 rehypeCodeChrome 이
+  만듭니다. ⚠ 머리 줄을 판 **안**으로 옮기지 마세요 — Shiki 가 배경색을
+  `!important` 로 박아서 색을 맞출 수가 없습니다.
+*/
+.prose figure.code {
+  margin: 0;
+}
+
+.prose .code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+.prose .code-lang {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* 클립보드를 쓸 수 있는 곳에서만 나옵니다 — 켜는 것은 PostLayout 의 script */
+.prose .code-copy {
+  display: none;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-faint);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+html.has-copy .prose .code-copy {
+  display: inline-block;
+}
+
+.prose .code-copy:hover {
+  background-color: var(--surface);
+  color: var(--text-dim);
+}
+
 .prose pre {
+  margin: 0;
   padding: 1rem 1.15rem;
   border-radius: var(--radius-lg);
   overflow-x: auto;
@@ -525,4 +573,28 @@ html[data-theme='dark'] .astro-code span {
   font-style: var(--shiki-dark-font-style) !important;
   font-weight: var(--shiki-dark-font-weight) !important;
   text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/*
+  코드 판 색만 우리 것으로 바꿉니다.
+
+  github-light 의 배경이 `#fff` 라 라이트 테마에서 카드와 구분이 안 됐습니다 —
+  노션처럼 판이 보이려면 배경이 본문과 달라야 합니다. /admin 편집기도 판 색을
+  `--a-surface` 로 쓰고 있어서, 여기만 흰색이면 편집기와 올라간 글이 갈라집니다.
+
+  ⚠ **글자색은 Shiki 것을 그대로 둡니다.** 여기서 색까지 덮으면 하이라이팅이
+    통째로 죽습니다. 바꾸는 것은 배경뿐입니다.
+  ⚠ **토막(span)마다 배경이 또 깔려 있습니다.** `defaultColor: false` 라
+    Shiki 가 토막마다 테마 배경을 적어 두는데, 판 색을 바꾸면 그 흰 조각들이
+    줄 앞머리에 네모로 남습니다 (실제로 그렇게 나왔습니다). 투명으로 덮습니다 —
+    줄 강조(transformer)를 쓰기 시작하면 여기부터 보세요.
+*/
+html[data-theme='light'] .prose pre.astro-code,
+html[data-theme='dark'] .prose pre.astro-code {
+  background-color: var(--surface) !important;
+}
+
+html[data-theme='light'] .prose pre.astro-code span,
+html[data-theme='dark'] .prose pre.astro-code span {
+  background-color: transparent !important;
 }

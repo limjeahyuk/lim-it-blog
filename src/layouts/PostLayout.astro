@@ -191,3 +191,39 @@ const who = author ? getAuthor(author) : undefined
     color: var(--text);
   }
 </style>
+
+<script>
+  /*
+    코드 블록의 「복사」.
+
+    ⚠ 단추 하나하나에 거는 게 아니라 **문서에 한 번** 겁니다. 비밀글은
+      본문이 나중에 풀려서 그때 DOM 에 들어오는데(SecretGate), 그렇게 들어온
+      코드 블록도 그대로 눌립니다.
+    ⚠ `navigator.clipboard` 는 보안 컨텍스트(https·localhost)에만 있습니다.
+      없으면 단추를 아예 안 보이게 둡니다 — 눌리지도 않는 단추가 코드마다
+      붙어 있는 것보다 낫습니다 (`html.has-copy` 로 켭니다).
+  */
+  if (navigator.clipboard) {
+    document.documentElement.classList.add('has-copy')
+
+    document.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement | null
+      const btn = target && target.closest ? target.closest('.code-copy') : null
+      if (!btn) return
+
+      const fig = btn.closest('figure.code')
+      const pre = fig ? fig.querySelector('pre') : null
+      if (!pre) return
+
+      try {
+        await navigator.clipboard.writeText(pre.innerText)
+        btn.textContent = '복사됨'
+      } catch {
+        btn.textContent = '실패'
+      }
+      setTimeout(() => {
+        btn.textContent = '복사'
+      }, 1200)
+    })
+  }
+</script>

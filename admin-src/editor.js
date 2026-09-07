@@ -33,7 +33,7 @@ import { TableKit } from '@tiptap/extension-table'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
 import StarterKit from '@tiptap/starter-kit'
 import { BLOCKS, blockAt, setBlock } from './blocks.js'
-import { BlockShortcuts, ToolShortcuts } from './shortcuts.js'
+import { BlockShortcuts, ImeShortcuts, ToolShortcuts } from './shortcuts.js'
 
 /* -------------------------------------------------------------------
    글자 색.
@@ -138,6 +138,54 @@ const Highlight = Mark.create({
 })
 
 
+/* -------------------------------------------------------------------
+   사진 크기.
+
+   `![설명](주소)` 에는 크기를 적을 자리가 없습니다. 그래서 크기를 준
+   사진만 **HTML 로** 내보냅니다 — `<img src alt width>`. 마크다운 안의
+   HTML 은 그대로 통과하고, 블로그의 `.prose img` 가 `max-width: 100%` 라
+   폰에서는 알아서 줄어듭니다.
+
+   ⚠ **크기를 안 준 사진은 건드리지 않습니다.** 지금 글에 있는 사진 404장이
+     전부 `![...](...)` 이라, 전부 HTML 로 바꾸면 왕복 검사가 통째로 무너집니다.
+
+   ⚠ **읽어 들이는 쪽은 이미 됩니다.** @tiptap/extension-image 가 `width`
+     속성을 원래 들고 있어서 `<img width="480">` 은 그대로 파싱됩니다
+     (재 보고 확인했습니다). 없던 것은 **내보내기**뿐이라 여기만 얹습니다.
+   ------------------------------------------------------------------- */
+const LimImage = Image.extend({
+  renderMarkdown(node) {
+    const a = (node && node.attrs) || {}
+    const src = a.src || ''
+    const alt = (a.alt || '').replace(/"/g, '&quot;')
+    if (!a.width) return `![${alt}](${src})`
+    return `<img src="${src}" alt="${alt}" width="${a.width}">`
+  },
+})
+
+/*
+  코드 블록 언어 — 도구 띠 아래 고르개에 나오는 것들.
+
+  글 128편에서 실제로 쓰인 것(swift 183 · javascript 122 · html 98 ·
+  bash 34 · css 8 · ts 2)에 자주 쓸 것 몇을 더했습니다. 목록에 없는 값이
+  이미 붙어 있는 코드 블록은 그 값을 그대로 한 칸 더 만들어 보여 줍니다 —
+  고르개를 열었다는 이유로 언어가 지워지면 안 됩니다.
+*/
+const CODE_LANGS = [
+  'swift',
+  'javascript',
+  'typescript',
+  'html',
+  'css',
+  'bash',
+  'json',
+  'dart',
+  'kotlin',
+  'python',
+  'sql',
+  'text',
+]
+
 /*
   글자 색 다섯. 단축키 ⌘⌥⇧1~5 가 이 순서를 따릅니다 (shortcuts.js).
   색을 늘리려면 여기와 `global.css` 의 `.prose .c-*`, `admin/index.html` 의
@@ -162,12 +210,13 @@ export function makeExtensions({ pickImage, pickLink } = {}) {
       underline: false,
       link: { openOnClick: false },
     }),
-    Image,
+    LimImage,
     TableKit,
     TaskList,
     TaskItem.configure({ nested: true }),
     Highlight,
     TextColor,
+    ImeShortcuts,
     BlockShortcuts,
     ToolShortcuts.configure({
       pickImage: pickImage || (() => {}),
@@ -409,7 +458,51 @@ function registerWidget(CMS, h) {
     const ed = this.editor
     if (!ed) return ''
     const marks = BUTTONS.map((b) => (b.active && ed.isActive.apply(ed, b.active) ? '1' : '0'))
-    return marks.join('') + '|' + blockAt(ed)
+    /* 사진 크기·코드 언어까지 넣습니다 — 아래 「고른 것」 줄이 이 값으로
+       다시 그려집니다. 안 넣으면 슬라이더를 움직여도 숫자가 안 바뀝니다. */
+    const img = ed.isActive('image') ? 'i' + (ed.getAttributes('image').width || 0) : ''
+    const pre = ed.isActive('codeBlock') ? 'c' + (ed.getAttributes('codeBlock').language || '') : ''
+    return marks.join('') + '|' + blockAt(ed) + '|' + img + pre
+  }
+
+  /* ---------------------------------------------------------------
+     고른 것에 따라 바뀌는 한 줄 (도구 띠 바로 아래).
+
+     사진을 고르면 크기, 코드 블록 안이면 언어가 나옵니다. 둘 다 **고르기
+     전에는 쓸 일이 없는 칸**이라 도구 띠에 상시로 두지 않았습니다 — 단추가
+     이미 스물셋입니다.
+     --------------------------------------------------------------- */
+
+  /** 사진 크기의 기준이 되는 본문 폭. 편집기 안쪽 폭(좌우 여백 뺀 것)입니다. */
+  P.contentWidth = function () {
+    const dom = this.editor && this.editor.view && this.editor.view.dom
+    const w = dom ? dom.clientWidth - 28 : 0
+    return w > 80 ? w : 640
+  }
+
+  /** 지금 사진의 크기를 %로. 크기를 안 준 사진은 100% 입니다. */
+  P.imagePercent = function () {
+    const w = this.editor.getAttributes('image').width
+    if (!w) return 100
+    const p = Math.round((w / this.contentWidth()) * 100)
+    return Math.max(10, Math.min(100, p))
+  }
+
+  /*
+    ⚠ 100% 는 **크기를 지우는 것**입니다. 그래야 마크다운이 `![...](...)` 로
+      돌아갑니다 — HTML 로 적힌 사진은 왕복 검사에서 옛 글 취급을 받습니다.
+  */
+  P.setImagePercent = function (percent) {
+    const ed = this.editor
+    if (!ed) return
+    const width = percent >= 100 ? null : Math.round((this.contentWidth() * percent) / 100)
+    ed.chain().updateAttributes('image', { width, height: null }).run()
+  }
+
+  P.setCodeLang = function (lang) {
+    const ed = this.editor
+    if (!ed) return
+    ed.chain().focus().updateAttributes('codeBlock', { language: lang || null }).run()
   }
 
   P.run = function (key) {
@@ -560,6 +653,75 @@ function registerWidget(CMS, h) {
     }
   }
 
+  /*
+    고른 것에 따라 바뀌는 한 줄. 아무것도 안 골랐으면 아예 안 그립니다.
+
+    ⚠ 슬라이더에는 `onMouseDown` 막기를 걸지 마세요 — 그걸 막으면 손잡이를
+      끌 수가 없습니다. 대신 명령에서 `.focus()` 를 빼서, 끄는 동안 본문으로
+      포커스가 튀지 않게 합니다 (사진 선택은 문서에 남아 있습니다).
+  */
+  P.renderContext = function () {
+    const self = this
+    const ed = this.editor
+    if (!ed || this.state.raw) return null
+
+    if (ed.isActive('image')) {
+      const percent = this.imagePercent()
+      return h(
+        'div',
+        { className: 'lim-md-ctx' },
+        h('span', { className: 'lim-md-ctx-label' }, '사진 크기'),
+        h('input', {
+          type: 'range',
+          className: 'lim-md-range',
+          min: 20,
+          max: 100,
+          step: 5,
+          value: percent,
+          'aria-label': '사진 크기',
+          onChange: (e) => self.setImagePercent(Number(e.target.value)),
+        }),
+        h('span', { className: 'lim-md-ctx-val' }, percent + '%'),
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'lim-md-btn',
+            title: '크기를 지우고 원래대로',
+            onMouseDown: (e) => e.preventDefault(),
+            onClick: () => self.setImagePercent(100),
+          },
+          '원래대로'
+        )
+      )
+    }
+
+    if (ed.isActive('codeBlock')) {
+      const lang = ed.getAttributes('codeBlock').language || ''
+      const options = CODE_LANGS.indexOf(lang) === -1 && lang ? [lang].concat(CODE_LANGS) : CODE_LANGS
+      return h(
+        'div',
+        { className: 'lim-md-ctx' },
+        h('span', { className: 'lim-md-ctx-label' }, '코드 언어'),
+        h(
+          'select',
+          {
+            className: 'lim-md-select',
+            value: lang,
+            'aria-label': '코드 언어',
+            onChange: (e) => self.setCodeLang(e.target.value),
+          },
+          [h('option', { key: '', value: '' }, '없음')].concat(
+            options.map((l) => h('option', { key: l, value: l }, l))
+          )
+        ),
+        h('span', { className: 'lim-md-ctx-note' }, '색칠은 올린 뒤에 붙습니다')
+      )
+    }
+
+    return null
+  }
+
   P.render = function () {
     const self = this
     const p = this.props
@@ -655,6 +817,7 @@ function registerWidget(CMS, h) {
       { className: (p.classNameWrapper || '') + ' lim-md' },
       h('div', { className: 'lim-md-bar' }, groups),
       palette,
+      this.renderContext(),
       this.state.rawAuto
         ? h(
             'p',
