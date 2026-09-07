@@ -7,8 +7,8 @@
     여기도 같이 고치세요.
 
   값이 `--a-*` 인 것은 /admin 이 블로그 토큰을 손으로 옮겨 둔 것입니다
-  (admin/index.html). `--surface-2` 에 해당하는 칸이 없어서 인용문·표
-  머리는 `--a-surface` 를 씁니다.
+  (admin/index.html). `--surface-2` 에 해당하는 칸이 없어서 표 머리는
+  `--a-surface` 를 씁니다.
 */
 
 /* ── 도구 띠 ─────────────────────────────────────────── */
@@ -172,6 +172,11 @@
   margin-top: 1.25em;
 }
 
+/* 첫 덩어리가 제목이면 도구 띠 아래가 2.5em 빈 채로 남습니다 */
+.lim-md-editor .ProseMirror > :first-child {
+  margin-top: 0;
+}
+
 .lim-md-editor .ProseMirror h2 {
   margin: 2.5em 0 0.7em;
   padding-bottom: 0.4em;
@@ -195,12 +200,6 @@
   color: var(--a-dim);
 }
 
-.lim-md-editor .ProseMirror h4,
-.lim-md-editor .ProseMirror blockquote,
-.lim-md-editor .ProseMirror blockquote :where(p, li) {
-  color: var(--a-dim);
-}
-
 .lim-md-editor .ProseMirror p {
   margin: 0;
 }
@@ -219,13 +218,16 @@
   margin: 0;
 }
 
+/* 노션 인용문과 같은 모양 — 선 하나뿐입니다 (global.css 의 `.prose` 와 같게) */
 .lim-md-editor .ProseMirror blockquote {
   margin: 0;
-  padding: 0.6em 1.1em;
-  border-radius: 8px;
-  border-left: 3px solid var(--a-accent);
-  background-color: var(--a-surface);
-  color: var(--a-dim);
+  padding: 0 0 0 1em;
+  border-left: 3px solid var(--a-text);
+  color: var(--a-text);
+}
+
+.lim-md-editor .ProseMirror blockquote > * + * {
+  margin-top: 0.7em;
 }
 
 .lim-md-editor .ProseMirror a {

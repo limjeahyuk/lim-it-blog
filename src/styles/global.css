@@ -289,6 +289,11 @@ a.pill:hover {
   margin-top: 1.25em;
 }
 
+/* 첫 덩어리가 제목이면 위쪽에 2.5em 이 빈 채로 남습니다 — 위에는 아무것도 없습니다 */
+.prose > :first-child {
+  margin-top: 0;
+}
+
 .prose h2 {
   margin-top: 2.5em;
   margin-bottom: 0.7em;
@@ -329,13 +334,16 @@ a.pill:hover {
   margin-top: 0.4em;
 }
 
+/*
+  노션 인용문과 같은 모양입니다 — 왼쪽 선 하나뿐이고 배경도 모서리도 없습니다.
+  ⚠ 배경을 다시 깔지 마세요. 판이 생기면 인용문이 코드블록·표와 같은 무게로
+    읽혀서, 본문 사이에 끼어 있을 때 덩어리가 하나 더 있는 것처럼 보입니다.
+*/
 .prose blockquote {
   margin: 0;
-  padding: 0.6em 1.1em;
-  border-radius: var(--radius-md);
-  border-left: 3px solid var(--accent);
-  background-color: var(--surface-2);
-  color: var(--text-dim);
+  padding: 0 0 0 1em;
+  border-left: 3px solid var(--text);
+  color: var(--text);
 }
 
 .prose blockquote > * + * {
