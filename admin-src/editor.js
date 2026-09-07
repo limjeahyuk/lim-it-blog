@@ -34,6 +34,7 @@ import { TaskItem, TaskList } from '@tiptap/extension-list'
 import StarterKit from '@tiptap/starter-kit'
 import { BLOCKS, blockAt, setBlock } from './blocks.js'
 import { BlockShortcuts, ImeShortcuts, ToolShortcuts } from './shortcuts.js'
+import { ImageUpload, imagesIn, readCloudinary, uploadImage } from './upload.js'
 
 /* -------------------------------------------------------------------
    글자 색.
@@ -203,7 +204,7 @@ export const EXTENSIONS = makeExtensions()
  *   열었다 저장할 때 표가 통째로 사라졌습니다. StarterKit 에 없는 것은 직접
  *   넣어야 합니다.
  */
-export function makeExtensions({ pickImage, pickLink } = {}) {
+export function makeExtensions({ pickImage, pickLink, upload } = {}) {
   return [
     StarterKit.configure({
       // 밑줄은 마크다운에 없습니다. 넣어 주면 <u> 가 본문에 박힙니다.
@@ -223,6 +224,9 @@ export function makeExtensions({ pickImage, pickLink } = {}) {
       pickLink: pickLink || (() => {}),
       colors: COLORS,
     }),
+    /* 떨어뜨리기·붙여넣기로 들어온 사진을 Cloudinary 로 올립니다.
+       `upload` 가 없으면 아무 일도 안 합니다 (왕복 검사가 그 경우). */
+    ImageUpload.configure({ upload: upload || null }),
     Markdown,
   ]
 }
@@ -244,10 +248,10 @@ export function normalizeMarkdown(s) {
 
 /** 마크다운 → tiptap → 마크다운. 왕복 검사에서도 씁니다. */
 export function makeEditor(element, markdown, handlers = {}) {
-  const { pickImage, pickLink, ...rest } = handlers
+  const { pickImage, pickLink, upload, ...rest } = handlers
   return new Editor({
     element,
-    extensions: makeExtensions({ pickImage, pickLink }),
+    extensions: makeExtensions({ pickImage, pickLink, upload }),
     content: markdown || '',
     contentType: 'markdown',
     ...rest,
@@ -335,7 +339,7 @@ function registerWidget(CMS, h) {
 
   function LimMarkdownControl(props) {
     Base.call(this, props)
-    this.state = { palette: false, raw: false, rawAuto: false, tick: 0 }
+    this.state = { palette: false, raw: false, rawAuto: false, tick: 0, uploading: 0 }
     this.editor = null
     this.host = null
     this.ta = null
@@ -347,6 +351,8 @@ function registerWidget(CMS, h) {
     this.setHost = this.setHost.bind(this)
     this.setTa = this.setTa.bind(this)
     this.onRawInput = this.onRawInput.bind(this)
+    this.onRawDrop = this.onRawDrop.bind(this)
+    this.onRawPaste = this.onRawPaste.bind(this)
   }
 
   LimMarkdownControl.prototype = Object.create(Base.prototype)
@@ -367,6 +373,94 @@ function registerWidget(CMS, h) {
     }
   }
 
+  /*
+    떨어뜨리거나 붙여넣은 사진을 올리는 함수.
+
+    ⚠ **저장소로 올리는 `onPersistMedia` 를 쓰지 않습니다.** 그건 base64
+      커밋이라, 사진을 Cloudinary 로 옮긴 이유(§6-5)와 정면으로 부딪힙니다.
+      설정은 `config.yml` 의 `media_library` 한 곳에서 읽습니다 — 단추로
+      넣은 사진과 **같은 변환**이 붙어야 두 경로가 갈라지지 않습니다.
+  */
+  P.uploader = function () {
+    const cl = readCloudinary(this.props.config)
+    if (!cl) return null
+    return (file) => uploadImage(file, cl)
+  }
+
+  /* ---------------------------------------------------------------
+     원문 모드에서 떨어뜨리기·붙여넣기.
+
+     ⚠ **여기를 비워 두면 안 됩니다.** 원문 칸은 그냥 textarea 라, 사진을
+       떨어뜨리면 브라우저가 그 파일로 페이지를 넘겨 버립니다 — 쓰던 글이
+       통째로 날아갑니다. 게다가 **옛 글은 늘 원문으로 열립니다**
+       (129편 중 119편) — 드물게 쓰는 자리가 아닙니다.
+
+     서식 모드처럼 자리표시를 문서에 둘 수가 없어서(글자를 넣으면 그게 곧
+     저장될 원문입니다) 도구 띠 아래에 한 줄로 알립니다.
+     --------------------------------------------------------------- */
+
+  P.onRawDrop = function (e) {
+    const files = e.dataTransfer && e.dataTransfer.files
+    if (!files || !files.length) return
+    /* 사진이 아니어도 막습니다 — 기본 동작이 곧 글을 잃는 것입니다. */
+    e.preventDefault()
+    this.uploadIntoRaw(files)
+  }
+
+  P.onRawPaste = function (e) {
+    const files = e.clipboardData && e.clipboardData.files
+    if (!files || !files.length || !imagesIn(files).length) return
+    e.preventDefault()
+    this.uploadIntoRaw(files)
+  }
+
+  P.uploadIntoRaw = async function (list) {
+    const files = imagesIn(list)
+    if (!files.length) return
+
+    const upload = this.uploader()
+    if (!upload) {
+      window.alert('사진을 올릴 자리가 설정되지 않았습니다. 「사진」 단추를 쓰세요.')
+      return
+    }
+
+    for (let i = 0; i < files.length; i += 1) {
+      this.setState({ uploading: files.length - i })
+      let url = null
+      try {
+        url = await upload(files[i])
+      } catch (err) {
+        this.setState({ uploading: 0 })
+        window.alert('사진을 올리지 못했습니다.\n\n' + (err.message || err))
+        return
+      }
+      this.rawInsert('![설명](' + url + ')')
+    }
+    this.setState({ uploading: 0 })
+  }
+
+  /** 커서 자리에 넣습니다. 앞뒤로 빈 줄을 만들어 문단이 붙지 않게 합니다. */
+  P.rawInsert = function (md) {
+    const ta = this.ta
+    if (!ta) return
+
+    const at = ta.selectionStart == null ? ta.value.length : ta.selectionStart
+    const to = ta.selectionEnd == null ? at : ta.selectionEnd
+    const head = ta.value.slice(0, at)
+    const tail = ta.value.slice(to)
+
+    /* ⚠ 빈 줄이 없으면 이 블로그에서는 앞 문단에 그대로 이어 붙습니다
+       (remark-breaks 를 안 씁니다 — CLAUDE.md §2). */
+    const lead = !head || /\n\n$/.test(head) ? '' : /\n$/.test(head) ? '\n' : '\n\n'
+    const rear = !tail || /^\n\n/.test(tail) ? '' : /^\n/.test(tail) ? '\n' : '\n\n'
+    const text = lead + md + rear
+
+    ta.value = head + text + tail
+    const caret = (head + text).length
+    ta.setSelectionRange(caret, caret)
+    this.onRawInput({ target: ta })
+  }
+
   P.mount = function (el) {
     const self = this
     const original = this.props.value || ''
@@ -374,6 +468,7 @@ function registerWidget(CMS, h) {
     this.editor = makeEditor(el, original, {
       pickImage: () => self.openMedia(),
       pickLink: () => self.setLink(),
+      upload: this.uploader(),
       onUpdate() {
         self.scheduleFlush()
       },
@@ -818,6 +913,15 @@ function registerWidget(CMS, h) {
       h('div', { className: 'lim-md-bar' }, groups),
       palette,
       this.renderContext(),
+      raw && this.state.uploading
+        ? h(
+            'p',
+            { className: 'lim-md-note' },
+            this.state.uploading > 1
+              ? `사진 올리는 중… (${this.state.uploading}장 남음)`
+              : '사진 올리는 중…'
+          )
+        : null,
       this.state.rawAuto
         ? h(
             'p',
@@ -839,6 +943,8 @@ function registerWidget(CMS, h) {
             className: 'lim-md-ta',
             defaultValue: this.lastEmitted,
             onChange: this.onRawInput,
+            onDrop: this.onRawDrop,
+            onPaste: this.onRawPaste,
             ref: this.setTa,
             spellCheck: false,
             autoCorrect: 'off',

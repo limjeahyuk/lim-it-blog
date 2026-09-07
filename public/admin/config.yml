@@ -42,6 +42,19 @@ media_library:
     #      api_key 는 숫자만 있어서 따옴표를 빼면 YAML 이 숫자로 읽습니다.
     cloud_name: m1zcmsux
     api_key: "895653536158845"
+    # 편집기에 사진을 **떨어뜨리거나 붙여넣을 때**만 쓰는 값입니다
+    # (admin-src/upload.js). 「사진」 단추는 이것 없이도 돕니다 — 그쪽은
+    # Cloudinary 창에서 로그인해서 올리니까요.
+    #
+    # 만드는 곳: Cloudinary → Settings → Upload → Upload presets →
+    #            Add upload preset → Signing Mode 를 **Unsigned** 로.
+    #
+    # ⚠ 이 이름은 공개됩니다. 저장소가 공개이고 이 파일은 그대로 배포돼서,
+    #   남이 이 프리셋으로 올릴 수 있습니다. **막는 자리는 코드가 아니라
+    #   프리셋 설정입니다** — 폴더를 고정하고(예: blog), 최대 용량과 허용
+    #   형식(image 만)을 좁혀 두세요. api_secret 은 여기에 절대 적지 않습니다
+    #   (unsigned 는 secret 없이 올라갑니다).
+    upload_preset: lim-it-blog
     # 폰 원본(3~5MB)을 그대로 본문에 걸지 않습니다. 긴 변 1600px 로 줄이고
     # (crop: limit — 작은 사진은 안 늘립니다) 화질·형식은 브라우저에 맞춰
     # 자동으로 고릅니다. 여기서 나온 주소가 본문에 들어갑니다.
