@@ -1120,6 +1120,31 @@ GET .../mediaflows/api/v2/flows/damapp/m1zcmsux  net::ERR_FAILED 404
 - `[Unicorn] Rollbar` 는 Cloudinary 자기네 오류 수집기입니다. "preloaded but not used" 42줄도 그쪽 앱 것입니다.
 - ⚠ **`config.yml` 을 만져서 없앨 수 없습니다.** `cloud_name`·`api_key`·`upload_preset`·`default_transformations` 중 어느 것도 이 probe 를 켜고 끄지 않습니다. 창을 열면 그쪽 코드가 자기 판단으로 부릅니다.
 
+### 「이미지 선택」으로 넣을 때 터지던 것 — Decap 을 감쌌습니다
+
+**콘솔 오류(위)와 다른 이야기입니다.** 이쪽은 진짜로 안 됐습니다 — 창에서
+사진을 올리고 고른 다음 Insert 를 누르면 아무것도 안 들어갔습니다.
+
+Decap 3.9 가 고른 사진을 주소로 옮기는 자리는 이렇습니다 (번들 그대로).
+
+```js
+(asset.derived && use_transformations ? asset.derived[0] : asset)[...]
+```
+
+`derived` 가 **없을** 때는 원본으로 잘 떨어지는데 **빈 배열**이면 `[]` 가
+참이라 `[][0]`, 즉 `undefined` 를 읽습니다 —
+`TypeError: Cannot read properties of undefined (reading 'secure_url')`.
+**방금 올린 사진**은 변환본이 아직 없어서 여기 걸립니다. 그래서 이미 있던
+사진을 고르면 되고 새로 올린 것만 안 됐습니다.
+
+고치는 자리는 `admin-src/upload.js` 의 `guardMediaLibrary()` 입니다.
+
+- ⚠ **Decap 안은 못 고칩니다** — `insertHandler` 가 모듈 안에 닫혀 있습니다. Cloudinary 위젯을 만들 때 그 handler 를 **감싸서**, 자산을 넘겨주기 전에 손봅니다.
+- **`derived` 가 비었으면 우리가 채웁니다.** `default_transformations` 를 주소 조각으로 옮겨서(`withTransform`) 넣습니다 — Cloudinary 가 만들어 줬을 주소와 같은 모양입니다. **`derived` 가 아예 없을 때도 채웁니다**: 그때 Decap 은 원본 주소로 떨어지는데, 그러면 폰 원본이 그대로 본문에 박힙니다.
+- 이제 **「사진」 단추 · 끌어다 놓기 · 커버 사진**이 전부 같은 주소를 만듭니다 (`…/c_limit,f_auto,q_auto,w_1600/…`).
+- ⚠ **`window.cloudinary` 를 getter 로 감쌉니다.** Cloudinary 스크립트가 `window.cloudinary = {}` 를 먼저 놓고 `createMediaLibrary` 를 **나중에** 얹어서, set 만 지켜보면 놓칩니다 (실제로 놓쳤습니다).
+- ⚠ **`use_transformations: false` 로 끄는 쪽은 안 골랐습니다.** 그러면 터지지는 않지만 주소에 변환이 안 붙어서 폰 원본 3~5MB 가 그대로 걸립니다.
+
 ---
 
 ## 7. 명령어
@@ -1153,6 +1178,25 @@ node scripts/import-tistory.mjs --dry    # 티스토리 이관 (한 번 쓰고 �
 ## 8. 고친 것 기록
 
 새 항목은 **위에** 붙입니다. 한 작업에 서너 줄이면 충분합니다 — 자세한 건 커밋에 있습니다.
+
+### 2026-09-07 · 커버 사진을 「이미지 선택」으로 넣으면 터지던 것
+
+"업로드 누르고 사진 클릭하고 insert 하면 에러가 난다" 고 하셔서 봤습니다.
+**앞의 CORS 이야기와 다른, 진짜 고장이었습니다.**
+
+Decap 3.9 의 `insertHandler` 가 `asset.derived[0]` 을 읽는데, `derived` 가
+**빈 배열**이면 `[]` 가 참이라 `undefined` 를 읽고 터집니다 — `derived` 가
+아예 **없을** 때는 원본으로 잘 떨어지게 해 놨으면서 빈 배열은 안 걸렀습니다.
+**방금 올린 사진**은 변환본이 아직 없어서 여기 걸리고, 그래서 이미 있던
+사진을 고르면 되고 새로 올린 것만 안 됐습니다.
+
+- **재현을 실제로 했습니다.** 로그인 없이는 창 안을 못 건드려서, `index.html` 에 잠깐 probe 를 넣어 **Decap 이 Cloudinary 에 건네는 진짜 `insertHandler` 를 잡아채서** 세 가지 모양으로 불러 봤습니다 — `derived` 있음/없음은 통과, **빈 배열만 `TypeError: Cannot read properties of undefined (reading 'secure_url')`**. probe 는 지웠습니다.
+- **고친 자리는 `admin-src/upload.js` 의 `guardMediaLibrary()`** 입니다. Decap 안은 못 고칩니다(handler 가 모듈 안에 닫혀 있습니다) — 위젯을 만들 때 handler 를 감싸서 자산을 먼저 손봅니다. 자세한 건 §6-5.
+- ⚠ **빈 배열일 때 그냥 원본으로 떨어뜨리지 않았습니다.** 터지지는 않지만 변환이 안 붙어서 폰 원본 3~5MB 가 본문에 박힙니다 (§6-5 가 막으려던 바로 그것). `default_transformations` 를 우리가 주소에 붙여 채웁니다. **`derived` 가 없을 때도** 같은 이유로 채웁니다.
+- **덤으로 주소 모양이 하나로 모였습니다** — 「사진」 단추·끌어다 놓기·커버 사진이 전부 `…/c_limit,f_auto,q_auto,w_1600/…` 입니다.
+- ⚠ **`window.cloudinary` 는 getter 로 감싸야 합니다.** 스크립트가 `{}` 를 먼저 놓고 `createMediaLibrary` 를 나중에 얹어서, set 만 지켜보면 놓칩니다 — 처음에 그렇게 짰다가 못 잡았습니다.
+- 번들에 들어간 진짜 guard 에 Decap 의 표현식을 그대로 물려서 세 모양을 다시 돌렸습니다 — 셋 다 같은 변환 주소가 나오고 터지지 않습니다. 사진 창이 그대로 열리는 것, 콘솔에 경고가 없는 것도 봤습니다. 왕복 검사 그대로(129편 중 119 / 76), 빌드 142쪽 통과.
+- ⚠ **실제 Cloudinary 업로드로는 아직 못 봤습니다** — 로그인이 필요해서입니다. 위 오류 메시지가 보신 것과 같은지 확인해 주세요.
 
 ### 2026-09-07 · 임시저장 · 글쓰기 화면 스크롤 막대 · Cloudinary 콘솔 오류
 

@@ -84,6 +84,15 @@ export function withTransform(url, params) {
 }
 
 /**
+ * `default_transformations` 에서 첫 변환 하나를 꺼냅니다.
+ *
+ * `[[{ width: 1600, … }]]` — 배열의 배열입니다 (Cloudinary 가 그렇게 받습니다).
+ */
+export function firstTransform(list) {
+  return Array.isArray(list) && Array.isArray(list[0]) ? list[0][0] : null
+}
+
+/**
  * Decap 설정에서 Cloudinary 칸을 꺼냅니다.
  *
  * 위젯이 받는 `config` 는 Immutable Map 이라 `toJS()` 로 풀어 씁니다.
@@ -102,8 +111,7 @@ export function readCloudinary(config) {
   const cfg = raw && typeof raw.toJS === 'function' ? raw.toJS() : raw
   if (!cfg || !cfg.cloud_name) return null
 
-  const list = cfg.default_transformations
-  const first = Array.isArray(list) && Array.isArray(list[0]) ? list[0][0] : null
+  const first = firstTransform(cfg.default_transformations)
 
   return {
     cloudName: cfg.cloud_name,
@@ -334,4 +342,106 @@ function hasFiles(event) {
   const types = event.dataTransfer && event.dataTransfer.types
   if (!types) return false
   return Array.prototype.indexOf.call(types, 'Files') !== -1
+}
+
+/* -------------------------------------------------------------------
+   「이미지 선택」으로 넣을 때 Decap 이 터지던 것
+
+   Decap 3.9 가 고른 사진을 주소로 옮기는 자리는 이렇습니다 (번들 그대로).
+
+     (asset.derived && use_transformations ? asset.derived[0] : asset)[...]
+
+   `derived` 가 **없을** 때는 원본으로 잘 떨어지는데, **빈 배열**이면
+   `[]` 가 참이라 `[][0]` 즉 `undefined` 를 읽습니다 —
+   `TypeError: Cannot read properties of undefined (reading 'secure_url')`.
+   방금 올린 사진은 아직 변환본이 안 만들어져서 여기에 걸립니다.
+
+   ⚠ **Decap 안을 고칠 수는 없습니다** — insertHandler 가 모듈 안에 닫혀
+     있습니다. 대신 Cloudinary 위젯을 만들 때 그 handler 를 감싸서, 자산을
+     **넘겨주기 전에** 손봐 둡니다.
+
+   손보는 것은 두 가지입니다. 둘 다 결과는 `default_transformations` 를 먹인
+   같은 모양의 주소입니다 — 「사진」 단추 · 끌어다 놓기 · 커버 사진이 전부
+   같은 주소를 만들게 됩니다 (§6-5).
+
+   | derived | 원래 | 손본 뒤 |
+   |---|---|---|
+   | 있음 | 그대로 씀 | 그대로 둡니다 |
+   | 빈 배열 | **터짐** | 변환 주소를 채웁니다 |
+   | 없음 | 원본 주소(변환 없음) | 변환 주소를 채웁니다 |
+
+   ⚠ **`window.cloudinary` 를 getter 로 감쌉니다.** Cloudinary 스크립트가
+     `window.cloudinary = {}` 를 먼저 놓고 `createMediaLibrary` 를 **나중에**
+     얹습니다 — set 만 지켜보면 놓칩니다 (실제로 놓쳤습니다).
+   ------------------------------------------------------------------- */
+
+/** 자산 하나를 Decap 이 읽어도 안 터지게 손봅니다. */
+function healAsset(asset, transform) {
+  if (!asset || typeof asset !== 'object') return asset
+  /* 쓸 만한 변환본이 이미 있으면 그대로 둡니다 */
+  if (asset.derived && asset.derived[0]) return asset
+
+  const url = asset.secure_url || asset.url
+  if (typeof url !== 'string') return asset
+
+  const fixed = withTransform(url, transform)
+  return Object.assign({}, asset, { derived: [{ secure_url: fixed, url: fixed }] })
+}
+
+/**
+ * Cloudinary 미디어 라이브러리를 감쌉니다. 브라우저에서 한 번만 부릅니다.
+ *
+ * ⚠ Decap 이 위젯을 만들기 **전에** 걸려 있어야 합니다. `index.js` 에서
+ *   부르는 이유입니다 — 라이브러리는 「사진」을 처음 누를 때 만들어집니다.
+ */
+export function guardMediaLibrary() {
+  if (typeof window === 'undefined') return
+
+  const wrap = (obj) => {
+    if (!obj || obj.__limSafeInsert) return obj
+    if (typeof obj.createMediaLibrary !== 'function') return obj
+
+    const orig = obj.createMediaLibrary
+    obj.createMediaLibrary = function (opts, handlers) {
+      try {
+        const t = firstTransform(opts && opts.default_transformations)
+        const h = handlers && handlers.insertHandler
+        if (typeof h === 'function') {
+          handlers = Object.assign({}, handlers, {
+            insertHandler: function (data) {
+              const assets = data && data.assets
+              if (Array.isArray(assets)) {
+                data = Object.assign({}, data, {
+                  assets: assets.map((a) => healAsset(a, t)),
+                })
+              }
+              return h.call(this, data)
+            },
+          })
+        }
+      } catch (e) {
+        /* 손보다 죽으면 사진을 아예 못 넣습니다 — 원래 것으로 갑니다 */
+        if (window.console) console.warn('[lim admin] 미디어 라이브러리 감싸기', e)
+      }
+      return orig.call(this, opts, handlers)
+    }
+    obj.__limSafeInsert = true
+    return obj
+  }
+
+  try {
+    let real = window.cloudinary
+    Object.defineProperty(window, 'cloudinary', {
+      configurable: true,
+      get: function () {
+        return wrap(real)
+      },
+      set: function (v) {
+        real = v
+      },
+    })
+  } catch (e) {
+    /* 못 감싸도 Decap 은 그대로 굴러갑니다 (옛 사진은 원래 잘 들어갑니다) */
+    if (window.console) console.warn('[lim admin] 미디어 라이브러리 감싸기', e)
+  }
 }

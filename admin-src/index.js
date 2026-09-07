@@ -19,15 +19,23 @@
   값을 읽고 쓰는 길은 위젯들이 직접 등록하므로(editor.js·skin.js), 여기서는
   듣기 시작하라고 한 번 불러 주기만 합니다.
 
+  `guardMediaLibrary()` 는 Cloudinary 사진 창을 감싸는 것입니다. Decap 이 그
+  창을 만드는 것은 「사진」을 **처음 누를 때**라, 페이지가 뜨는 동안 아무 때나
+  걸어 두면 됩니다 (upload.js 참고).
+
   esbuild 가 이 파일을 묶으면 `public/admin/editor.js` 와
   `public/admin/editor.css` 두 개가 나옵니다. **둘 다 커밋합니다.**
 */
 import './editor.css'
 
 import { startDrafts } from './drafts.js'
+import { guardMediaLibrary } from './upload.js'
 
 import './media.js'
 import './editor.js'
 import './skin.js'
 
+/* ⚠ 여기 차례는 상관없습니다. import 는 어차피 먼저 다 돌고(ESM), 사진 창은
+   「사진」을 처음 누를 때 만들어집니다 — 그 전이기만 하면 됩니다. */
+guardMediaLibrary()
 startDrafts()
