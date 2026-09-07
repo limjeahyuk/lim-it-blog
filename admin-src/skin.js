@@ -413,6 +413,9 @@ let saving = false
 /** 결과가 영영 안 오면 풀어 줍니다 (네트워크가 멈춘 경우). */
 let savingTimer = null
 
+/** 다음 「저장」 한 번은 가로채지 않습니다 (아래 `waitForMenu` 가 켭니다). */
+let escapeNext = false
+
 function buildSaveModal(meta) {
   const back = el('div', 'lim-modal-back')
   back.addEventListener('click', closeSaveModal)
@@ -490,30 +493,88 @@ function confirmSave() {
       합니다 — 저장이 됐다고 알리지는 않습니다.
   */
   if (savingTimer) clearTimeout(savingTimer)
-  savingTimer = setTimeout(() => finishSave(), 20000)
+  savingTimer = setTimeout(() => {
+    finishSave()
+    say('저장 결과를 못 받았습니다. 위 띠에서 저장됐는지 확인해 주세요.')
+  }, 20000)
 
   passingThrough = true
   btn.click()
   passingThrough = false
 
-  let tries = 0
-  const pick = () => {
-    const item = document.querySelector("[class*='DropdownList'] [role='menuitem']")
-    if (item) {
-      item.click()
-      return
-    }
-    if (++tries < 12) {
-      setTimeout(pick, 30)
-      return
-    }
-    /* 메뉴를 못 찾았으면 저장이 시작조차 안 된 것입니다 — 모달을 되돌립니다. */
-    finishSave()
-    if (window.console) {
-      console.warn('[lim admin skin] 저장 메뉴를 못 찾았습니다 — 직접 골라 주세요')
-    }
+  waitForMenu()
+}
+
+/*
+  드롭다운의 「지금 게시」를 찾아 누릅니다. **저장이 실제로 나가는 곳입니다.**
+
+  ⚠ **시간을 넉넉히 줘야 합니다.** 예전에는 30ms 씩 열두 번(360ms)만 보고
+    포기했습니다. 빈 글은 6ms 면 뜨길래 그 숫자를 믿었는데, 글이 길거나 기기가
+    느리면 React 가 그 안에 드롭다운을 못 그립니다 — 그러면 **저장이 통째로
+    안 나갑니다.** 2026-09-07 에 실제로 그랬습니다 (콘솔에 "저장 메뉴를 못
+    찾았습니다" 만 남고 저장소에는 아무것도 안 올라갔습니다).
+
+  ⚠ **타이머로 훑지 말고 MutationObserver 로 기다리세요.** 뜨는 순간 바로
+    누릅니다. 정해 둔 시간(6초)은 "이쯤이면 안 뜬다" 는 뜻이지 기다리는
+    간격이 아닙니다.
+
+  ⚠ **못 찾았으면 조용히 넘어가면 안 됩니다.** 저장이 시작조차 안 된
+    것입니다. 사람에게 알리고, **다음 한 번은 가로채지 않아서** Decap 의
+    원래 두 단계로 저장할 수 있게 둡니다.
+*/
+function waitForMenu() {
+  const MENU = "[class*='DropdownList'] [role='menuitem']"
+  let done = false
+  let mo = null
+  let giveUp = null
+
+  const stop = () => {
+    done = true
+    if (mo) mo.disconnect()
+    if (giveUp) clearTimeout(giveUp)
   }
-  setTimeout(pick, 0)
+
+  const tryPick = () => {
+    if (done) return
+    const item = document.querySelector(MENU)
+    if (!item) return
+    stop()
+    item.click()
+  }
+
+  mo = new MutationObserver(tryPick)
+  mo.observe(document.body, { childList: true, subtree: true })
+
+  giveUp = setTimeout(() => {
+    if (done) return
+    stop()
+    finishSave()
+    escapeNext = true
+    say('저장이 안 나갔습니다. 「저장」을 한 번 더 누르고 「지금 게시」를 골라 주세요.')
+    if (window.console) {
+      console.warn('[lim admin skin] 저장 메뉴를 못 찾았습니다 — 다음 한 번은 그냥 통과시킵니다')
+    }
+  }, 6000)
+
+  tryPick()
+}
+
+/*
+  우리가 직접 띄우는 한 줄. Decap 의 알림이 **안 뜨는 경우**에만 씁니다
+  (저장이 시작조차 안 됐을 때). 판정이 있는 것은 Decap 알림에 맡깁니다 —
+  같은 말을 두 곳에서 하면 언젠가 어긋납니다.
+*/
+let sayTimer = null
+function say(text) {
+  let box = document.querySelector('.lim-say')
+  if (!box) {
+    box = el('div', 'lim-say')
+    document.body.appendChild(box)
+  }
+  box.textContent = text
+  box.classList.add('is-on')
+  if (sayTimer) clearTimeout(sayTimer)
+  sayTimer = setTimeout(() => box.classList.remove('is-on'), 8000)
 }
 
 /*
@@ -577,6 +638,11 @@ function watchToasts() {
 
 function onSaveIntent(e) {
   if (passingThrough) return
+  /* 한 번 실패한 뒤에는 Decap 원래 두 단계(저장 → 지금 게시)로 보냅니다. */
+  if (escapeNext) {
+    escapeNext = false
+    return
+  }
   const target = e.target && e.target.closest ? e.target.closest(SAVE_BUTTON) : null
   if (!target) return
   if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return
