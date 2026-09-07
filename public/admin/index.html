@@ -744,12 +744,26 @@
         display: none !important;
       }
 
-      /* 머리띠·목록과 같은 폭입니다. 여기만 1240 이라 큰 화면에서
-         글쓰기 화면만 혼자 좁아 보였습니다. */
-      [class*='ControlPaneContainer'] {
+      /*
+        머리띠·목록과 같은 폭입니다. 여기만 1240 이라 큰 화면에서
+        글쓰기 화면만 혼자 좁아 보였습니다.
+
+        ⚠ **폭을 재우는 것은 안쪽 판입니다.** `ControlPaneContainer` 라는
+          이름이 둘인데(바깥은 `PreviewPaneContainer-ControlPaneContainer`)
+          **스크롤은 바깥이 합니다.** 바깥에 폭을 주면 스크롤 막대가 화면
+          오른쪽 끝이 아니라 그 판의 오른쪽 끝(1600px 화면에서 80px 안쪽)에
+          섭니다 — 화면 가운데에 떠 있는 것처럼 보입니다. 바깥은 화면 폭을
+          그대로 쓰게 두세요.
+      */
+      [class*='ControlPaneContainer']:not([class*='PreviewPaneContainer']) {
         max-width: 1440px !important;
         margin: 0 auto !important;
         padding: 28px 20px 60px !important;
+      }
+      [class*='PreviewPaneContainer'][class*='ControlPaneContainer'] {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
 
       /*
@@ -1128,6 +1142,97 @@
       }
       .lim-saved.is-dirty {
         color: var(--a-warn);
+      }
+
+      /* ── 임시저장 ────────────────────────────────────────────────
+         쓰던 글을 이 브라우저에 남겨 둔 것입니다 (admin-src/drafts.js).
+
+         ⚠ **「저장」과 헷갈리게 쓰지 마세요.** 사이트에 나가는 것은 여전히
+           위 띠의 「저장」뿐이고, 이건 그 사이에 탭이 죽었을 때를 위한
+           백업입니다. 그래서 문구에 "이 브라우저에만" 을 붙여 둡니다.
+
+         ⚠ Decap 이 `p` 에 글자색을 전역으로 깝니다 (§6-2). 여기 글자색을
+           빼면 어두운 판에 어두운 글자가 됩니다. */
+      .lim-draftbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px 16px;
+        margin: 0 0 20px;
+        padding: 14px 16px;
+        background: var(--a-surface);
+        border: 1px solid var(--a-border);
+        border-left: 3px solid var(--a-accent);
+        border-radius: 10px;
+      }
+      .lim-draftbar-text {
+        margin: 0 !important;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--a-dim) !important;
+      }
+      .lim-draftbar-text b {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--a-text) !important;
+      }
+      .lim-draftbar-acts {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .lim-draftbar-acts button {
+        padding: 8px 14px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 8px;
+        border: 1px solid var(--a-border);
+        background: var(--a-card);
+        color: var(--a-text);
+        cursor: pointer;
+      }
+      .lim-draftbar-yes {
+        border-color: var(--a-accent) !important;
+        background: var(--a-accent) !important;
+        color: var(--a-accent-fg) !important;
+      }
+
+      /* 본문 아래 한 줄에 붙는 쪽. 긴 글에서는 위 띠가 화면 밖으로 나가서
+         여기가 쓰는 동안 늘 보이는 유일한 자리입니다. */
+      .lim-draft {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .lim-draft-now {
+        padding: 4px 10px;
+        font: inherit;
+        font-size: 12px;
+        border-radius: 7px;
+        border: 1px solid var(--a-border);
+        background: var(--a-card);
+        color: var(--a-dim);
+        cursor: pointer;
+      }
+      .lim-draft-now:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .lim-draft-when.is-bad {
+        color: var(--a-warn);
+      }
+
+      /* 폰에서는 단추가 글자 아래로 내려가고 화면 폭을 나눠 씁니다 */
+      @media (max-width: 520px) {
+        .lim-draftbar-acts {
+          width: 100%;
+        }
+        .lim-draftbar-acts button {
+          flex: 1;
+        }
       }
 
       /* ── 필드 한 칸 ───────────────────────────────────────────────
@@ -1531,6 +1636,14 @@
           padding-right: 12px !important;
         }
 
+        /* ⚠ 위 규칙은 안쪽 판을 못 이깁니다 (`:not()` 이 붙어 특이도가
+             높습니다). 바깥 판이 여백을 0 으로 두고 있으니 여기서 두 번
+             나눠 주던 값(12 + 12)을 한 번에 줍니다. */
+        [class*='ControlPaneContainer']:not([class*='PreviewPaneContainer']) {
+          padding-left: 24px !important;
+          padding-right: 24px !important;
+        }
+
         /* 아이폰 노치·홈바 영역 확보 */
         [class*='EditorContainer'] {
           padding-bottom: env(safe-area-inset-bottom) !important;
@@ -1693,6 +1806,6 @@
       config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
       바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=17"></script>
+    <script src="/admin/editor.js?v=18"></script>
   </body>
 </html>

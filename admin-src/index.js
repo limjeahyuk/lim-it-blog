@@ -15,11 +15,19 @@
   아직 config.yml 을 받아오는 중에 백엔드를 감싸야 해서, **editor.js 보다
   먼저** 부릅니다.
 
+  `./drafts.js` 는 쓰던 글을 이 브라우저에 남겨 두는 것입니다(임시저장).
+  값을 읽고 쓰는 길은 위젯들이 직접 등록하므로(editor.js·skin.js), 여기서는
+  듣기 시작하라고 한 번 불러 주기만 합니다.
+
   esbuild 가 이 파일을 묶으면 `public/admin/editor.js` 와
   `public/admin/editor.css` 두 개가 나옵니다. **둘 다 커밋합니다.**
 */
 import './editor.css'
 
+import { startDrafts } from './drafts.js'
+
 import './media.js'
 import './editor.js'
 import './skin.js'
+
+startDrafts()

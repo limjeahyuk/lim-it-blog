@@ -37,6 +37,7 @@ import { BLOCKS, blockAt, setBlock } from './blocks.js'
 import { BlockShortcuts, ImeShortcuts, ToolShortcuts } from './shortcuts.js'
 import { ALIGNS, Align, setAlignExtensions } from './align.js'
 import { ImageUpload, imagesIn, readCloudinary, uploadImage } from './upload.js'
+import { registerPort } from './drafts.js'
 
 /* -------------------------------------------------------------------
    글자 색.
@@ -362,6 +363,18 @@ const BUTTONS = GROUPS.reduce((all, g) => all.concat(g), [])
 /* Decap 위젯 등록. 브라우저에서만 돕니다. */
 if (typeof window !== 'undefined' && window.CMS && window.h) {
   registerWidget(window.CMS, window.h)
+}
+
+/*
+  이 위젯이 어느 칸인가. 임시저장(drafts.js)에 자기 칸을 등록할 때 씁니다.
+
+  ⚠ DOM 에서 input 을 찾아 값을 넣는 방법은 쓰지 않습니다 — 커버 사진과
+    저자에는 input 이 아예 없고(§6-2 의 "라벨 for" 이야기와 같은 자리),
+    React 가 들고 있는 값을 DOM 으로 밀어 넣으면 리덕스와 어긋납니다.
+    그래서 **위젯이 스스로 등록**하고, 되살릴 때도 위젯의 onChange 를 씁니다.
+*/
+function draftField(props) {
+  return props && props.field && props.field.get ? props.field.get('name') : null
 }
 
 function registerWidget(CMS, h) {
@@ -802,8 +815,63 @@ function registerWidget(CMS, h) {
     }
   }
 
+  /*
+    임시저장에 본문을 등록합니다 (drafts.js).
+
+    ⚠ **`get()` 이 tiptap 을 다시 훑으면 안 됩니다.** 이 함수는 글자를 칠
+      때마다 불립니다(본문을 치는 것이 곧 DOM 이 바뀌는 것이고, skin.js 의
+      손질 한 바퀴가 거기 물려 있습니다). 긴 글에서 글자마다 마크다운으로
+      옮기면 그대로 눌립니다 — `scheduleFlush` 를 150ms 로 모으는 것과 같은
+      이유입니다. 그래서 **마지막으로 내보낸 것**(`lastEmitted`)을 돌려주고,
+      진짜 지금 것이 필요한 남기기 직전에만 `flush()` 로 맞춥니다.
+
+    ⚠ 원문 모드에서는 textarea 를 그대로 읽습니다. 거기 값이 곧 파일에 나갈
+      글이고, `flush()` 는 원문 모드에서 아무것도 안 합니다 (그게 맞습니다 —
+      tiptap 이 들고 있는 것은 파일의 글이 아닙니다).
+  */
+  P.componentDidMount = function () {
+    const self = this
+    this.draftOff = registerPort(draftField(this.props), {
+      get: function () {
+        if (self.state.raw) return self.ta ? self.ta.value : self.props.value || ''
+        return self.lastEmitted != null ? self.lastEmitted : self.props.value || ''
+      },
+      set: function (md) {
+        self.setValue(md)
+      },
+      flush: function () {
+        self.flush()
+      },
+    })
+  }
+
+  /*
+    임시저장에서 되살린 본문을 앉힙니다.
+
+    ⚠ 두 모드가 다릅니다. 원문 모드의 textarea 는 `defaultValue` 로 그린
+      것이라(되돌리기 기록을 살리려고 두 편집기를 같이 둡니다) 값을 직접
+      써 넣어야 합니다 — props 만 바꾸면 화면이 안 바뀝니다.
+
+    ⚠ `lastEmitted` 를 같이 맞춰 둡니다. 안 맞추면 `componentDidUpdate` 가
+      "바깥에서 값이 바뀌었다" 고 보고 한 번 더 부어 넣습니다.
+  */
+  P.setValue = function (md) {
+    const text = md || ''
+    this.lastEmitted = text
+    if (this.state.raw) {
+      if (this.ta) this.ta.value = text
+    } else if (this.editor) {
+      this.editor.commands.setContent(text, { contentType: 'markdown' })
+    }
+    this.props.onChange(text)
+  }
+
   P.componentWillUnmount = function () {
     this.flush()
+    if (this.draftOff) {
+      this.draftOff()
+      this.draftOff = null
+    }
     if (this.editor) {
       this.editor.destroy()
       this.editor = null
@@ -1080,12 +1148,31 @@ function registerWidget(CMS, h) {
 
   LimStringControl.prototype.componentDidMount = function () {
     const p = this.props
+    /* 제목·주소를 임시저장에 등록합니다. 글자 칸은 칠 때마다 바로
+       내보내서 `flush` 가 필요 없습니다. */
+    const self = this
+    this.draftOff = registerPort(draftField(p), {
+      get: function () {
+        return self.props.value || ''
+      },
+      set: function (v) {
+        self.props.onChange(v || '')
+      },
+    })
+
     /* 값이 있으면 손대지 않습니다 — 옛 글을 열었을 때 주소가 바뀌면
        그 자리에서 404 가 됩니다. 지운 채로 두는 것도 그대로 둡니다
        (componentDidMount 는 한 번만 돕니다). */
     if (!p.field || p.field.get('name') !== 'slug') return
     if (p.value) return
     p.onChange(slugStamp())
+  }
+
+  LimStringControl.prototype.componentWillUnmount = function () {
+    if (this.draftOff) {
+      this.draftOff()
+      this.draftOff = null
+    }
   }
 
   /* 원래 string 위젯을 그대로 그립니다. 직접 input 을 그리면 Decap 이
@@ -1095,6 +1182,54 @@ function registerWidget(CMS, h) {
   }
 
   CMS.registerWidget('string', LimStringControl, stringWidget.preview)
+
+  /* ---------------------------------------------------------------
+     한 줄 요약(text) — 임시저장에 등록하려고만 감쌉니다.
+
+     ⚠ 그리는 것은 Decap 것 그대로입니다. 이 칸은 높이를 인라인
+       `!important` 로 박아 두는 등 Decap 이 손대는 것이 있어서(§8), 직접
+       textarea 를 그리면 그 처리를 하나씩 따라 만들어야 합니다.
+
+     ⚠ `text` 위젯이 없으면 아무것도 안 합니다. 없는 위젯을 등록하면
+       config.yml 의 `widget: text` 가 갈 곳을 잃습니다.
+  --------------------------------------------------------------- */
+
+  const textWidget = CMS.getWidget('text')
+  if (textWidget && textWidget.control) {
+    const TextControl = textWidget.control
+
+    function LimTextControl(props) {
+      Base.call(this, props)
+    }
+
+    LimTextControl.prototype = Object.create(Base.prototype)
+    LimTextControl.prototype.constructor = LimTextControl
+
+    LimTextControl.prototype.componentDidMount = function () {
+      const self = this
+      this.draftOff = registerPort(draftField(this.props), {
+        get: function () {
+          return self.props.value || ''
+        },
+        set: function (v) {
+          self.props.onChange(v || '')
+        },
+      })
+    }
+
+    LimTextControl.prototype.componentWillUnmount = function () {
+      if (this.draftOff) {
+        this.draftOff()
+        this.draftOff = null
+      }
+    }
+
+    LimTextControl.prototype.render = function () {
+      return h(TextControl, this.props)
+    }
+
+    CMS.registerWidget('text', LimTextControl, textWidget.preview)
+  }
 
   /* ---------------------------------------------------------------
      커버 사진 — 끌어다 놓기.
@@ -1168,7 +1303,23 @@ function registerWidget(CMS, h) {
     this.box.removeEventListener('drop', this.onDrop, true)
   }
 
+  LimImageControl.prototype.componentDidMount = function () {
+    const self = this
+    this.draftOff = registerPort(draftField(this.props), {
+      get: function () {
+        return self.props.value || ''
+      },
+      set: function (v) {
+        self.props.onChange(v || '')
+      },
+    })
+  }
+
   LimImageControl.prototype.componentWillUnmount = function () {
+    if (this.draftOff) {
+      this.draftOff()
+      this.draftOff = null
+    }
     this.detach()
     this.box = null
   }

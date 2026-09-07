@@ -25,6 +25,8 @@
   전부 try/catch 안에서 돕니다. 여기가 죽어도 Decap 은 제 모양으로 굴러갑니다.
 */
 
+import { draftSaved, draftsPass, registerPort } from './drafts.js'
+
 /* 목록 요약(config.yml 의 summary)을 이 글자로 이어 붙여 놨습니다.
    ⚠ 여기를 고치면 config.yml 의 summary 도 같이 고쳐야 합니다.
    제목 128개에 이 글자가 들어간 것은 없습니다 (세어 봤습니다). */
@@ -604,7 +606,11 @@ function setSaveBusy(on) {
   ⚠ 실패해도 모달을 닫습니다. 걸리는 칸(본문 같은 것)은 모달 **밖**에
     있어서, 열어 둔 채로는 어디가 문제인지 볼 수가 없습니다.
 */
-function finishSave() {
+/**
+ * @param ok 저장이 **됐는가**. 임시저장본을 버릴지가 여기서 갈립니다.
+ *   모르면 넘기지 마세요 — 안 된 것을 됐다고 보는 쪽이 훨씬 나쁩니다.
+ */
+function finishSave(ok) {
   if (savingTimer) {
     clearTimeout(savingTimer)
     savingTimer = null
@@ -613,6 +619,16 @@ function finishSave() {
   saving = false
   setSaveBusy(false)
   closeSaveModal()
+  /* 파일로 나갔으니 이 브라우저에 남겨 둔 한 벌은 버립니다 (drafts.js).
+     ⚠ 실패했으면 **그대로 둡니다** — 남겨 둔 것이 필요한 자리가 바로
+     여기입니다. */
+  if (ok) {
+    try {
+      draftSaved()
+    } catch (e) {
+      if (window.console) console.warn('[lim admin skin] 임시저장 비우기', e)
+    }
+  }
 }
 
 function watchToasts() {
@@ -626,7 +642,14 @@ function watchToasts() {
       /* ⚠ **저장을 기다리는 동안에만 반응합니다.** 알림은 저장 말고도
          뜹니다 — 아무 때나 모달을 닫으면 글을 쓰던 중에 초점이 위
          「저장」 단추로 튑니다. */
-      finishSave()
+
+      /* 됐는지 안 됐는지도 Decap 것을 봅니다. 저장이 끝나면
+         `type: 'success'` 로 알림을 띄우고(번들에서 확인), react-toastify
+         가 그걸 클래스로 붙입니다. 실패는 `--error` 입니다.
+         ⚠ 클래스가 없으면 **안 된 것으로 봅니다** — 임시저장본은 남는
+         쪽이 안전합니다. */
+      const ok = String(t.className).indexOf('Toastify__toast--success') >= 0
+      finishSave(ok)
     })
   }
   const mo = new MutationObserver(check)
@@ -814,6 +837,9 @@ function pass() {
     statusPill()
     editorFoot()
     placeholders()
+    /* ⚠ 손질이 다 끝난 뒤여야 합니다 — 임시저장은 `.lim-form` 과
+       `.lim-foot` 안에 줄을 답니다 (layoutForm·editorFoot 이 만듭니다). */
+    draftsPass()
   } catch (e) {
     /* 화면 하나가 안 고쳐지는 것보다 CMS 가 죽는 게 나쁩니다 */
     if (window.console) console.warn('[lim admin skin]', e)
@@ -914,6 +940,31 @@ function registerAuthorPills(CMS, h) {
 
   LimSelectControl.prototype = Object.create(Base.prototype)
   LimSelectControl.prototype.constructor = LimSelectControl
+
+  /* 저자를 임시저장에 등록합니다 (drafts.js). 알약에는 input 이 없어서
+     DOM 으로는 값을 넣을 수가 없습니다 — 위젯이 직접 등록합니다.
+     `project` 는 「발행 설정」이라 등록되지 않습니다 (drafts 의 FIELDS 가
+     걸러냅니다). */
+  LimSelectControl.prototype.componentDidMount = function () {
+    const self = this
+    const p = this.props
+    const name = p.field && p.field.get ? p.field.get('name') : null
+    this.draftOff = registerPort(name, {
+      get: function () {
+        return self.props.value || ''
+      },
+      set: function (v) {
+        self.props.onChange(v || '')
+      },
+    })
+  }
+
+  LimSelectControl.prototype.componentWillUnmount = function () {
+    if (this.draftOff) {
+      this.draftOff()
+      this.draftOff = null
+    }
+  }
 
   LimSelectControl.prototype.render = function () {
     const p = this.props
