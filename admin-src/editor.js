@@ -1095,6 +1095,135 @@ function registerWidget(CMS, h) {
   }
 
   CMS.registerWidget('string', LimStringControl, stringWidget.preview)
+
+  /* ---------------------------------------------------------------
+     커버 사진 — 끌어다 놓기.
+
+     칸에는 "끌어다 놓거나 아래에서 고르세요" 라고 **적혀 있었는데 실제로는
+     안 됐습니다** (`index.html` 의 커버 판 문구). Decap 의 image 위젯은
+     「이미지 선택」 단추 하나뿐이고 떨어뜨리기를 안 받습니다.
+
+     ⚠ **저장소로 올리지 않습니다.** 본문 편집기와 **같은 길**로 Cloudinary
+       에 바로 올립니다 (`upload.js` 의 `uploadImage`) — 그래야 단추로 고른
+       사진과 주소 모양(변환 조각)이 같습니다. Decap 의 `onPersistMedia` 는
+       base64 커밋이라 §6-5 와 정면으로 부딪힙니다.
+
+     ⚠ **`dragover` 와 `drop` 둘 다 막아야 합니다.** 안 막으면 브라우저가
+       그 파일로 페이지를 넘겨서 **쓰던 글이 통째로 날아갑니다** (본문
+       쪽에서 겪은 것과 같습니다).
+  --------------------------------------------------------------- */
+  const imageWidget = CMS.getWidget('image')
+  const ImageControl = imageWidget.control
+
+  function LimImageControl(props) {
+    Base.call(this, props)
+    this.state = { over: false, busy: false, error: '' }
+    this.setBox = this.setBox.bind(this)
+    this.box = null
+  }
+
+  LimImageControl.prototype = Object.create(Base.prototype)
+  LimImageControl.prototype.constructor = LimImageControl
+
+  LimImageControl.prototype.setBox = function (node) {
+    if (this.box === node) return
+    if (this.box) this.detach()
+    this.box = node
+    if (node) this.attach()
+  }
+
+  LimImageControl.prototype.attach = function () {
+    const self = this
+    const stop = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    this.onOver = (e) => {
+      if (!hasImageFile(e)) return
+      stop(e)
+      if (!self.state.over) self.setState({ over: true })
+    }
+    this.onOut = (e) => {
+      /* 안쪽 요소로 옮겨 다닐 때도 dragleave 가 옵니다 — 판 밖으로 나갔을 때만. */
+      if (e.relatedTarget && self.box && self.box.contains(e.relatedTarget)) return
+      if (self.state.over) self.setState({ over: false })
+    }
+    this.onDrop = (e) => {
+      if (!hasImageFile(e)) return
+      stop(e)
+      self.setState({ over: false })
+      const file = imagesIn(e.dataTransfer.files)[0]
+      if (file) self.take(file)
+    }
+    /* 캡처 단계 — Decap 이 같은 자리에 무엇을 달더라도 먼저 잡습니다. */
+    this.box.addEventListener('dragover', this.onOver, true)
+    this.box.addEventListener('dragleave', this.onOut, true)
+    this.box.addEventListener('drop', this.onDrop, true)
+  }
+
+  LimImageControl.prototype.detach = function () {
+    if (!this.box) return
+    this.box.removeEventListener('dragover', this.onOver, true)
+    this.box.removeEventListener('dragleave', this.onOut, true)
+    this.box.removeEventListener('drop', this.onDrop, true)
+  }
+
+  LimImageControl.prototype.componentWillUnmount = function () {
+    this.detach()
+    this.box = null
+  }
+
+  LimImageControl.prototype.take = function (file) {
+    const self = this
+    const cl = readCloudinary(this.props.config)
+    if (!cl) {
+      this.setState({ error: 'Cloudinary 설정을 못 읽었습니다. 「이미지 선택」을 쓰세요.' })
+      return
+    }
+    this.setState({ busy: true, error: '' })
+    uploadImage(file, cl).then(
+      (url) => {
+        self.setState({ busy: false })
+        self.props.onChange(url)
+      },
+      (err) => {
+        self.setState({ busy: false, error: (err && err.message) || '사진을 못 올렸습니다.' })
+      }
+    )
+  }
+
+  LimImageControl.prototype.render = function () {
+    const st = this.state
+    return h(
+      'div',
+      {
+        className:
+          'lim-cover-drop' + (st.over ? ' is-over' : '') + (st.busy ? ' is-busy' : ''),
+        ref: this.setBox,
+      },
+      h(ImageControl, this.props),
+      st.busy ? h('p', { className: 'lim-cover-note' }, '사진 올리는 중…') : null,
+      st.error ? h('p', { className: 'lim-cover-note is-error' }, st.error) : null
+    )
+  }
+
+  CMS.registerWidget('image', LimImageControl, imageWidget.preview)
+}
+
+/** 끌고 온 것에 사진이 들어 있는지. 파일이 아닌 것(글자·주소)은 그냥 둡니다. */
+function hasImageFile(e) {
+  const dt = e.dataTransfer
+  if (!dt) return false
+  const types = dt.types ? Array.prototype.slice.call(dt.types) : []
+  if (types.indexOf('Files') === -1) return false
+  /* dragover 에서는 files 가 비어 있을 수 있어 items 로도 봅니다. */
+  if (dt.items && dt.items.length) {
+    for (let i = 0; i < dt.items.length; i += 1) {
+      if (dt.items[i].kind === 'file' && /^image\//.test(dt.items[i].type || '')) return true
+    }
+    return false
+  }
+  return true
 }
 
 /**

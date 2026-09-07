@@ -407,6 +407,12 @@ const SAVE_BUTTON = "[class*='ToolbarSectionMain'] [class*='PublishButton']"
 /** 모달을 거치지 않고 통과시키는 동안만 켭니다 (모달의 「저장」이 켭니다). */
 let passingThrough = false
 
+/** 저장을 눌러 놓고 결과를 기다리는 동안만 켭니다. */
+let saving = false
+
+/** 결과가 영영 안 오면 풀어 줍니다 (네트워크가 멈춘 경우). */
+let savingTimer = null
+
 function buildSaveModal(meta) {
   const back = el('div', 'lim-modal-back')
   back.addEventListener('click', closeSaveModal)
@@ -447,8 +453,11 @@ function openSaveModal() {
 
 function closeSaveModal() {
   const modal = document.querySelector('.lim-modal')
+  const wasOpen = modal && modal.classList.contains('is-open')
   if (modal) modal.classList.remove('is-open')
-  /* 눌렀던 자리로 초점을 돌려줍니다 — 키보드로 다니는 사람이 길을 잃습니다 */
+  /* 눌렀던 자리로 초점을 돌려줍니다 — 키보드로 다니는 사람이 길을 잃습니다.
+     ⚠ **열려 있었을 때만.** 안 그러면 엉뚱한 때에 초점을 뺏습니다. */
+  if (!wasOpen) return
   const btn = document.querySelector(SAVE_BUTTON)
   if (btn && btn.focus) btn.focus()
 }
@@ -464,7 +473,24 @@ function closeSaveModal() {
 function confirmSave() {
   const btn = document.querySelector(SAVE_BUTTON)
   if (!btn) return
-  closeSaveModal()
+
+  /*
+    ⚠ **모달을 바로 닫지 않습니다.** 배포에서 쓰는 GitHub 백엔드는 저장이
+      곧 커밋이라 몇 초가 걸립니다. 예전에는 여기서 모달을 닫아 버려서,
+      누른 뒤 결과가 올 때까지 화면에 **아무 일도 안 일어났습니다** —
+      저장이 됐는지 안 됐는지 알 방법이 없었습니다.
+      끝난 것은 `watchToasts()` 가 Decap 의 알림을 보고 알려 줍니다.
+  */
+  saving = true
+  setSaveBusy(true)
+
+  /*
+    ⚠ **빠져나갈 길을 둡니다.** 알림이 영영 안 오면(네트워크가 멈추면)
+      모달이 「저장하는 중…」에 갇힙니다. 그때는 풀어 주고 위 띠를 보게
+      합니다 — 저장이 됐다고 알리지는 않습니다.
+  */
+  if (savingTimer) clearTimeout(savingTimer)
+  savingTimer = setTimeout(() => finishSave(), 20000)
 
   passingThrough = true
   btn.click()
@@ -481,11 +507,72 @@ function confirmSave() {
       setTimeout(pick, 30)
       return
     }
+    /* 메뉴를 못 찾았으면 저장이 시작조차 안 된 것입니다 — 모달을 되돌립니다. */
+    finishSave()
     if (window.console) {
       console.warn('[lim admin skin] 저장 메뉴를 못 찾았습니다 — 직접 골라 주세요')
     }
   }
   setTimeout(pick, 0)
+}
+
+/*
+  「저장하는 중…」.
+
+  ⚠ **단추 글자만 바꾸지 말고 눌리지 않게 막으세요.** 안 막으면 기다리는
+    동안 한 번 더 눌러서 저장이 두 번 나갑니다.
+*/
+function setSaveBusy(on) {
+  const btn = document.querySelector('.lim-modal-save')
+  if (!btn) return
+  btn.disabled = on
+  btn.textContent = on ? '저장하는 중…' : '저장'
+  const modal = document.querySelector('.lim-modal')
+  if (modal) modal.classList.toggle('is-busy', on)
+}
+
+/*
+  Decap 의 알림(react-toastify)을 지켜보다 저장이 끝나면 모달을 닫습니다.
+
+  **왜 Decap 것을 봅니까.** 저장이 됐는지 안 됐는지는 Decap 만 압니다 —
+  성공이면 "항목 저장됨", 실패면 "필수 필드를 놓치셨습니다" 같은 것을
+  띄웁니다 (번들의 ko 로케일에서 확인). 우리가 따로 판정하면 언젠가 둘이
+  어긋납니다. 그래서 **판정은 Decap 것을 쓰고, 보여 주는 자리만 우리가**
+  손봅니다.
+
+  ⚠ 실패해도 모달을 닫습니다. 걸리는 칸(본문 같은 것)은 모달 **밖**에
+    있어서, 열어 둔 채로는 어디가 문제인지 볼 수가 없습니다.
+*/
+function finishSave() {
+  if (savingTimer) {
+    clearTimeout(savingTimer)
+    savingTimer = null
+  }
+  if (!saving) return
+  saving = false
+  setSaveBusy(false)
+  closeSaveModal()
+}
+
+function watchToasts() {
+  const root = document.body
+  if (!root) return
+  const seen = new WeakSet()
+  const check = () => {
+    document.querySelectorAll('.Toastify__toast').forEach((t) => {
+      if (seen.has(t)) return
+      seen.add(t)
+      /* ⚠ **저장을 기다리는 동안에만 반응합니다.** 알림은 저장 말고도
+         뜹니다 — 아무 때나 모달을 닫으면 글을 쓰던 중에 초점이 위
+         「저장」 단추로 튑니다. */
+      finishSave()
+    })
+  }
+  const mo = new MutationObserver(check)
+  mo.observe(root, { childList: true, subtree: true })
+  /* ⚠ 지역 변수에 두면 수거될 수 있습니다 (§6-2). */
+  window.__limToastWatcher = mo
+  check()
 }
 
 function onSaveIntent(e) {
@@ -842,6 +929,8 @@ export function startSkin() {
 
   /* 주소가 바뀌는 것(목록 ↔ 글 ↔ 검색결과)도 따로 챙깁니다 */
   window.addEventListener('hashchange', () => setTimeout(pass, 0))
+
+  watchToasts()
 
   /* 「저장」을 가로채 발행 설정을 먼저 묻습니다 — 캡처 단계여야 React 보다
      먼저 걸립니다. 모달이 없으면 아무것도 안 하고 지나갑니다. */
