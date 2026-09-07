@@ -488,6 +488,83 @@ function paint() {
 }
 
 /* -------------------------------------------------------------------
+   남겨 둔 것 전부를 보여 주는 쪽
+
+   ⚠ **되살리기 줄(위)과 하는 일이 다릅니다.** 그쪽은 "지금 연 글"에 남은
+     것 하나를 묻습니다. 그런데 새 글은 `posts/new` 한 자리에만 쌓이고, 옛
+     글에 남긴 것은 **그 글을 다시 열기 전에는 있는지조차 모릅니다.** 그래서
+     머리띠에 목록을 답니다 (skin.js).
+
+   ⚠ 목록은 **파일과 견주지 않습니다.** 견주려면 글 130편을 다 읽어야 합니다.
+     이미 저장한 것과 같아진 임시저장본은 그 글을 열 때 `settle()` 이 버립니다.
+   ------------------------------------------------------------------- */
+
+/** 사람이 읽는 "몇 분 전". 목록에서도 씁니다. */
+export function draftAgo(at) {
+  return ago(at)
+}
+
+/**
+ * 남겨 둔 것 전부. 최근 것이 앞입니다.
+ *
+ * 돌려주는 것: `{ key, at, title, slug, route, isNew }`
+ */
+export function listDrafts() {
+  const rows = []
+  try {
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = localStorage.key(i)
+      if (!k || k.indexOf(KEY_PREFIX) !== 0) continue
+      let o = null
+      try {
+        o = JSON.parse(localStorage.getItem(k))
+      } catch (e) {
+        o = null
+      }
+      if (!o || !o.fields) continue
+      const entry = k.slice(KEY_PREFIX.length)
+      rows.push({
+        key: k,
+        at: o.at || 0,
+        title: (o.fields.title || '').trim(),
+        slug: (o.fields.slug || '').trim(),
+        route: '#/collections/' + entry,
+        isNew: isNewEntry(entry),
+      })
+    }
+  } catch (e) {
+    /* 목록 하나 때문에 CMS 를 막지 않습니다 */
+    return []
+  }
+  rows.sort((a, b) => b.at - a.at)
+  return rows
+}
+
+/**
+ * 목록에서 지웁니다.
+ *
+ * ⚠ 지금 열어 놓은 글의 것을 지웠으면 **들고 있던 것도 같이 비웁니다.**
+ *   안 그러면 다음 바퀴에 그대로 다시 씁니다.
+ */
+export function dropDraft(k) {
+  if (!k) return
+  try {
+    localStorage.removeItem(k)
+  } catch (e) {
+    /* 못 지워도 아래에서 상태는 맞춰 둡니다 */
+  }
+  if (key && KEY_PREFIX + key === k) {
+    offer = null
+    baseline = readForm()
+    lastFields = baseline
+    seen = baseline
+    savedAt = 0
+    full = false
+    paint()
+  }
+}
+
+/* -------------------------------------------------------------------
    바깥에서 부르는 것
    ------------------------------------------------------------------- */
 

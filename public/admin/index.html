@@ -1225,6 +1225,157 @@
         color: var(--a-warn);
       }
 
+      /* ── 쓰다 만 글 목록 (머리띠 단추 + 판) ──────────────────────
+         ⚠ 남은 것이 없으면 skin.js 가 `hidden` 으로 감춥니다. */
+      .lim-drafts-btn {
+        padding: 6px 12px !important;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 8px;
+        border: 1px solid var(--a-border);
+        background: var(--a-card);
+        color: var(--a-dim);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .lim-drafts-btn:hover {
+        color: var(--a-text);
+      }
+      .lim-drafts-label {
+        margin-right: 5px;
+      }
+      .lim-drafts-count {
+        display: inline-block;
+        min-width: 16px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: var(--a-accent);
+        color: var(--a-accent-fg);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .lim-drafts {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .lim-drafts-back {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .lim-drafts-card {
+        position: relative;
+        width: 100%;
+        max-width: 460px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        padding: 22px;
+        background: var(--a-bg);
+        border: 1px solid var(--a-border);
+        border-radius: 14px;
+      }
+      .lim-drafts-card:focus {
+        outline: none;
+      }
+      .lim-drafts-title {
+        margin: 0 0 6px !important;
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--a-text) !important;
+      }
+      .lim-drafts-hint {
+        margin: 0 0 16px !important;
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--a-faint) !important;
+      }
+      .lim-drafts-list {
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .lim-drafts-empty {
+        margin: 0 !important;
+        font-size: 13px;
+        color: var(--a-faint) !important;
+      }
+      .lim-drafts-row {
+        display: flex;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .lim-drafts-go {
+        flex: 1;
+        min-width: 0;
+        text-align: left;
+        padding: 10px 12px;
+        font: inherit;
+        border-radius: 9px;
+        border: 1px solid var(--a-border);
+        background: var(--a-card);
+        cursor: pointer;
+      }
+      .lim-drafts-go b {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--a-text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .lim-drafts-go span {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        color: var(--a-faint);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .lim-drafts-go:hover {
+        border-color: var(--a-accent);
+      }
+      .lim-drafts-del {
+        flex-shrink: 0;
+        padding: 0 12px;
+        font: inherit;
+        font-size: 12px;
+        border-radius: 9px;
+        border: 1px solid var(--a-border);
+        background: none;
+        color: var(--a-faint);
+        cursor: pointer;
+      }
+      .lim-drafts-del:hover {
+        color: var(--a-danger, #fe6d6d);
+        border-color: var(--a-danger, #fe6d6d);
+      }
+      .lim-drafts-foot {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+      }
+      .lim-drafts-close {
+        padding: 8px 16px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 8px;
+        border: 1px solid var(--a-border);
+        background: var(--a-card);
+        color: var(--a-text);
+        cursor: pointer;
+      }
+
       /* 폰에서는 단추가 글자 아래로 내려가고 화면 폭을 나눠 씁니다 */
       @media (max-width: 520px) {
         .lim-draftbar-acts {
@@ -1588,6 +1739,16 @@
           width: 100% !important;
         }
 
+        /* ⚠ 머리띠에 자리가 없습니다. 다 적으면 오른쪽 끝이 44px 밀려서
+           「게시」와 아바타가 화면 밖으로 나갑니다 (재서 확인). 숫자만
+           남깁니다 — 읽어 주는 이름(aria-label)에는 그대로 다 있습니다. */
+        .lim-drafts-label {
+          display: none;
+        }
+        .lim-drafts-btn {
+          padding: 6px 8px !important;
+        }
+
         /*
           폰에서는 머리글 한 줄에 이름·메뉴 둘·해달·새 글·아바타가 다
           들어가야 합니다. 데스크톱 간격 그대로 두면 375px 에서 25px 이
@@ -1806,6 +1967,6 @@
       config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
       바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=18"></script>
+    <script src="/admin/editor.js?v=19"></script>
   </body>
 </html>

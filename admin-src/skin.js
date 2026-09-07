@@ -25,7 +25,14 @@
   전부 try/catch 안에서 돕니다. 여기가 죽어도 Decap 은 제 모양으로 굴러갑니다.
 */
 
-import { draftSaved, draftsPass, registerPort } from './drafts.js'
+import {
+  draftAgo,
+  draftSaved,
+  draftsPass,
+  dropDraft,
+  listDrafts,
+  registerPort,
+} from './drafts.js'
 
 /* 목록 요약(config.yml 의 summary)을 이 글자로 이어 붙여 놨습니다.
    ⚠ 여기를 고치면 config.yml 의 summary 도 같이 고쳐야 합니다.
@@ -148,6 +155,175 @@ function decorateHeader() {
   themeBtn.addEventListener('click', toggleTheme)
   actions.insertBefore(themeBtn, actions.firstChild)
   paintThemeButton(currentTheme())
+
+  const draftsBtn = el('button', 'lim-drafts-btn')
+  draftsBtn.type = 'button'
+  draftsBtn.addEventListener('click', openDraftsPanel)
+  actions.insertBefore(draftsBtn, themeBtn)
+  paintDraftsButton()
+}
+
+/* -------------------------------------------------------------------
+   쓰다 만 글 목록 — 머리띠 단추
+
+   되살리기 줄(폼 맨 위)은 **지금 연 글**에 남은 것만 묻습니다. 그런데 새 글은
+   `posts/new` 한 자리에 쌓이고, 옛 글에 남긴 것은 그 글을 다시 열기 전에는
+   있는지조차 알 수가 없습니다 — 목록 화면에서는 아무 표시도 없었습니다.
+   그래서 머리띠에서 한눈에 보고 건너갈 수 있게 답니다.
+
+   ⚠ **남은 것이 없으면 단추를 감춥니다.** 되찾는 자리라, 되찾을 것이 없을 때
+     "임시저장 (0)" 이 머리띠에 붙어 있으면 눌러 봐야 빈 판입니다.
+
+   ⚠ **판은 `document.body` 에 답니다.** 발행 설정 모달과 다릅니다 — 그쪽은
+     React 가 그린 필드를 담고 있어서 글 화면(`pane`) 안이어야 하는데, 이건
+     우리가 만든 것뿐이고 **목록 화면에서도 열려야** 합니다.
+
+   ⚠ **여기서 곧장 되살리지 않습니다.** 그 글로 건너가기만 하고, 되살릴지는
+     원래 있던 줄이 묻습니다 — 되살리기는 폼을 덮어쓰는 일이라 확인하는 자리가
+     하나만 있는 편이 낫습니다.
+   ------------------------------------------------------------------- */
+
+/**
+ * 그 글이 정말 떠 있는가. 주소만 보면 안 됩니다 (아래 `goToDraft` 참고).
+ *
+ * 「주소」 칸을 봅니다 — 글 130편에 전부 채워져 있습니다 (§3).
+ */
+function draftLoaded(route) {
+  const m = /\/entries\/([^/?#]+)$/.exec(route)
+  if (!m) return true /* 새 글은 주소만 바꿔도 잘 넘어갑니다 (재 보고 확인) */
+  const slug = document.querySelector("[id^='slug-field-']")
+  return !!slug && slug.value === m[1]
+}
+
+/**
+ * 남겨 둔 글로 건너갑니다.
+ *
+ * ⚠ **글 → 글은 주소만 바꿔서는 안 넘어갑니다.** Decap 이 주소는 바꿔 놓고
+ *   폼은 **옛 글 그대로** 둡니다 — 고칠 것이 없는 깨끗한 글에서도 그렇습니다
+ *   (재현해서 확인했습니다). 그러면 엉뚱한 글 위에 "쓰다 만 글이 있습니다"
+ *   가 떠서, 되살리면 남의 글을 덮어씁니다. **조용히 틀리는 쪽이라 제일
+ *   나쁩니다.**
+ *
+ *   목록을 한 번 거치면 넘어갑니다. 그래서 두 걸음으로 갑니다.
+ */
+function goToDraft(route) {
+  if (location.hash === route) {
+    /* 이미 그 글에 서 있으면 주소가 안 바뀌어 아무 일도 안 일어납니다 —
+       손질 한 바퀴를 돌려 되살리기 줄이 뜨게 합니다. */
+    pass()
+    return
+  }
+
+  const list = route.replace(/\/(new|entries\/[^/?#]+)$/, '')
+  location.hash = list
+  setTimeout(() => {
+    location.hash = route
+  }, 60)
+
+  /*
+    ⚠ 그래도 안 바뀌면 통째로 다시 엽니다. 남겨 둔 것은 localStorage 에 있어서
+      다시 열어도 그대로고, 쓰던 글도 나가기 직전에 한 번 더 남깁니다
+      (drafts.js 의 `pagehide`). **엉뚱한 글을 보여 주는 것보다 낫습니다.**
+  */
+  setTimeout(() => {
+    if (location.hash === route && !draftLoaded(route)) location.reload()
+  }, 1500)
+}
+
+/*
+  ⚠ **글자와 숫자를 따로 담습니다.** 폰(375px)에서는 머리띠에 자리가 없어서
+    글자를 감추고 숫자만 남깁니다 — 통째로 한 덩어리면 그걸 못 합니다.
+    다 적으면 오른쪽 끝이 44px 밀려서 「게시」와 아바타가 화면 밖으로 나갑니다
+    (재서 확인했습니다).
+*/
+function paintDraftsButton() {
+  const btn = document.querySelector('.lim-drafts-btn')
+  if (!btn) return
+  const n = listDrafts().length
+  btn.hidden = n === 0
+
+  let label = btn.querySelector('.lim-drafts-label')
+  if (!label) {
+    btn.textContent = ''
+    label = el('span', 'lim-drafts-label', '쓰다 만 글')
+    btn.appendChild(label)
+    btn.appendChild(el('span', 'lim-drafts-count'))
+  }
+  const count = btn.querySelector('.lim-drafts-count')
+  const text = String(n)
+  if (count.textContent !== text) count.textContent = text
+  btn.setAttribute('aria-label', '쓰다 만 글 ' + n + '개')
+}
+
+function closeDraftsPanel() {
+  const panel = document.querySelector('.lim-drafts')
+  if (panel && panel.parentNode) panel.parentNode.removeChild(panel)
+}
+
+function openDraftsPanel() {
+  closeDraftsPanel()
+
+  const panel = el('div', 'lim-drafts')
+  const back = el('div', 'lim-drafts-back')
+  back.addEventListener('click', closeDraftsPanel)
+
+  const card = el('div', 'lim-drafts-card')
+  card.setAttribute('role', 'dialog')
+  card.setAttribute('aria-modal', 'true')
+  card.setAttribute('aria-label', '쓰다 만 글')
+  card.setAttribute('tabindex', '-1')
+  card.appendChild(el('h3', 'lim-drafts-title', '쓰다 만 글'))
+  card.appendChild(
+    el(
+      'p',
+      'lim-drafts-hint',
+      '이 브라우저에만 남아 있습니다. 고르면 그 글로 가서 되살릴지 묻습니다.',
+    ),
+  )
+
+  const list = el('div', 'lim-drafts-list')
+  const rows = listDrafts()
+  if (!rows.length) {
+    list.appendChild(el('p', 'lim-drafts-empty', '남아 있는 것이 없습니다.'))
+  }
+  for (const row of rows) {
+    const item = el('div', 'lim-drafts-row')
+
+    const go = el('button', 'lim-drafts-go')
+    go.type = 'button'
+    go.appendChild(el('b', null, row.title || '제목 없음'))
+    const where = row.isNew ? '새 글' : row.slug || '옛 글'
+    go.appendChild(el('span', null, draftAgo(row.at) + ' · ' + where))
+    go.addEventListener('click', () => {
+      closeDraftsPanel()
+      goToDraft(row.route)
+    })
+
+    const del = el('button', 'lim-drafts-del', '버리기')
+    del.type = 'button'
+    del.addEventListener('click', () => {
+      dropDraft(row.key)
+      paintDraftsButton()
+      openDraftsPanel()
+    })
+
+    item.appendChild(go)
+    item.appendChild(del)
+    list.appendChild(item)
+  }
+  card.appendChild(list)
+
+  const foot = el('div', 'lim-drafts-foot')
+  const close = el('button', 'lim-drafts-close', '닫기')
+  close.type = 'button'
+  close.addEventListener('click', closeDraftsPanel)
+  foot.appendChild(close)
+  card.appendChild(foot)
+
+  panel.appendChild(back)
+  panel.appendChild(card)
+  document.body.appendChild(panel)
+  card.focus()
 }
 
 /*
@@ -677,6 +853,10 @@ function onSaveIntent(e) {
 
 function onEscape(e) {
   if (e.key !== 'Escape') return
+  if (document.querySelector('.lim-drafts')) {
+    closeDraftsPanel()
+    return
+  }
   const modal = document.querySelector('.lim-modal.is-open')
   if (modal) closeSaveModal()
 }
@@ -840,6 +1020,7 @@ function pass() {
     /* ⚠ 손질이 다 끝난 뒤여야 합니다 — 임시저장은 `.lim-form` 과
        `.lim-foot` 안에 줄을 답니다 (layoutForm·editorFoot 이 만듭니다). */
     draftsPass()
+    paintDraftsButton()
   } catch (e) {
     /* 화면 하나가 안 고쳐지는 것보다 CMS 가 죽는 게 나쁩니다 */
     if (window.console) console.warn('[lim admin skin]', e)
