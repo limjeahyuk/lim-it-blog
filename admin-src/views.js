@@ -96,7 +96,7 @@ async function load() {
     }))
     .sort((a, b) => b.n - a.n)
 
-  return { rows, total: data.total || 0 }
+  return { rows, total: data.total || 0, store: data.store !== false }
 }
 
 function closeViewsPanel() {
@@ -202,7 +202,19 @@ export function openViewsPanel() {
       return
     }
     if (!data.rows.length) {
-      list.appendChild(el('p', 'lim-views-empty', '아직 아무도 안 읽었습니다.'))
+      /* ⚠ 빈 표에는 두 가지가 섞여 있습니다 — 아직 아무도 안 읽은 것과,
+         셀 데(Upstash)가 아예 안 붙어 있는 것. 뒤엣것을 "안 읽었습니다" 로
+         적으면 홈이 왜 「최신 글」에 머물러 있는지 알 방법이 없습니다. */
+      list.appendChild(
+        el(
+          'p',
+          'lim-views-empty',
+          data.store
+            ? '아직 아무도 안 읽었습니다.'
+            : '셀 데가 안 붙어 있습니다 — Vercel 에 Upstash 환경변수' +
+                '(KV_REST_API_URL · KV_REST_API_TOKEN)를 넣고 다시 배포하세요.',
+        ),
+      )
       return
     }
 

@@ -166,6 +166,11 @@ export default async function handler(req, res) {
           order,
           views: counts,
           total: order.reduce((sum, k) => sum + counts[k], 0),
+          /* ⚠ **"아직 아무도 안 읽었다" 와 "셀 데가 없다" 는 다릅니다.**
+             둘 다 빈 표로 오기 때문에, `/admin` 이 그걸 구분해서 말할 수
+             있게 저장소가 붙어 있는지를 같이 보냅니다. 열쇠를 넣은
+             사람에게만 나가는 응답이라 여기에 둡니다. */
+          store: !!creds(),
         })
         return
       }
