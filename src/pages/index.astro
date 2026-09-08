@@ -4,7 +4,7 @@
  *
  *   1. 헤드라인 한 편 크게 + 옆에 세 줄
  *   2. 최신 글 카드 넷
- *   3. 더 읽을 글 (번호 붙은 줄)
+ *   3. 인기 글 — 조회수 순 (숫자를 못 받아오면 「더 읽을 글」 최신순 그대로)
  *   4. Editors · Service · Contact
  *
  * ⚠ 홈에만 상자(카드)를 씁니다. `/posts` 같은 목록은 여전히 "카드가 아니라
@@ -124,10 +124,15 @@ const who = (id?: string) => (id ? getAuthor(id) : undefined)
       </div>
     </section>
 
-    {/* ── 더 읽을 글 ─────────────────────────────── */}
+    {/* ── 인기 글 ────────────────────────────────────
+        서버는 최신순으로 그려 두고, 브라우저가 조회수를 받아 오면 그때
+        순서와 제목을 인기순으로 갈아 끼웁니다 (맨 아래 script · §6-6).
+
+        ⚠ **못 받아오면 「더 읽을 글」 그대로 둡니다.** 최신순 여덟 줄에
+          「인기 글」이라고 써 붙이면 세지도 않은 것을 센 척하게 됩니다. */}
     <section class="sec">
       <header class="sec-head">
-        <h2>더 읽을 글</h2>
+        <h2 id="ranks-head">더 읽을 글</h2>
       </header>
 
       <ol class="ranks">
@@ -449,3 +454,109 @@ const who = (id?: string) => (id ? getAuthor(id) : undefined)
     }
   }
 </style>
+
+<script>
+  /*
+    「더 읽을 글」을 조회수 순으로 갈아 끼웁니다.
+
+    홈은 빌드할 때 굳는 지면이라 순위를 미리 넣을 수가 없습니다. 그래서
+    최신순 여덟 줄을 그대로 그려 두고, 브라우저가 두 가지를 받아 옵니다 —
+    `/api/views` 에서 **순서만**(숫자는 안 옵니다 · §6-6), `/ranks.json`
+    에서 주소·제목·날짜.
+
+    ⚠ **못 받아오면 아무것도 안 합니다.** 제목이 「더 읽을 글」로 남고 줄도
+      최신순 그대로입니다. 스크립트가 죽었을 때 지면이 빈 채로 남지 않게
+      하는 것(§4)과 같은 규칙이고, 여기서는 **거짓말을 안 하는 쪽**이기도
+      합니다.
+
+    ⚠ **위에 이미 나온 여덟 편은 뺍니다.** 헤드라인·옆줄·카드에 있는 글이
+      바로 아래 인기 글에 또 나오면 같은 화면에 두 번입니다. 어느 글이
+      나와 있는지는 DOM 에서 읽습니다 — 그려 놓은 것이 곧 정답이라 목록을
+      따로 심어 둘 필요가 없습니다.
+
+    ⚠ **모자라면 최신순으로 채웁니다.** 조회수가 잡힌 글이 몇 편뿐인 동안
+      줄이 세 개만 남으면 지면에 구멍이 납니다.
+  */
+  const head = document.querySelector<HTMLElement>('#ranks-head')
+  const list = document.querySelector<HTMLElement>('.ranks')
+
+  type Row = { s: string; t: string; d: string }
+
+  const slugOf = (href: string | null) => {
+    const m = /^\/posts\/([^/]+)\//.exec(href || '')
+    return m ? m[1] : ''
+  }
+
+  const fmt = (d: string) =>
+    new Date(d + 'T00:00:00').toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+
+  async function popular(head: HTMLElement, list: HTMLElement) {
+    const [ranked, rows] = await Promise.all([
+      fetch('/api/views')
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+      fetch('/ranks.json')
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ])
+
+    const order: string[] = (ranked && ranked.order) || []
+    if (!order.length || !Array.isArray(rows) || !rows.length) return
+
+    const by = new Map<string, Row>()
+    for (const row of rows as Row[]) by.set(row.s, row)
+
+    /* 위쪽 덩어리에 이미 나와 있는 글 */
+    const shown = new Set<string>()
+    for (const a of document.querySelectorAll<HTMLAnchorElement>(
+      '.hero, .side-item, .card',
+    )) {
+      const s = slugOf(a.getAttribute('href'))
+      if (s) shown.add(s)
+    }
+
+    const items = [...list.querySelectorAll('li')]
+    const fallback = items.map((li) =>
+      slugOf(li.querySelector('a')?.getAttribute('href') ?? null),
+    )
+
+    const top: string[] = []
+    for (const s of order) {
+      if (top.length >= items.length) break
+      if (shown.has(s) || top.includes(s) || !by.has(s)) continue
+      top.push(s)
+    }
+    const fromViews = top.length
+    if (!fromViews) return
+
+    for (const s of fallback) {
+      if (top.length >= items.length) break
+      if (!s || top.includes(s) || !by.has(s)) continue
+      top.push(s)
+    }
+
+    items.forEach((li, i) => {
+      const row = by.get(top[i])
+      if (!row) {
+        li.remove()
+        return
+      }
+      const a = li.querySelector('a')
+      const title = li.querySelector('h3')
+      const time = li.querySelector('time')
+      if (!a || !title || !time) return
+      a.setAttribute('href', `/posts/${row.s}/`)
+      title.textContent = row.t
+      time.setAttribute('datetime', row.d)
+      time.textContent = fmt(row.d)
+    })
+
+    head.textContent = '인기 글'
+  }
+
+  if (head && list) popular(head, list).catch(() => {})
+</script>

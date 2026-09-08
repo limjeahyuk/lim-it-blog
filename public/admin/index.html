@@ -1387,6 +1387,168 @@
         cursor: pointer;
       }
 
+      /* ── 조회수 판 (목록 화면의 「128개」 옆 단추 + 판) ───────────
+         ⚠ 머리띠가 아니라 여기 답니다 — 폰에서 머리띠는 이미 꽉 차 있습니다.
+         모양은 「쓰다 만 글」 판과 같습니다 (§6-6). */
+      .lim-views-btn {
+        margin-left: 10px;
+        padding: 4px 10px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 8px;
+        border: 1px solid var(--a-border);
+        background: var(--a-card);
+        color: var(--a-dim);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .lim-views-btn:hover {
+        color: var(--a-text);
+      }
+
+      .lim-views {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .lim-views-back {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .lim-views-card {
+        position: relative;
+        width: 100%;
+        max-width: 460px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        padding: 22px;
+        background: var(--a-bg);
+        border: 1px solid var(--a-border);
+        border-radius: 14px;
+      }
+      .lim-views-card:focus {
+        outline: none;
+      }
+      .lim-views-title {
+        margin: 0 0 6px !important;
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--a-text) !important;
+      }
+      .lim-views-hint {
+        margin: 0 0 16px !important;
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--a-faint) !important;
+      }
+      .lim-views-list {
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .lim-views-empty {
+        margin: 0 !important;
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--a-faint) !important;
+      }
+      .lim-views-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 2px;
+        border-bottom: 1px solid var(--a-border);
+      }
+      .lim-views-name {
+        flex: 1;
+        min-width: 0;
+      }
+      .lim-views-name b {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--a-text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .lim-views-name span {
+        display: block;
+        margin-top: 1px;
+        font-size: 11px;
+        color: var(--a-faint);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .lim-views-n {
+        flex-shrink: 0;
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--a-text);
+        font-variant-numeric: tabular-nums;
+      }
+      .lim-views-ask {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .lim-views-askline {
+        display: flex;
+        gap: 8px;
+      }
+      .lim-views-key {
+        flex: 1;
+        min-width: 0;
+        padding: 8px 10px;
+        /* ⚠ 16px 미만이면 iOS 사파리가 탭할 때 화면을 확대합니다 (§6-2) */
+        font: inherit;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--a-border);
+        background: var(--a-card);
+        color: var(--a-text);
+      }
+      .lim-views-foot {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .lim-views-del {
+        padding: 8px 14px;
+        font: inherit;
+        font-size: 13px;
+        border-radius: 8px;
+        border: 1px solid var(--a-border);
+        background: none;
+        color: var(--a-faint);
+        cursor: pointer;
+      }
+      .lim-views-del:hover {
+        color: var(--a-danger, #fe6d6d);
+        border-color: var(--a-danger, #fe6d6d);
+      }
+      .lim-views-close {
+        padding: 8px 16px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 8px;
+        border: 1px solid var(--a-border);
+        background: var(--a-card);
+        color: var(--a-text);
+        cursor: pointer;
+      }
+
       /* 폰에서는 단추가 글자 아래로 내려가고 화면 폭을 나눠 씁니다 */
       @media (max-width: 520px) {
         .lim-draftbar-acts {

@@ -33,6 +33,7 @@ import {
   listDrafts,
   registerPort,
 } from './drafts.js'
+import { closeViewsPanel, openViewsPanel } from './views.js'
 
 /* 목록 요약(config.yml 의 summary)을 이 글자로 이어 붙여 놨습니다.
    ⚠ 여기를 고치면 config.yml 의 summary 도 같이 고쳐야 합니다.
@@ -418,6 +419,14 @@ function decorateList() {
     }
     const text = count + '개'
     if (n.textContent !== text) n.textContent = text
+
+    /* 조회수 판 — 「128개」 옆. 머리띠는 폰에서 이미 꽉 차 있습니다 (§6-6). */
+    if (!controls.querySelector('.lim-views-btn')) {
+      const btn = el('button', 'lim-views-btn', '조회수')
+      btn.type = 'button'
+      btn.addEventListener('click', openViewsPanel)
+      controls.appendChild(btn)
+    }
   }
 
   /* 사이드바 컬렉션 줄에도 같은 숫자를 답니다 */
@@ -862,6 +871,10 @@ function onSaveIntent(e) {
 
 function onEscape(e) {
   if (e.key !== 'Escape') return
+  if (document.querySelector('.lim-views')) {
+    closeViewsPanel()
+    return
+  }
   if (document.querySelector('.lim-drafts')) {
     closeDraftsPanel()
     return
