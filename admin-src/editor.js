@@ -26,7 +26,7 @@
     하고, 이 블로그에만 있는 것(글자 색·형광펜)은 아래에서 마크로 직접
     정의해 왕복시킵니다.
 */
-import { Editor, Mark } from '@tiptap/core'
+import { Editor, Extension, Mark, wrappingInputRule } from '@tiptap/core'
 import { Markdown } from '@tiptap/markdown'
 import Image from '@tiptap/extension-image'
 import { TableKit } from '@tiptap/extension-table'
@@ -142,6 +142,36 @@ const Highlight = Mark.create({
 })
 
 
+/*
+  인용문을 `| ` 로 시작하기.
+
+  줄 맨 앞에서 `|` 를 치고 스페이스를 누르면 인용문이 됩니다. tiptap 기본은
+  마크다운 그대로 `>` 인데, `|` 로도 되게 해 달라고 하셔서 더했습니다 —
+  화면의 인용문이 왼쪽 세로선 하나(§4)라 치는 글자와 모양이 맞기도 합니다.
+
+  ⚠ **기본 `>` 는 그대로 둡니다** — StarterKit 의 Blockquote 가 매어 둔 것이라
+    빼려면 그 확장을 통째로 갈아끼워야 하고, 마크다운을 아는 사람은 그쪽을
+    먼저 칩니다. 두 가지가 다 되는 편이 낫습니다.
+
+  ⚠ **저장되는 마크다운은 여전히 `> ` 입니다.** 여기서 바꾸는 것은 치는
+    방법뿐이고, 파일에 `|` 가 남지 않습니다 (왕복 검사 숫자도 그대로입니다).
+
+  ⚠ **표 안에서도 먹습니다.** 칸 맨 앞에서 `| ` 를 치면 그 칸 안에 인용문이
+    생깁니다 — 기본 `>` 도 원래 그렇습니다 (재현해서 확인). 잘못 눌렀으면
+    되돌리기(⌘Z) 한 번으로 `|` 가 돌아옵니다.
+*/
+const QuoteBar = Extension.create({
+  name: 'quoteBar',
+
+  addInputRules() {
+    const type = this.editor.schema.nodes.blockquote
+    /* StarterKit 에서 blockquote 를 빼면 조용히 아무 일도 안 하게 둡니다 */
+    if (!type) return []
+    return [wrappingInputRule({ find: /^\s*\|\s$/, type })]
+  },
+})
+
+
 /* -------------------------------------------------------------------
    사진 크기.
 
@@ -221,6 +251,7 @@ export function makeExtensions({ pickImage, pickLink, upload } = {}) {
     TaskItem.configure({ nested: true }),
     Highlight,
     TextColor,
+    QuoteBar,
     ImeShortcuts,
     BlockShortcuts,
     ToolShortcuts.configure({
@@ -312,7 +343,7 @@ const GROUPS = [
     { k: 'clear', label: '서식 지우기', title: '서식 지우기 ⌘\\' },
   ],
   [
-    { k: 'quote', label: '인용', title: '인용 ⌘⇧B', active: ['blockquote'] },
+    { k: 'quote', label: '인용', title: '인용 ⌘⇧B · 줄 앞에서 | +스페이스', active: ['blockquote'] },
     { k: 'ul', label: '• 목록', title: '글머리 목록 ⌘⇧8', active: ['bulletList'] },
     { k: 'ol', label: '1. 번호', title: '번호 목록 ⌘⇧7', active: ['orderedList'] },
     { k: 'task', label: '☑ 할 일', title: '할 일 목록 ⌘⇧9', active: ['taskList'] },

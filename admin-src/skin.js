@@ -81,15 +81,18 @@ const ICON = {
   sun: 'M12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8ZM6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12ZM12 1C12.5523 1 13 1.44772 13 2V4C13 4.55228 12.5523 5 12 5C11.4477 5 11 4.55228 11 4V2C11 1.44772 11.4477 1 12 1ZM12 19C12.5523 19 13 19.4477 13 20V22C13 22.5523 12.5523 23 12 23C11.4477 23 11 22.5523 11 22V20C11 19.4477 11.4477 19 12 19ZM4.29289 4.29289C4.68342 3.90237 5.31658 3.90237 5.70711 4.29289L6.70711 5.29289C7.09763 5.68342 7.09763 6.31658 6.70711 6.70711C6.31658 7.09763 5.68342 7.09763 5.29289 6.70711L4.29289 5.70711C3.90237 5.31658 3.90237 4.68342 4.29289 4.29289ZM17.2929 17.2929C17.6834 16.9024 18.3166 16.9024 18.7071 17.2929L19.7071 18.2929C20.0976 18.6834 20.0976 19.3166 19.7071 19.7071C19.3166 20.0976 18.6834 20.0976 18.2929 19.7071L17.2929 18.7071C16.9024 18.3166 16.9024 17.6834 17.2929 17.2929ZM1 12C1 11.4477 1.44772 11 2 11H4C4.55228 11 5 11.4477 5 12C5 12.5523 4.55228 13 4 13H2C1.44772 13 1 12.5523 1 12ZM19 12C19 11.4477 19.4477 11 20 11H22C22.5523 11 23 11.4477 23 12C23 12.5523 22.5523 13 22 13H20C19.4477 13 19 12.5523 19 12ZM6.70711 17.2929C7.09763 17.6834 7.09763 18.3166 6.70711 18.7071L5.70711 19.7071C5.31658 20.0976 4.68342 20.0976 4.29289 19.7071C3.90237 19.3166 3.90237 18.6834 4.29289 18.2929L5.29289 17.2929C5.68342 16.9024 6.31658 16.9024 6.70711 17.2929ZM19.7071 4.29289C20.0976 4.68342 20.0976 5.31658 19.7071 5.70711L18.7071 6.70711C18.3166 7.09763 17.6834 7.09763 17.2929 6.70711C16.9024 6.31658 16.9024 5.68342 17.2929 5.29289L18.2929 4.29289C18.6834 3.90237 19.3166 3.90237 19.7071 4.29289Z',
 }
 
+/* ⚠ 화면에 있는 것을 **전부** 칠합니다. 해/달은 목록 화면(머리띠)과 글
+   화면(위 띠) 두 군데에 답니다 — 하나만 칠하면 다른 쪽이 옛 그림으로
+   남습니다. */
 function paintThemeButton(theme) {
-  const btn = document.querySelector('.lim-theme')
-  if (!btn) return
   const d = theme === 'dark' ? ICON.moon : ICON.sun
-  btn.innerHTML =
+  const svg =
     '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' +
     '<path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="' +
     d +
     '"></path></svg>'
+  const btns = document.querySelectorAll('.lim-theme')
+  for (const btn of btns) btn.innerHTML = svg
 }
 
 function applyTheme(theme) {
@@ -110,6 +113,15 @@ function toggleTheme() {
     /* 사파리 비공개 모드 — 이번 화면에서만 바뀝니다 */
   }
   applyTheme(next)
+}
+
+/** 해/달 단추 하나. 머리띠와 글 위 띠가 **같은 것**을 씁니다. */
+function themeButton() {
+  const btn = el('button', 'lim-theme')
+  btn.type = 'button'
+  btn.setAttribute('aria-label', '테마 전환')
+  btn.addEventListener('click', toggleTheme)
+  return btn
 }
 
 /* ------------------------------------------------------------------- */
@@ -149,10 +161,7 @@ function decorateHeader() {
   const actions = content.querySelector("[class*='AppHeaderActions']")
   if (!actions) return
 
-  const themeBtn = el('button', 'lim-theme')
-  themeBtn.type = 'button'
-  themeBtn.setAttribute('aria-label', '테마 전환')
-  themeBtn.addEventListener('click', toggleTheme)
+  const themeBtn = themeButton()
   actions.insertBefore(themeBtn, actions.firstChild)
   paintThemeButton(currentTheme())
 
@@ -970,6 +979,33 @@ function routeFlag() {
 }
 
 /*
+  글 쓰는 화면의 해/달.
+
+  글을 열면 머리띠(AppHeader) 자리를 위 띠(Toolbar)가 덮습니다 — 머리띠는 DOM
+  에 남아 있지만 화면에서는 가려져서, 해/달이 **글을 쓰는 동안에는 없었습니다.**
+  목록으로 나갔다 들어와야 바꿀 수 있었는데, 정작 눈이 부신 자리는 글 쓰는
+  화면입니다.
+
+  ⚠ **그래서 글 화면에서는 `.lim-theme` 이 둘입니다** (가려진 머리띠 것 하나 +
+    여기 하나). 눌리는 것도 보이는 것도 하나뿐이지만, `.lim-theme` 을 하나로
+    치고 코드를 쓰지 마세요.
+
+  ⚠ **자리는 `order` 로 정합니다.** 상태 알약도 여기 첫 칸에 끼어드는데,
+    둘 중 어느 것이 먼저 붙는지는 글에 따라 다릅니다 (새 글은 초안 토글이
+    늦게 떠서 알약이 나중입니다). DOM 차례에 기대면 해/달이 왼쪽에 있다
+    없다 합니다 — index.html 의 `order: -2` 가 못박습니다.
+
+  ⚠ **머리띠 것과 같은 함수를 씁니다.** 따로 만들면 한쪽만 칠해지거나 한쪽만
+    안 눌리는 일이 생깁니다 (`paintThemeButton` 이 둘 다 칠합니다).
+*/
+function editorTheme() {
+  const main = document.querySelector("[class*='ToolbarSectionMain']")
+  if (!main || main.querySelector('.lim-theme')) return
+  main.insertBefore(themeButton(), main.firstChild)
+  paintThemeButton(currentTheme())
+}
+
+/*
   오른쪽 위 상태 알약.
 
   Decap 의 "게시" 단추는 눌러서 저장하는 자리라 지금 상태를 안 알려 줍니다.
@@ -1014,6 +1050,7 @@ function pass() {
     decorateHeader()
     decorateList()
     layoutForm()
+    editorTheme()
     statusPill()
     editorFoot()
     placeholders()

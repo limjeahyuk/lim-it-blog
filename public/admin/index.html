@@ -672,6 +672,17 @@
       }
 
       /*
+        글 쓰는 화면의 해/달 (skin.js 가 답니다). Decap 은 글을 열면
+        머리띠를 걷어내서, 안 달면 글을 쓰는 동안 테마를 못 바꿉니다.
+        ⚠ **자리는 `order` 로 못박습니다** — 상태 알약도 이 칸 맨 앞에
+          끼어드는데 어느 것이 먼저 붙는지가 글마다 다릅니다.
+      */
+      [class*='ToolbarSectionMain'] .lim-theme {
+        order: -2 !important;
+        flex: 0 0 auto !important;
+      }
+
+      /*
         지금 상태 알약. Decap 의 "게시" 단추는 누르는 자리라 상태를 안
         알려 줍니다 — skin.js 가 초안 토글을 읽어서 여기에 씁니다.
         목록의 "상태" 칸과 같은 값입니다.
@@ -1967,6 +1978,6 @@
       config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
       바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=19"></script>
+    <script src="/admin/editor.js?v=20"></script>
   </body>
 </html>
