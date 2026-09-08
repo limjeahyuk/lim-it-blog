@@ -37,64 +37,71 @@ const who = (id?: string) => (id ? getAuthor(id) : undefined)
 
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
   <div class="wrap">
-    {/* ── 헤드라인 ───────────────────────────────── */}
-    <section class="top">
-      <a class="hero" href={`/posts/${lead.id}/`}>
-        <Cover
-          cover={coverOf(lead)}
-          alt=""
-          ratio="16 / 10"
-          sizes="(min-width: 900px) 62vw, 100vw"
-          tint={who(lead.data.author)?.color}
-        />
-        <div class="hero-text">
-          <span class="kicker">
-            {
-              who(lead.data.author) && (
-                <span style={`color:${who(lead.data.author)!.color}`}>
-                  {who(lead.data.author)!.name}
-                </span>
-              )
-            }
-            <span class="dot">·</span>새 글
-          </span>
-          <h1>{lead.data.title}</h1>
-        </div>
-      </a>
+    {/*
+      ── 최신 글 ─────────────────────────────────
+      제목 하나가 **헤드라인 + 옆줄 셋 + 카드 넷**을 다 덮습니다 (최신 8편).
 
-      <div class="side">
-        {
-          side.map((post) => (
-            <a class="side-item" href={`/posts/${post.id}/`}>
-              <div class="thumb">
-                <Cover
-                  cover={coverOf(post)}
-                  alt=""
-                  ratio="1 / 1"
-                  sizes="96px"
-                  tint={who(post.data.author)?.color}
-                />
-              </div>
-              <div class="side-text">
-                {who(post.data.author) && (
-                  <span class="who" style={`color:${who(post.data.author)!.color}`}>
-                    {who(post.data.author)!.name}
-                  </span>
-                )}
-                <h3>{post.data.title}</h3>
-              </div>
-            </a>
-          ))
-        }
-      </div>
-    </section>
-
-    {/* ── 최신 글 ────────────────────────────────── */}
-    <section class="sec">
+      ⚠ 카드 넷에만 「최신 글」을 붙이면 안 됩니다. 위에서부터 겹치지 않게
+        잘라 쓰기 때문에 카드는 다섯째 글부터입니다 — 그렇게 두면 방금 올린
+        글은 제목 없는 헤드라인에 있고, 「최신 글」 아래에는 몇 주 지난 글이
+        놓입니다 (2026-09-08 에 그것 때문에 옮겼습니다).
+    */}
+    <section class="sec sec-latest">
       <header class="sec-head">
         <h2>최신 글</h2>
         <a class="more" href="/posts">전체보기 →</a>
       </header>
+
+      <div class="top">
+        <a class="hero" href={`/posts/${lead.id}/`}>
+          <Cover
+            cover={coverOf(lead)}
+            alt=""
+            ratio="16 / 10"
+            sizes="(min-width: 900px) 62vw, 100vw"
+            tint={who(lead.data.author)?.color}
+          />
+          <div class="hero-text">
+            <span class="kicker">
+              {
+                who(lead.data.author) && (
+                  <span style={`color:${who(lead.data.author)!.color}`}>
+                    {who(lead.data.author)!.name}
+                  </span>
+                )
+              }
+              <span class="dot">·</span>새 글
+            </span>
+            <h1>{lead.data.title}</h1>
+          </div>
+        </a>
+
+        <div class="side">
+          {
+            side.map((post) => (
+              <a class="side-item" href={`/posts/${post.id}/`}>
+                <div class="thumb">
+                  <Cover
+                    cover={coverOf(post)}
+                    alt=""
+                    ratio="1 / 1"
+                    sizes="96px"
+                    tint={who(post.data.author)?.color}
+                  />
+                </div>
+                <div class="side-text">
+                  {who(post.data.author) && (
+                    <span class="who" style={`color:${who(post.data.author)!.color}`}>
+                      {who(post.data.author)!.name}
+                    </span>
+                  )}
+                  <h3>{post.data.title}</h3>
+                </div>
+              </a>
+            ))
+          }
+        </div>
+      </div>
 
       <div class="cards">
         {
@@ -164,6 +171,11 @@ const who = (id?: string) => (id ? getAuthor(id) : undefined)
   .top {
     display: grid;
     gap: 1rem;
+  }
+
+  /* 카드 넷은 같은 섹션 안에서 헤드라인 바로 아래에 붙습니다 */
+  .top + .cards {
+    margin-top: 1rem;
   }
 
   .hero {
@@ -275,6 +287,13 @@ const who = (id?: string) => (id ? getAuthor(id) : undefined)
 
   .sec {
     margin-top: 2.5rem;
+  }
+
+  /* ⚠ 「최신 글」은 첫 덩어리라 위 여백이 없습니다. **이 규칙은 `.sec` 보다
+     뒤에 있어야 합니다** — 특이도가 같아서 앞에 두면 위의 2.5rem 이 이깁니다
+     (그렇게 뒀다가 지면이 40px 내려갔습니다). */
+  .sec-latest {
+    margin-top: 0;
   }
 
   .sec-head {
