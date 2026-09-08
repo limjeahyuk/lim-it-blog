@@ -17,7 +17,6 @@
 import BaseLayout from '../../components/BaseLayout.astro'
 import Cover from '../../components/Cover.astro'
 import Icon from '../../components/Icon.astro'
-import SiteFooter from '../../components/SiteFooter.astro'
 import { PROJECTS } from '../../consts'
 import { coverOf } from '../../lib/cover'
 import { getPublishedPosts, postsByProject } from '../../lib/posts'
@@ -93,8 +92,6 @@ const cards = PROJECTS.map((project) => {
       }
     </div>
   </div>
-
-  <SiteFooter />
 </BaseLayout>
 
 <style>

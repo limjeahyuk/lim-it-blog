@@ -1,0 +1,214 @@
+---
+/**
+ * 에디터로 고르는 알약 줄.
+ *
+ * 서고(`/posts`)와 저자 지면(`/authors/<id>`) 맨 위에 같은 줄이 섭니다 —
+ * 두 지면이 사실 "전부 / 이 저자만" 한 쌍이라, 줄이 같아야 어디에 있는지가
+ * 알약의 눌림으로 읽힙니다.
+ *
+ * ⚠ **거르는 것이 아니라 넘어가는 것입니다.** 예전 `/posts` 는 128줄을 다
+ *   그려 놓고 `?author=` 로 숨겼다 켰는데, 2026-09-08 시안에서 서고에
+ *   쪽 나누기가 생기면서 "거르기 × 쪽" 두 상태를 한 화면에서 들고 있어야
+ *   했습니다. 저자별 목록은 이미 `/authors/<id>` 가 하고 있으니 그쪽으로
+ *   보냅니다 — 옛 `?author=` 주소는 `/posts` 의 script 가 그 자리로
+ *   넘겨 줍니다.
+ *
+ * ⚠ 글이 0편인 저자는 **여기서 빠집니다.** 고르는 자리라, 눌러 봐야 빈
+ *   목록인 이름이 있으면 방해가 됩니다 (`/authors` 목록에는 나옵니다).
+ */
+import Avatar from './Avatar.astro'
+import { AUTHORS } from '../consts'
+import { getPublishedPosts, postsByAuthor } from '../lib/posts'
+
+interface Props {
+  /** 지금 보고 있는 저자. 전체 목록이면 빈 문자열 */
+  current?: string
+  /**
+   * stack  — 라벨이 위에 있고 알약에 얼굴이 붙습니다 (서고)
+   * inline — 라벨이 옆에 붙고 얼굴이 없습니다 (저자 지면. 아래에 큰 얼굴이
+   *          또 나오기 때문에 여기서 한 번 더 그리면 같은 것이 두 번입니다)
+   */
+  variant?: 'stack' | 'inline'
+}
+
+const { current = '', variant = 'stack' } = Astro.props as Props
+
+const posts = await getPublishedPosts()
+
+const tabs = [
+  { id: '', name: '전체', initial: '전', color: '', href: '/posts', count: posts.length },
+  ...AUTHORS.map((a) => ({
+    id: a.id,
+    name: a.name,
+    initial: a.initial,
+    color: a.color,
+    href: `/authors/${a.id}`,
+    count: postsByAuthor(posts, a.id).length,
+  })).filter((a) => a.count > 0),
+]
+---
+
+<nav class:list={['tabs', variant]} aria-label="Editors">
+  <span class="label">Editors</span>
+
+  <div class="list">
+    {
+      tabs.map((tab) => (
+        <a
+          class:list={['tab', tab.id === current && 'is-on']}
+          href={tab.href}
+          style={tab.color ? `--who:${tab.color}` : undefined}
+          data-who={tab.color || undefined}
+          aria-current={tab.id === current ? 'page' : undefined}
+        >
+          {variant === 'stack' && (
+            <Avatar
+              name={tab.name}
+              initial={tab.initial}
+              color={tab.color || 'var(--text-faint)'}
+              size={22}
+            />
+          )}
+          <span class="name">{tab.name}</span>
+          <span class="n">{tab.count}</span>
+        </a>
+      ))
+    }
+  </div>
+</nav>
+
+<script>
+  /*
+    폰에서는 알약 줄이 화면 밖으로 흘러서, 지금 보고 있는 저자가 오른쪽
+    끝에 있으면 **눌린 알약이 아예 안 보입니다** (375px 에서 임데브가 그
+    경우였습니다). 그 알약이 보이는 데까지만 줄을 밀어 둡니다.
+
+    ⚠ scrollIntoView 를 쓰지 마세요 — 페이지까지 같이 스크롤해서 글 목록이
+      화면 위로 잘려 나갑니다. 가로 위치만 손댑니다.
+  */
+  for (const list of document.querySelectorAll<HTMLElement>('.tabs .list')) {
+    const on = list.querySelector<HTMLElement>('.tab.is-on')
+    if (!on) continue
+    const over = on.offsetLeft + on.offsetWidth - list.clientWidth
+    if (over > 0) list.scrollLeft = over + 16
+  }
+</script>
+
+<style>
+  .label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  /*
+    폰에서는 한 줄로 흘립니다. 안쪽에서 딱 끊기면 그게 끝인 줄 알거든요 —
+    잘린 알약이 보여야 옆으로 더 있다는 것이 읽힙니다 (§6-4).
+  */
+  .list {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    margin-inline: -1.25rem;
+    padding-inline: 1.25rem;
+    scrollbar-width: none;
+  }
+
+  .list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background-color: var(--card);
+    font-weight: 700;
+    color: var(--text-dim);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /*
+    ⚠ 알약 색은 그 저자 색을 옅게 깐 것입니다. 글자는 저자 색 그대로라
+      대비가 떨어지지 않습니다 — 12% 는 흰 배경에서 5.0:1, 어두운 배경에서
+      7.9:1 이 남습니다 (계산해서 고른 값입니다. 눈대중 금지 — §4).
+    color-mix 를 모르는 브라우저에서는 위의 --card 가 그대로 남습니다.
+  */
+  .tab.is-on {
+    border-color: transparent;
+    background-color: var(--surface);
+    color: var(--text);
+  }
+
+  .tab.is-on[data-who] {
+    background-color: color-mix(in srgb, var(--who) 12%, var(--card));
+    color: var(--who);
+  }
+
+  .tab:not(.is-on):hover {
+    border-color: var(--text-faint);
+  }
+
+  .tab[data-who] .name {
+    color: var(--who);
+  }
+
+  .n {
+    font-weight: 500;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── 서고 — 라벨이 위, 알약에 얼굴 ─────────────────────── */
+
+  .stack .label {
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .stack .tab {
+    padding: 0.4375rem 0.9375rem 0.4375rem 0.4375rem;
+    font-size: 0.9375rem;
+  }
+
+  .stack .n {
+    font-size: 0.8125rem;
+  }
+
+  /* ── 저자 지면 — 라벨이 옆, 얼굴 없음 ──────────────────── */
+
+  .inline {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    /* 알약 줄이 흘러야 해서, 넘치는 것은 .list 가 맡습니다 */
+    min-width: 0;
+  }
+
+  .inline .label {
+    flex-shrink: 0;
+  }
+
+  .inline .list {
+    margin-inline: 0;
+    padding-inline: 0;
+    /* 폰에서 라벨 뒤로 흘러나가는 만큼은 화면 끝까지 씁니다 */
+    margin-right: -1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .inline .tab {
+    padding: 0.375rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  .inline .n {
+    font-size: 0.75rem;
+  }
+</style>

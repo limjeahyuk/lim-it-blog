@@ -68,10 +68,12 @@
            안 적으면 어두운 화면에서 날짜 아이콘만 흰 사각형으로 남습니다. */
         color-scheme: light;
 
-        --a-bg: #f6f7f8; /* 바탕 */
+        /* ⚠ 판 네 겹은 2026-09-08 시안 값입니다 (tokens.css 의 --ui-*).
+           limSystem 회색이 아닙니다 — 블로그가 바뀌면 여기도 같이. */
+        --a-bg: #fafafa; /* 바탕 */
         --a-card: #ffffff; /* 카드·입력칸 */
-        --a-surface: #eef0f1; /* hover·알약 바탕 */
-        --a-border: #e4e7e9; /* 선 */
+        --a-surface: #f4f4f4; /* hover·알약 바탕 */
+        --a-border: #ececec; /* 선 */
         --a-text: #16181d; /* 글자 */
         --a-dim: #6d7178; /* 보조 글자 */
         --a-faint: #9298a0; /* 날짜·개수 */
@@ -81,7 +83,7 @@
         --a-ok-bg: #e6f5ec;
         --a-warn: #b24c00; /* 저장 안 됨 */
         --a-danger: #d13b34; /* 삭제 */
-        --a-accent: #00838a; /* 토글·포커스 (teal-700, 흰 배경 4.6:1) */
+        --a-accent: #2563eb; /* 토글·포커스 (시안 파랑, 흰 배경 5.2:1) */
         --a-accent-fg: #ffffff;
       }
 
@@ -89,43 +91,43 @@
         :root:not([data-theme='light']) {
           color-scheme: dark;
 
-          --a-bg: #181a1b; /* gray-990 */
-          --a-card: #232527;
-          --a-surface: #333538; /* gray-950 */
-          --a-border: #3c3e44; /* gray-900 */
+          --a-bg: #111214; /* 시안 */
+          --a-card: #17181b;
+          --a-surface: #1b1d20;
+          --a-border: #2a2c31;
           --a-text: #f1f2f4; /* gray-50  */
           --a-dim: #b3b7bd; /* gray-400 */
           --a-faint: #8a8f96;
           /* 검은 단추는 어두운 바탕에서 안 보입니다 — 밝은 쪽으로 뒤집습니다 */
           --a-pri: #f1f2f4;
-          --a-pri-fg: #181a1b;
+          --a-pri-fg: #111214;
           --a-ok: #5bc25d;
           --a-ok-bg: rgba(91, 194, 93, 0.16);
           --a-warn: #ff9100;
           --a-danger: #fe6d6d;
-          --a-accent: #23c7cd; /* teal-500 */
-          --a-accent-fg: #181a1b;
+          --a-accent: #6ea8ff; /* 시안 파랑 (#111214 위 8.5:1) */
+          --a-accent-fg: #111214;
         }
       }
 
       :root[data-theme='dark'] {
         color-scheme: dark;
 
-        --a-bg: #181a1b;
-        --a-card: #232527;
-        --a-surface: #333538;
-        --a-border: #3c3e44;
+        --a-bg: #111214;
+        --a-card: #17181b;
+        --a-surface: #1b1d20;
+        --a-border: #2a2c31;
         --a-text: #f1f2f4;
         --a-dim: #b3b7bd;
         --a-faint: #8a8f96;
         --a-pri: #f1f2f4;
-        --a-pri-fg: #181a1b;
+        --a-pri-fg: #111214;
         --a-ok: #5bc25d;
         --a-ok-bg: rgba(91, 194, 93, 0.16);
         --a-warn: #ff9100;
         --a-danger: #fe6d6d;
-        --a-accent: #23c7cd;
-        --a-accent-fg: #181a1b;
+        --a-accent: #6ea8ff;
+        --a-accent-fg: #111214;
       }
 
       /* 블로그와 같은 폰트.

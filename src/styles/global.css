@@ -5,30 +5,40 @@
    원시 값(--lim-*)을 컴포넌트에서 직접 쓰지 마세요.
    =============================================================== */
 
+/*
+  ⚠ 판 네 겹(bg·card·surface·border)은 2026-09-08 시안 값입니다 (--ui-*).
+    limSystem 회색이 아닙니다 — 왜인지는 tokens.css 의 그 덩어리에 있습니다.
+    **글자색은 여전히 limSystem 입니다** (대비를 계산해 둔 값이라 그대로 둡니다).
+*/
 :root,
 html[data-theme='dark'] {
-  --bg: var(--lim-gray-990);
-  --card: var(--lim-gray-980);
-  --surface: var(--lim-gray-950);
-  --surface-2: var(--lim-gray-950);
-  --border: var(--lim-gray-900);
+  --bg: var(--ui-bg-dark);
+  --card: var(--ui-card-dark);
+  --surface: var(--ui-surface-dark);
+  --surface-2: var(--ui-surface-dark);
+  --border: var(--ui-border-dark);
+
+  /* 인용문 왼쪽 선. --border 로는 판 위에서 안 보입니다 */
+  --quote-bar: var(--lim-gray-900);
 
   --text: var(--lim-gray-50);
   --text-dim: var(--lim-gray-400);
   --text-faint: var(--lim-gray-600);
 
   /* 색이 들어간 알약 위의 글자색 */
-  --pill-fg: var(--lim-gray-990);
+  --pill-fg: var(--ui-bg-dark);
 
   color-scheme: dark;
 }
 
 html[data-theme='light'] {
-  --bg: var(--lim-gray-50);
-  --card: var(--lim-white);
-  --surface: var(--lim-gray-100);
-  --surface-2: var(--lim-gray-100);
-  --border: var(--lim-gray-200);
+  --bg: var(--ui-bg-light);
+  --card: var(--ui-card-light);
+  --surface: var(--ui-surface-light);
+  --surface-2: var(--ui-surface-light);
+  --border: var(--ui-border-light);
+
+  --quote-bar: var(--lim-gray-300);
 
   --text: var(--lim-gray-990);
   --text-dim: var(--lim-gray-700);
@@ -43,22 +53,37 @@ html[data-theme='light'] {
 
 /* ---------------------------------------------------------------
    ⬇ 강조색 (ACCENT) — 여기만 바꾸면 사이트 전체 인상이 바뀝니다.
-   링크, 인용문 왼쪽 선에 쓰입니다.
-   현재: Neon Jungle 의 청록 (limSystem TEAL)
+   링크, 홈의 번호, 읽기 진행 막대, 프로젝트의 주 버튼에 쓰입니다.
 
-   다크와 라이트가 값이 다릅니다. 밝은 청록은 흰 배경에서
-   대비가 2.1:1 밖에 안 나와서, 라이트 테마는 진한 쪽을 씁니다.
+   ⚠ 2026-09-08 에 **청록에서 파랑으로** 바꿨습니다 (시안). 그전에는
+     Neon Jungle 의 TEAL 이었고, `--nj-accent*` 셋은 이제 아무 데서도
+     안 씁니다 — 프로젝트 색(`--nj-teal` 등)과 헷갈리지 마세요.
+
+   ⚠ 이 파랑은 **저자 study Lim 의 파랑과 같은 값**입니다. 아래
+     `--who-student` 와 한 쌍이니 한쪽만 고치지 마세요.
+
+   --accent-fg 는 강조색 **판 위에 얹는 글자**입니다. 라이트는 진한
+   파랑이라 흰 글자, 다크는 밝은 파랑이라 어두운 글자입니다.
 --------------------------------------------------------------- */
 
 :root,
 html[data-theme='dark'] {
-  --accent: var(--nj-accent);
-  --accent-text: var(--nj-accent-text);
+  --accent: var(--ui-blue-dark);
+  --accent-text: var(--ui-blue-dark);
+  --accent-fg: var(--ui-bg-dark); /* #6ea8ff 위 8.5:1 */
+
+  /* LIVE 배지 — 시안에서 강조색이 아니라 빨강입니다 (임데브와 같은 값) */
+  --live-bg: var(--ui-red-dark);
+  --live-fg: var(--ui-bg-dark); /* #ff7070 위 7.6:1 */
 }
 
 html[data-theme='light'] {
-  --accent: var(--nj-accent-deep);
-  --accent-text: var(--nj-accent-deep);
+  --accent: var(--ui-blue-light);
+  --accent-text: var(--ui-blue-light);
+  --accent-fg: var(--lim-white); /* #2563eb 위 5.2:1 */
+
+  --live-bg: var(--ui-red-light);
+  --live-fg: var(--lim-white); /* #dc2626 위 4.8:1 */
 }
 
 /* ---------------------------------------------------------------
@@ -69,8 +94,10 @@ html[data-theme='light'] {
      400 단계 파스텔을 흰 배경에 글자로 올리면 2.8:1 밖에 안 나옵니다.
 
    그래서 강조색과 같은 방식으로 테마마다 다른 값을 씁니다.
-     다크  — 400 단계 (blue 6.5:1 · red 6.6:1)
-     라이트 — 700 단계 (blue 8.2:1 · red 5.9:1, 페이지 배경 기준)
+
+   ⚠ 2026-09-08 시안부터 **저자 색이 곧 강조색·LIVE 색**입니다. study Lim
+     파랑은 `--accent` 와, 임데브 빨강은 `--live-bg` 와 같은 값입니다.
+     한쪽만 고치면 화면에서 갈라집니다 (링크와 저자 이름이 다른 파랑).
 
    저자를 늘릴 때 여기 두 줄을 같이 추가하세요. consts.ts 의 color 는
    이 이름을 가리킵니다 — 원시 --nj-* 를 직접 넣으면 라이트에서 안 읽힙니다.
@@ -78,13 +105,13 @@ html[data-theme='light'] {
 
 :root,
 html[data-theme='dark'] {
-  --who-student: var(--nj-blue);
-  --who-developer: var(--nj-red);
+  --who-student: var(--ui-blue-dark); /* 8.5:1 */
+  --who-developer: var(--ui-red-dark); /* 7.6:1 */
 }
 
 html[data-theme='light'] {
-  --who-student: var(--lim-blue-700);
-  --who-developer: var(--lim-red-700);
+  --who-student: var(--ui-blue-light); /* 5.2:1 */
+  --who-developer: var(--ui-red-light); /* 4.8:1 */
 }
 
 /* ---------------------------------------------------------------
@@ -250,10 +277,11 @@ a.pill:hover {
   LIVE 배지 — "지금 받아서 해볼 수 있는가" (consts.ts 의 PROJECTS[].active).
   Service 목록·프로젝트 페이지·소개 페이지 셋이 같이 씁니다.
 
-  ⚠ 글자색은 --card 입니다. --pill-fg 를 쓰면 라이트 테마에서 어두운
-    글자 + 어두운 배경이 됩니다.
-  배경은 --accent 라 테마마다 값이 다릅니다 — 다크 TEAL_500 위의
-  --card 글자가 6.9:1, 라이트 TEAL_700 위의 흰 글자가 4.6:1 입니다.
+  ⚠ 2026-09-08 시안부터 배경이 **강조색이 아니라 빨강**입니다 (--live-bg).
+    강조색이 파랑이 되면서, 링크·번호·주 버튼과 같은 파랑을 배지에까지
+    쓰면 "지금 되는 것" 이라는 표시가 안 읽힙니다. 임데브 빨강과 같은 값.
+  ⚠ 글자색은 --live-fg 입니다. --card 나 --pill-fg 를 쓰면 한쪽 테마에서
+    어두운 글자 + 어두운 배경이 됩니다.
 */
 .live {
   display: inline-flex;
@@ -265,14 +293,70 @@ a.pill:hover {
   font-weight: 800;
   letter-spacing: 0.08em;
   line-height: 1.4;
-  color: var(--card);
-  background-color: var(--accent);
+  color: var(--live-fg);
+  background-color: var(--live-bg);
 }
 
 .muted {
   color: var(--text-faint);
   font-size: 0.875rem;
   line-height: 1.25rem;
+}
+
+/*
+  쪽 단추 — 서고(/posts)와 저자 지면이 같이 씁니다 (2026-09-08 시안).
+
+  ⚠ 안은 스크립트가 채웁니다 (src/lib/pager.ts). 그래서 자바스크립트가
+    죽으면 이 자리는 **빈 채로 남고 줄은 전부 보입니다** — 안 눌리는 쪽
+    번호가 남아 있는 것보다 낫습니다.
+  ⚠ 단추는 <button> 입니다. 쪽마다 주소를 따로 내지 않기 때문에(같은
+    문서 안에서 줄을 숨겼다 켭니다) <a href> 로 두면 갈 데가 없습니다.
+*/
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 2.5rem 0 1rem;
+}
+
+.pager:empty {
+  display: none;
+}
+
+.pager button {
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-faint);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.pager button:hover:not(:disabled) {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+.pager button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pager .is-on {
+  font-weight: 800;
+  color: var(--text);
+}
+
+.pager .pg-gap {
+  padding: 0 0.25rem;
+  color: var(--text-faint);
 }
 
 /* ---------------------------------------------------------------
@@ -335,14 +419,23 @@ a.pill:hover {
 }
 
 /*
-  노션 인용문과 같은 모양입니다 — 왼쪽 선 하나뿐이고 배경도 모서리도 없습니다.
-  ⚠ 배경을 다시 깔지 마세요. 판이 생기면 인용문이 코드블록·표와 같은 무게로
-    읽혀서, 본문 사이에 끼어 있을 때 덩어리가 하나 더 있는 것처럼 보입니다.
+  왼쪽 선 + 옅은 판입니다 (2026-09-08 시안).
+
+  ⚠ **2026-09-07 에 "배경을 다시 깔지 마세요" 라고 적어 둔 것을 뒤집은 것입니다.**
+    그때는 글 본문이 카드(--card) 위에 있어서, 인용문에까지 판을 깔면 코드블록·
+    표와 같은 무게로 읽혔습니다. 지금은 본문이 페이지 배경 위에 바로 놓이기 때문에
+    (PostLayout 에서 카드를 걷어냈습니다) --card 판이 오히려 제일 옅은 층입니다.
+    **글 본문을 다시 카드 위로 올리면 이 배경도 같이 걷어내세요.**
+
+  ⚠ 왼쪽 선은 --border 로는 판 위에서 안 보입니다 — --quote-bar 입니다.
+  ⚠ 편집기(admin-src/editor.css)도 같은 모양이라 한쪽만 고치면 갈라집니다.
 */
 .prose blockquote {
   margin: 0;
-  padding: 0 0 0 1em;
-  border-left: 3px solid var(--text);
+  padding: 1em 1.25em;
+  border-left: 3px solid var(--quote-bar);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  background-color: var(--card);
   color: var(--text);
 }
 

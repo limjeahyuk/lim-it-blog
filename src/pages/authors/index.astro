@@ -50,6 +50,11 @@ const counts = countByAuthor(await getPublishedPosts())
     padding: 2rem 1.25rem 4rem;
   }
 
+  /*
+    ⚠ 제목이 강조색이었는데 2026-09-08 에 본문 색으로 내렸습니다. 강조색이
+      청록에서 파랑으로 바뀌면서, 이 줄만 파란 대문자로 떠서 다른 지면의
+      까만 제목들과 안 어울렸습니다.
+  */
   h1 {
     margin-bottom: 2.5rem;
     font-size: 1.125rem;
@@ -57,7 +62,7 @@ const counts = countByAuthor(await getPublishedPosts())
     letter-spacing: 0.14em;
     text-transform: uppercase;
     text-align: center;
-    color: var(--accent-text);
+    color: var(--text);
   }
 
   /*

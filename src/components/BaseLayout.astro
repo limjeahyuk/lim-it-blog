@@ -1,6 +1,7 @@
 ---
 import BaseHead from './BaseHead.astro'
 import Header from './Header.astro'
+import SiteFooter from './SiteFooter.astro'
 import Analytics from '@vercel/analytics/astro'
 import SpeedInsights from '@vercel/speed-insights/astro'
 
@@ -28,6 +29,9 @@ const head = Astro.props as Props
     <main>
       <slot />
     </main>
+
+    {/* ⚠ 지면에서 <SiteFooter /> 를 또 부르지 마세요 — 두 번 나옵니다. */}
+    <SiteFooter />
 
     {/* 배포된 사이트에서만 붙입니다. 로컬 개발 중에는 아무것도 안 나갑니다. */}
     {

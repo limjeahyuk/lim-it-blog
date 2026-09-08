@@ -1,143 +1,87 @@
 ---
 /**
- * 홈 맨 아래 띠 — Editors · Service · Contact.
+ * 맨 아래 띠 — 저작권 한 줄 + 연락처 두 개.
  *
- * 예전에는 이 셋이 오른쪽 열에 카드로 서 있었습니다. 홈이 지면을 화면
- * 전체로 쓰게 되면서 그 열이 없어졌고, 참고한 세 곳(디에디트·롱블랙·폴인)
- * 처럼 아래로 내렸습니다.
+ * ⚠ 2026-09-08 시안에서 **Editors · Service · Contact 세 칸을 걷어냈습니다.**
+ *   그 셋은 이미 메뉴 판(햄버거) 안에 다 있습니다. 아래 띠에 또 늘어놓으면
+ *   같은 목록이 사이트에 두 벌이 되고, 지면마다 스크롤 끝에 화면 하나만큼의
+ *   링크 더미가 붙습니다. **다시 넣지 마세요.**
  *
- * ⚠ 홈에서만 씁니다. /posts·/authors·/projects 는 아직 오른쪽 열이 있는
- *   FeedLayout 을 쓰기 때문에, 거기에 이걸 또 붙이면 같은 것이 두 번 나옵니다.
+ * ⚠ 이제 **모든 지면**에 붙습니다 (BaseLayout 이 답니다). 예전에는 오른쪽
+ *   열이 없는 지면에서만 썼는데, 줄 하나라 오른쪽 열과 겹칠 것이 없습니다.
+ *   페이지에서 따로 <SiteFooter /> 를 부르지 마세요 — 두 번 나옵니다.
+ *
+ * 배경은 --card 입니다. 지면(--bg)보다 밝아서 글이 여기서 끝난다는 것이
+ * 선 하나보다 잘 읽힙니다 — 머리띠와 같은 처리입니다.
  */
-import { AUTHORS, OWNER, PROJECTS } from '../consts'
+import { OWNER } from '../consts'
 ---
 
 <footer class="foot">
   <div class="inner">
-    <section>
-      <h2>Editors</h2>
-      <ul>
-        {
-          AUTHORS.map((a) => (
-            <li>
-              <a href={`/authors/${a.id}`} style={`color:${a.color}`}>
-                {a.name}
-              </a>
-            </li>
-          ))
-        }
-        <li>
-          <a href="/posts">전체</a>
-        </li>
-      </ul>
-    </section>
+    <p class="copy">© {OWNER.name}</p>
 
-    <section>
-      <h2>Service</h2>
-      <ul>
-        {
-          PROJECTS.map((p) => (
-            <li>
-              <a href={`/projects/${p.id}`}>{p.name}</a>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-
-    <section>
-      <h2>Contact</h2>
-      <ul>
-        <li><a href={`https://github.com/${OWNER.github}`}>github</a></li>
-        <li><a href={`mailto:${OWNER.email}`}>email</a></li>
-      </ul>
-    </section>
+    <nav class="links">
+      <a href={`https://github.com/${OWNER.github}`}>github.com/{OWNER.github}</a>
+      <span class="dot" aria-hidden="true">·</span>
+      <a href={`mailto:${OWNER.email}`}>{OWNER.email}</a>
+    </nav>
   </div>
-
-  <p class="copy">© {OWNER.name} {new Date().getFullYear()}</p>
 </footer>
 
 <style>
-  /*
-    가로 여백은 .foot 이 아니라 안쪽 두 덩어리가 씁니다 — 위쪽 지면(.band)
-    이 max-width 1280px **안에** 여백을 두기 때문에, 여기서 바깥에 두면
-    글 목록보다 아래 띠가 그만큼 더 넓게 퍼져서 양끝이 안 맞습니다.
-    구분선은 .foot 에 있어서 화면 끝까지 그대로 갑니다.
-  */
   .foot {
     margin-top: 4rem;
-    padding: 2.5rem 0 3rem;
     border-top: 1px solid var(--border);
+    background-color: var(--card);
   }
 
+  /*
+    가로 여백은 .foot 이 아니라 안쪽이 씁니다 — 지면(.wrap)이 max-width
+    1280px **안에** 여백을 두기 때문에, 바깥에 두면 글 목록보다 띠가 그만큼
+    넓게 퍼져서 양끝이 안 맞습니다. 선은 화면 끝까지 그대로 갑니다.
+  */
   .inner {
-    display: grid;
-    gap: 2rem;
-    max-width: 1280px;
-    margin: 0 auto;
-    padding-inline: 1.25rem;
-  }
-
-  h2 {
-    margin: 0 0 0.75rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-faint);
-  }
-
-  ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1.25rem;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem;
   }
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.9375rem;
-  }
-
-  a {
-    color: var(--text-dim);
-    text-decoration: none;
-  }
-
-
 
   .copy {
-    max-width: 1280px;
-    margin: 2.5rem auto 0;
-    padding-inline: 1.25rem;
+    margin: 0;
     font-size: 0.8125rem;
     color: var(--text-faint);
   }
 
-  @media (min-width: 700px) {
-    .foot {
-      padding: 3rem 0 4rem;
-    }
-
-    .inner {
-      grid-template-columns: 1.4fr 1fr 1fr;
-      gap: 3rem;
-    }
-
-    ul {
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+  .links {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
   }
 
-  /* 지면(.band)이 여백을 2rem 으로 넓히는 지점과 같습니다 */
+  .links a {
+    color: var(--text-faint);
+    text-decoration: none;
+  }
+
+  .links a:hover {
+    color: var(--text);
+  }
+
+  .dot {
+    color: var(--text-faint);
+    opacity: 0.6;
+  }
+
+  /* 지면이 여백을 2rem 으로 넓히는 지점과 같습니다 */
   @media (min-width: 900px) {
-    .inner,
-    .copy {
+    .inner {
       padding-inline: 2rem;
     }
   }

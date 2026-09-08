@@ -10,7 +10,6 @@
  */
 import BaseLayout from '../../../components/BaseLayout.astro'
 import Icon from '../../../components/Icon.astro'
-import SiteFooter from '../../../components/SiteFooter.astro'
 import { PROJECTS, type Project } from '../../../consts'
 import { countByProject, getPublishedPosts } from '../../../lib/posts'
 import type { IconName } from '../../../lib/icon-names'
@@ -68,7 +67,6 @@ const storeName = 'storeName' in project ? project.storeName : null
               href={link.href}
               target="_blank"
               rel="noopener"
-              style={`background-color:${project.color}`}
             >
               <Icon name={LINK_ICON[link.kind] ?? 'link-external'} size={17} />
               {link.label}
@@ -104,8 +102,6 @@ const storeName = 'storeName' in project ? project.storeName : null
       <Icon name="arrow-right" size={16} />
     </a>
   </div>
-
-  <SiteFooter />
 </BaseLayout>
 
 <style>
@@ -184,7 +180,11 @@ const storeName = 'storeName' in project ? project.storeName : null
     margin-top: 1.5rem;
   }
 
-  /* 글자색은 두 테마 모두 어두운 --pill-fg 입니다 (§4) */
+  /*
+    ⚠ 2026-09-08 시안부터 **프로젝트 색이 아니라 강조색**입니다 —
+      프로젝트 지면(`/projects/<id>`)의 주 버튼과 같은 자리라 둘이 갈리면
+      안 됩니다. 왜 프로젝트 색을 안 쓰는지는 그쪽에 적어 뒀습니다.
+  */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -193,7 +193,8 @@ const storeName = 'storeName' in project ? project.storeName : null
     border-radius: var(--radius-md);
     font-size: 0.9375rem;
     font-weight: 700;
-    color: var(--pill-fg);
+    color: var(--accent-fg);
+    background-color: var(--accent);
     text-decoration: none;
     transition: opacity 200ms ease;
   }

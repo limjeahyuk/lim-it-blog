@@ -1,14 +1,23 @@
 ---
 /**
- * 저자 지면. 예전 /categories/<경로> 자리를 대신합니다.
+ * 저자 지면 — 얼굴 하나와 그 이름으로 쓴 글 전부.
+ *
+ * 서고(`/posts`)와 **한 쌍**입니다. 맨 위 알약 줄이 같고, 줄 모양과 쪽
+ * 나누기도 같습니다 — 서고가 "전부", 여기가 "이 저자만" 입니다. 그래서
+ * 서고에서 거르기를 걷어냈습니다 (EditorTabs 의 설명).
  *
  * ⚠ 옛 카테고리 주소(/categories/*)는 되살리지 않았습니다. 색인이 막
  *   시작된 참이라 잃을 게 적다고 보고 그냥 버리기로 한 것입니다.
+ *
+ * ⚠ 이름은 **저자 색이 아니라 본문 색**입니다 (시안). 바로 위 알약이
+ *   이미 그 색으로 눌려 있어서, 제목까지 색이면 화면에 같은 색 덩어리가
+ *   둘이 됩니다.
  */
 import Avatar from '../../components/Avatar.astro'
 import BaseLayout from '../../components/BaseLayout.astro'
-import FeedLayout from '../../components/FeedLayout.astro'
-import PostCard from '../../components/PostCard.astro'
+import EditorTabs from '../../components/EditorTabs.astro'
+import FormattedDate from '../../components/FormattedDate.astro'
+import Icon from '../../components/Icon.astro'
 import { AUTHORS, type Author } from '../../consts'
 import { getPublishedPosts, postsByAuthor, type Post } from '../../lib/posts'
 
@@ -26,25 +35,21 @@ const { author, posts } = Astro.props as Props
 ---
 
 <BaseLayout title={author.name} description={author.bio}>
-  <FeedLayout currentAuthor={author.id}>
-    <header class="masthead" style={`--who:${author.color}`}>
-      <p class="kicker">
-        <a href="/authors">Editors</a>
-        <span class="sep">/</span>
-      </p>
-      <div class="who">
-        <Avatar
-          name={author.name}
-          initial={author.initial}
-          color={author.color}
-          src={author.avatar}
-          size={72}
-        />
-        <div>
-          <h1>{author.name}</h1>
-          <p class="bio">{author.bio}</p>
-          <p class="count">글 {posts.length}편</p>
-        </div>
+  <div class="wrap">
+    <EditorTabs current={author.id} variant="inline" />
+
+    <header class="masthead">
+      <Avatar
+        name={author.name}
+        initial={author.initial}
+        color={author.color}
+        src={author.avatar}
+        size={76}
+      />
+      <div>
+        <h1>{author.name}</h1>
+        <p class="bio">{author.bio}</p>
+        <p class="count">글 {posts.length}편</p>
       </div>
     </header>
 
@@ -52,76 +57,158 @@ const { author, posts } = Astro.props as Props
       posts.length === 0 ? (
         <p class="empty">아직 이 이름으로 쓴 글이 없습니다.</p>
       ) : (
-        posts.map((post) => <PostCard post={post} hideAuthor />)
+        <div class="rows">
+          {posts.map((post) => (
+            <a class="row" href={`/posts/${post.id}/`}>
+              <span class="date">
+                <FormattedDate date={post.data.pubDate} />
+              </span>
+              <span class="title">
+                {post.data.secret && (
+                  <span class="lock" title="비밀글">
+                    <Icon name="lock" size={13} />
+                  </span>
+                )}
+                {post.data.title}
+              </span>
+            </a>
+          ))}
+        </div>
       )
     }
-  </FeedLayout>
+
+    <nav class="pager" data-pager aria-label="쪽"></nav>
+  </div>
 </BaseLayout>
 
+<script>
+  import { setupPager } from '../../lib/pager'
+
+  const rows = [...document.querySelectorAll<HTMLElement>('.rows .row')]
+  const mount = document.querySelector<HTMLElement>('[data-pager]')
+  if (rows.length && mount) {
+    setupPager({ rows, mount, top: document.querySelector<HTMLElement>('.masthead') })
+  }
+</script>
+
 <style>
+  /* 서고·홈·아래 띠와 같은 폭·같은 여백입니다. */
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 0;
+  }
+
   .masthead {
-    padding: 0 0 1.5rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--who);
-  }
-
-  .kicker {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin: 0 0 0.6rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-faint);
-  }
-
-  .kicker a:hover {
-    color: var(--text);
-  }
-
-  .sep {
-    opacity: 0.5;
-  }
-
-  .who {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
+    margin: 2.5rem 0 2.5rem;
+    scroll-margin-top: 4rem;
   }
 
   h1 {
-    font-size: 1.875rem;
-    line-height: 1.3;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    color: var(--who);
-  }
-
-  @media (min-width: 768px) {
-    h1 {
-      font-size: 2.5rem;
-    }
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
   }
 
   .bio {
-    margin: 0.75rem 0 0;
+    margin: 0.5rem 0 0;
     max-width: 34rem;
-    line-height: 1.8;
+    font-size: 0.9375rem;
+    line-height: 1.6;
     color: var(--text-dim);
   }
 
   .count {
-    margin: 0.75rem 0 0;
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── 한 줄 — 날짜가 왼쪽입니다 (서고와 반대) ───────────── */
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.0625rem 0;
+    border-bottom: 1px solid var(--border);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .row[hidden] {
+    display: none;
+  }
+
+  .date {
+    flex-shrink: 0;
     font-size: 0.75rem;
-    letter-spacing: 0.04em;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .title {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .row:hover .title {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .lock {
+    flex-shrink: 0;
+    display: inline-flex;
     color: var(--text-faint);
   }
 
   .empty {
-    padding: 1rem 0.25rem;
+    padding: 2rem 0;
     color: var(--text-faint);
     font-size: 0.9375rem;
+  }
+
+  /* 폰에서는 날짜를 제목 위로 올립니다 — 한 줄에 둘 다 넣으면 제목이 잘립니다 */
+  @media (max-width: 560px) {
+    .row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .wrap {
+      padding: 2.5rem 2rem 0;
+    }
+
+    .masthead {
+      gap: 1.75rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+    }
+
+    /* 제목이 줄마다 같은 자리에서 시작하게 날짜 칸을 못박습니다 */
+    .date {
+      width: 10rem;
+    }
+
+    .title {
+      font-size: 1rem;
+    }
   }
 </style>

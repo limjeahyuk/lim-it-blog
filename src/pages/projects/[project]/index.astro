@@ -14,7 +14,6 @@
 import BaseLayout from '../../../components/BaseLayout.astro'
 import Cover from '../../../components/Cover.astro'
 import Icon from '../../../components/Icon.astro'
-import SiteFooter from '../../../components/SiteFooter.astro'
 import { PROJECTS, getAuthor, type Project } from '../../../consts'
 import { coverOf } from '../../../lib/cover'
 import { getPublishedPosts, postsByProject, type Post } from '../../../lib/posts'
@@ -84,13 +83,7 @@ const stats = [
         <div class="cta">
           {
             project.links.map((link) => (
-              <a
-                class="btn primary"
-                href={link.href}
-                target="_blank"
-                rel="noopener"
-                style={`background-color:${project.color}`}
-              >
+              <a class="btn primary" href={link.href} target="_blank" rel="noopener">
                 <Icon name={LINK_ICON[link.kind] ?? 'link-external'} size={17} />
                 {link.label}
               </a>
@@ -105,7 +98,7 @@ const stats = [
           cover={posts[0] ? coverOf(posts[0]) : { kind: 'none' }}
           alt=""
           ratio="16 / 10"
-          sizes="(min-width: 900px) 560px, 100vw"
+          sizes="(min-width: 900px) 1280px, 100vw"
           tint={project.color}
         />
       </div>
@@ -163,8 +156,6 @@ const stats = [
       }
     </section>
   </div>
-
-  <SiteFooter />
 </BaseLayout>
 
 <style>
@@ -262,11 +253,16 @@ const stats = [
   }
 
   /*
-    배경은 프로젝트 색(밝은 파스텔)이라 글자는 두 테마 모두 어두운
-    --pill-fg 입니다. 흰 글자를 쓰면 1.5~3.0:1 로 떨어집니다 (§4).
+    ⚠ 2026-09-08 시안부터 주 버튼은 **프로젝트 색이 아니라 강조색**입니다.
+      프로젝트 색으로 칠하면 버튼이 프로젝트마다 다른 색이 되어, 같은 자리의
+      같은 동작("지금 해보기")이 지면마다 다르게 읽혔습니다. 프로젝트 색은
+      알약과 Service 목록의 점에 그대로 남아 있습니다.
+    글자는 --accent-fg 입니다 — 다크는 밝은 파랑 위 어두운 글자, 라이트는
+    진한 파랑 위 흰 글자로 갈립니다 (global.css).
   */
   .primary {
-    color: var(--pill-fg);
+    color: var(--accent-fg);
+    background-color: var(--accent);
   }
 
   .primary:hover {
@@ -289,20 +285,22 @@ const stats = [
 
   /* ── 숫자 띠 ──────────────────────────────────────────── */
 
+  /*
+    ⚠ 2026-09-08 시안부터 **칸마다 따로 선 것**입니다. 전에는 한 판을
+      1px gap 으로 갈라 놓은 모양이었는데, Devlog 목록이 카드가 되면서
+      그 아래위가 "판 하나 / 카드 여럿" 으로 갈렸습니다.
+  */
   .stats {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1px;
+    gap: 0.75rem;
     margin: 2rem 0 0;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-card);
-    /* 칸 사이 선을 gap 으로 냅니다 — 칸마다 border 를 주면 겹칩니다 */
-    background-color: var(--border);
   }
 
   .cell {
     padding: 1rem 1.125rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
     background-color: var(--card);
   }
 
@@ -347,14 +345,32 @@ const stats = [
     font-variant-numeric: tabular-nums;
   }
 
+  /*
+    ⚠ Devlog 는 **카드**입니다 (2026-09-08 시안). "목록에 상자를 두르지
+      않는다"(§4)는 글이 100편 넘게 늘어서는 서고 이야기이고, 여기는 한
+      프로젝트의 글 몇 편이라 카드 쪽이 위의 숫자 띠와 결이 맞습니다.
+  */
+  .rows {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
   .row {
     display: flex;
     align-items: baseline;
-    gap: 0.875rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border);
+    gap: 1.25rem;
+    padding: 1.125rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background-color: var(--card);
     color: inherit;
     text-decoration: none;
+    transition: border-color 200ms ease;
+  }
+
+  .row:hover {
+    border-color: var(--text-faint);
   }
 
   .date {
@@ -436,10 +452,19 @@ const stats = [
     }
 
     .hero {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: center;
-      gap: 3rem;
+      gap: 2rem;
       margin-top: 2.25rem;
+    }
+
+    /*
+      ⚠ 큰 화면에서는 사진이 **머리 아래 띠처럼** 깔립니다 (시안). 16/10
+        그대로 두면 1280px 폭에서 높이가 800px 이라 화면 하나를 통째로
+        먹습니다.
+      ⚠ !important 가 필요합니다 — 비율은 Cover 가 인라인 style 로 답니다
+        (한 컴포넌트가 여러 자리에서 다른 비율로 쓰이기 때문입니다).
+    */
+    .shot :global(.frame) {
+      aspect-ratio: 3 / 1 !important;
     }
 
     h1 {

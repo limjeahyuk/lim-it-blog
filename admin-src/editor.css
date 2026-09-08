@@ -319,10 +319,20 @@
 }
 
 /* 노션 인용문과 같은 모양 — 선 하나뿐입니다 (global.css 의 `.prose` 와 같게) */
+/*
+  왼쪽 선 + 옅은 판 (2026-09-08 시안. 블로그 `.prose blockquote` 와 한 쌍).
+
+  ⚠ **판 색만 블로그와 다릅니다.** 블로그는 본문이 지면(--bg) 위에 바로
+    놓여서 --card 가 제일 옅은 층인데, 여기는 편집기 바닥이 이미
+    --a-card 입니다. 같은 색을 깔면 판이 안 보여서 한 칸 옆(--a-surface)을
+    씁니다 — 표 머리가 --surface-2 대신 --a-surface 를 쓰는 것과 같은 사정.
+*/
 .lim-md-editor .ProseMirror blockquote {
   margin: 0;
-  padding: 0 0 0 1em;
-  border-left: 3px solid var(--a-text);
+  padding: 1em 1.25em;
+  border-left: 3px solid var(--a-border);
+  border-radius: 0 8px 8px 0;
+  background-color: var(--a-surface);
   color: var(--a-text);
 }
 

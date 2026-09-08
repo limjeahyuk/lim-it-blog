@@ -3,16 +3,19 @@
 // 정적 사이트라 숫자를 셀 데가 없습니다. 그래서 Upstash Redis 해시 하나
 // (`views`)에 slug 별로 세어 두고, 이 함수가 그 앞을 지킵니다.
 //
-//   POST /api/views          {slug}      → 하나 올립니다 (응답은 빈 것)
-//   GET  /api/views                      → **인기순 slug 목록만** (숫자 없음)
-//   GET  /api/views?full=1               → 숫자까지. 토큰이 있어야 합니다
+//   POST /api/views          {slug}      → 하나 올리고 **올린 뒤의 값**
+//   GET  /api/views?slug=<s>             → 그 글 하나의 조회수
+//   GET  /api/views                      → 인기순 slug 목록 (숫자 없음)
+//   GET  /api/views?full=1               → 전체 표. 토큰이 있어야 합니다
 //
-// ⚠ **숫자를 아무에게나 주지 않습니다.** 읽는 사람한테는 조회수를 안 보이게
-//   하기로 했습니다(§6-6). 홈이 인기순으로 줄을 세우는 데 필요한 것은 순서
-//   뿐이라, 공개 GET 은 순서만 돌려줍니다. 숫자는 `full=1` + 토큰입니다.
+// ⚠ **2026-09-08 에 규칙이 바뀌었습니다.** 그전에는 숫자를 아무에게도 안
+//   주고(POST 는 204, 공개 GET 은 순서만) `/admin` 에서 열쇠를 넣어야 볼 수
+//   있었습니다. 시안이 글 머리에 조회수를 찍어 놔서, **글 한 편의 숫자**는
+//   공개로 열었습니다.
 //
-// ⚠ **POST 도 숫자를 안 돌려줍니다.** 돌려주면 글 페이지를 여는 것만으로
-//   그 글의 조회수를 볼 수 있습니다.
+// ⚠ **여전히 전체 표는 안 줍니다.** `full=1` + 토큰만 `views`(주소별 숫자
+//   전부)와 `total` 을 받습니다. 한 편씩 물어보는 것과 131편을 통째로 받아
+//   가는 것은 다른 이야기입니다.
 //
 // 필요한 환경변수 (Vercel):
 //   KV_REST_API_URL   / KV_REST_API_TOKEN      ← Vercel 마켓플레이스 Upstash
@@ -104,14 +107,39 @@ export default async function handler(req, res) {
         res.status(501).json({ error: 'Upstash 환경변수가 없습니다.' })
         return
       }
-      await redis(['HINCRBY', HASH, slug, 1])
+      /* HINCRBY 는 올린 뒤의 값을 돌려줍니다 — 한 번 더 물어볼 필요가 없습니다. */
+      const views = Number(await redis(['HINCRBY', HASH, slug, 1])) || 0
       res.setHeader('Cache-Control', 'no-store')
-      res.status(204).end()
+      res.status(200).json({ views })
       return
     }
 
     if (req.method === 'GET') {
-      const full = req.query && req.query.full === '1'
+      const query = req.query || {}
+      const full = query.full === '1'
+
+      /*
+        글 한 편의 숫자. 오늘 이미 센 기기가 숫자만 물어볼 때 씁니다
+        (PostLayout 의 script). 없는 글이면 0 입니다 — 함수는 글 목록을
+        모르기 때문에 "없는 주소"와 "아직 아무도 안 읽은 글"을 구분할
+        방법이 없습니다.
+      */
+      const one = typeof query.slug === 'string' ? query.slug : ''
+      if (one) {
+        if (one.length > 80 || !SLUG.test(one)) {
+          res.status(400).json({ error: '주소가 올바르지 않습니다.' })
+          return
+        }
+        const raw = creds() ? await redis(['HGET', HASH, one]) : null
+        /* 홈의 순위표와 같은 5분 캐시입니다 — 조회수가 5분 늦게 움직이는
+           것은 아무 문제가 없고, 글마다 Redis 를 깨우지 않습니다. */
+        res.setHeader(
+          'Cache-Control',
+          'public, s-maxage=300, stale-while-revalidate=3600',
+        )
+        res.status(200).json({ views: Number(raw) || 0 })
+        return
+      }
 
       if (full) {
         const want = process.env.VIEWS_TOKEN
