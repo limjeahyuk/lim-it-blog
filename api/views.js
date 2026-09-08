@@ -6,7 +6,7 @@
 //   POST /api/views          {slug}      → 하나 올리고 **올린 뒤의 값**
 //   GET  /api/views?slug=<s>             → 그 글 하나의 조회수
 //   GET  /api/views                      → 인기순 slug 목록 (숫자 없음)
-//   GET  /api/views?full=1               → 전체 표. 토큰이 있어야 합니다
+//   GET  /api/views?full=1               → 전체 표 + 날짜별 합계. 토큰 필요
 //
 // ⚠ **2026-09-08 에 규칙이 바뀌었습니다.** 그전에는 숫자를 아무에게도 안
 //   주고(POST 는 204, 공개 GET 은 순서만) `/admin` 에서 열쇠를 넣어야 볼 수
@@ -17,6 +17,13 @@
 //   전부)와 `total` 을 받습니다. 한 편씩 물어보는 것과 131편을 통째로 받아
 //   가는 것은 다른 이야기입니다.
 //
+// ⚠ **날짜별 숫자는 사이트 전체 합계 하나뿐입니다** (`views:day` 해시의
+//   `YYYY-MM-DD` 칸). 글 × 날짜로 세면 열쇠가 글 수 × 날짜 수로 불어나는데,
+//   `/admin` 의 대시보드가 그리는 것은 "요즘 얼마나 읽히나" 한 줄이라
+//   거기까지 필요하지 않습니다. **날짜는 한국 시각(UTC+9) 기준입니다** —
+//   보는 사람이 저 하나라 서버의 UTC 자정에 날이 바뀌면 밤에 쓴 글의 조회가
+//   전날로 붙습니다.
+//
 // 필요한 환경변수 (Vercel):
 //   KV_REST_API_URL   / KV_REST_API_TOKEN      ← Vercel 마켓플레이스 Upstash
 //   UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN  ← Upstash 콘솔에서 직접
@@ -25,6 +32,8 @@
 import { timingSafeEqual } from 'node:crypto'
 
 const HASH = 'views'
+/* 날짜별 합계. 하루에 칸 하나씩 늘어납니다 (한 해에 365개) */
+const DAYS = 'views:day'
 
 /* config.yml 의 「주소」 칸과 같은 규칙입니다. 아무 글자나 받으면 해시에
    쓰레기 열쇠가 쌓입니다. */
@@ -36,6 +45,16 @@ function creds() {
     process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN
   if (!url || !token) return null
   return { url: url.replace(/\/$/, ''), token }
+}
+
+/**
+ * 오늘 (한국 시각).
+ *
+ * Vercel 함수는 UTC 로 돕니다 — `toISOString()` 을 그대로 쓰면 한국 시간
+ * 아침 9시에 날이 바뀝니다. 9시간을 더해서 자정에 바뀌게 맞춥니다.
+ */
+function today() {
+  return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
 }
 
 /** Upstash 는 REST 로 명령 하나를 배열로 받습니다 — SDK 를 넣을 필요가 없습니다. */
@@ -57,6 +76,40 @@ async function redis(command) {
     throw new Error(`upstash ${res.status} ${(body && body.error) || ''}`.trim())
   }
   return body.result
+}
+
+/**
+ * 명령 여러 개를 한 번에. 주소만 `/pipeline` 이고 몸통은 명령의 배열입니다.
+ *
+ * ⚠ **왕복을 늘리지 않으려고 씁니다.** 글을 한 번 열 때 올리는 것이 둘
+ *   (글 하나 + 오늘 합계)인데, 따로 부르면 Vercel 함수가 Upstash 를 두 번
+ *   기다립니다.
+ *
+ * ⚠ 답은 `[{result}, {result}]` 로 옵니다 — 하나만 실패해도 그 칸에
+ *   `error` 가 들어오므로 통째로 던집니다.
+ */
+async function pipeline(commands) {
+  const c = creds()
+  if (!c) return null
+
+  const res = await fetch(`${c.url}/pipeline`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${c.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(commands),
+  })
+
+  const body = await res.json().catch(() => null)
+  if (!res.ok || !Array.isArray(body)) {
+    throw new Error(
+      `upstash ${res.status} ${(body && body.error) || ''}`.trim(),
+    )
+  }
+  const bad = body.find((r) => r && r.error)
+  if (bad) throw new Error(`upstash ${bad.error}`)
+  return body.map((r) => (r ? r.result : null))
 }
 
 /* HGETALL 은 [열쇠, 값, 열쇠, 값…] 로 옵니다. 버전에 따라 객체로 오기도 해서
@@ -107,8 +160,14 @@ export default async function handler(req, res) {
         res.status(501).json({ error: 'Upstash 환경변수가 없습니다.' })
         return
       }
-      /* HINCRBY 는 올린 뒤의 값을 돌려줍니다 — 한 번 더 물어볼 필요가 없습니다. */
-      const views = Number(await redis(['HINCRBY', HASH, slug, 1])) || 0
+      /* HINCRBY 는 올린 뒤의 값을 돌려줍니다 — 한 번 더 물어볼 필요가
+         없습니다. 오늘 합계는 대시보드의 「최근 14일」이 쓰는 것이라 답을
+         안 봅니다. */
+      const [raw] = await pipeline([
+        ['HINCRBY', HASH, slug, 1],
+        ['HINCRBY', DAYS, today(), 1],
+      ])
+      const views = Number(raw) || 0
       res.setHeader('Cache-Control', 'no-store')
       res.status(200).json({ views })
       return
@@ -154,18 +213,25 @@ export default async function handler(req, res) {
         }
       }
 
-      /* ⚠ 환경변수가 없으면 빈 목록입니다 — 홈이 최신순 그대로 남습니다.
-         500 을 내면 홈 콘솔에 빨간 줄이 남는데, 여기서는 "아직 세는 곳이
-         없다" 가 맞는 상태입니다. */
-      const counts = toCounts(creds() ? await redis(['HGETALL', HASH]) : null)
-      const order = Object.keys(counts).sort((a, b) => counts[b] - counts[a])
-
       if (full) {
+        /* 대시보드는 날짜별 합계도 같이 그립니다 — 두 번 부르지 않습니다. */
+        const [rawViews, rawDays] = creds()
+          ? await pipeline([
+              ['HGETALL', HASH],
+              ['HGETALL', DAYS],
+            ])
+          : [null, null]
+        const counts = toCounts(rawViews)
+        const order = Object.keys(counts).sort((a, b) => counts[b] - counts[a])
+
         res.setHeader('Cache-Control', 'no-store')
         res.status(200).json({
           order,
           views: counts,
           total: order.reduce((sum, k) => sum + counts[k], 0),
+          /* `{ 'YYYY-MM-DD': 횟수 }`. 세기 시작한 날부터만 있습니다 —
+             받는 쪽이 빈 날을 0 으로 채웁니다. */
+          days: toCounts(rawDays),
           /* ⚠ **"아직 아무도 안 읽었다" 와 "셀 데가 없다" 는 다릅니다.**
              둘 다 빈 표로 오기 때문에, `/admin` 이 그걸 구분해서 말할 수
              있게 저장소가 붙어 있는지를 같이 보냅니다. 열쇠를 넣은
@@ -174,6 +240,12 @@ export default async function handler(req, res) {
         })
         return
       }
+
+      /* ⚠ 환경변수가 없으면 빈 목록입니다 — 홈이 최신순 그대로 남습니다.
+         500 을 내면 홈 콘솔에 빨간 줄이 남는데, 여기서는 "아직 세는 곳이
+         없다" 가 맞는 상태입니다. */
+      const counts = toCounts(creds() ? await redis(['HGETALL', HASH]) : null)
+      const order = Object.keys(counts).sort((a, b) => counts[b] - counts[a])
 
       /* 홈이 매번 Redis 를 깨우지 않게 5분 캐시합니다. 순위가 5분 늦게
          움직이는 것은 아무 문제가 없습니다. */

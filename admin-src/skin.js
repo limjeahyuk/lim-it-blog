@@ -33,7 +33,7 @@ import {
   listDrafts,
   registerPort,
 } from './drafts.js'
-import { closeViewsPanel, openViewsPanel } from './views.js'
+import { closeViewsPage, openViewsPage, viewsPageOpen } from './views.js'
 
 /* 목록 요약(config.yml 의 summary)을 이 글자로 이어 붙여 놨습니다.
    ⚠ 여기를 고치면 config.yml 의 summary 도 같이 고쳐야 합니다.
@@ -171,6 +171,74 @@ function decorateHeader() {
   draftsBtn.addEventListener('click', openDraftsPanel)
   actions.insertBefore(draftsBtn, themeBtn)
   paintDraftsButton()
+}
+
+/* -------------------------------------------------------------------
+   머리띠의 「조회수」 탭 — 콘텐츠 · 미디어 옆
+
+   조회수는 원래 목록 화면의 「개수」 옆 작은 단추 + 모달이었습니다. 460px
+   짜리 판에 순위·저자·날짜·막대를 다 넣을 자리가 없어서, 콘텐츠·미디어와
+   나란한 탭으로 옮겼습니다.
+
+   ⚠ **Decap 의 라우터에 길을 내지 않습니다.** `#/views` 는 Decap 이 모르는
+     주소라 뒤에서 404 를 그립니다. 탭은 그냥 단추이고, 지면은 우리가 화면
+     위에 덮습니다 (views.js) — 그래서 새로고침하면 목록으로 돌아옵니다.
+
+   ⚠ **Decap 이 그린 나머지 탭의 눌림 표시를 지우지 않습니다.** 그것은
+     React 가 주소를 보고 붙이는 것이라 우리가 떼어도 다음 그리기에 돌아옵니다.
+     대신 대시보드가 떠 있는 동안 `html[data-lim-views]` 로 그쪽 표시를
+     흐리게 덮습니다 (index.html).
+   ------------------------------------------------------------------- */
+
+function decorateNav() {
+  const list = document.querySelector("[class*='AppHeaderNavList']")
+  if (!list) return
+
+  let tab = list.querySelector('.lim-views-tab')
+  if (!tab) {
+    tab = el('button', 'lim-views-tab', '조회수')
+    tab.type = 'button'
+    tab.addEventListener('click', (e) => {
+      e.preventDefault()
+      if (viewsPageOpen()) closeViewsPage()
+      else openViewsPage()
+      markNav()
+    })
+    list.appendChild(tab)
+  }
+  markNav()
+}
+
+/** 탭 눌림 표시. 지면이 열려 있는 동안만 켭니다. */
+function markNav() {
+  const on = viewsPageOpen()
+  const tab = document.querySelector('.lim-views-tab')
+  if (tab) tab.classList.toggle('is-on', on)
+  if (on) document.documentElement.setAttribute('data-lim-views', '1')
+  else document.documentElement.removeAttribute('data-lim-views')
+}
+
+/*
+  다른 화면으로 넘어가면 대시보드를 걷습니다.
+
+  ⚠ **주소가 안 바뀌는 경우도 있습니다** — 이미 `#/collections/posts` 인
+    채로 대시보드를 열었다가 「콘텐츠」를 누르면 hashchange 가 안 옵니다.
+    그래서 링크를 누르는 것 자체를 봅니다.
+
+  ⚠ **머리띠 전체를 보면 안 됩니다.** 해/달과 「쓰다 만 글」이 거기 있어서,
+    숫자를 보다가 테마만 바꿔도 지면이 닫혔습니다(재현해서 고쳤습니다).
+    화면을 옮기는 것 — 탭 줄과 「새 글」 — 만 봅니다.
+*/
+function onNavClick(e) {
+  if (!viewsPageOpen()) return
+  const t = e.target && e.target.closest ? e.target.closest('a, button') : null
+  if (!t || t.classList.contains('lim-views-tab')) return
+  const goes =
+    t.closest("[class*='AppHeaderNavList']") ||
+    t.closest("[class*='QuickNewButton']")
+  if (!goes) return
+  closeViewsPage()
+  markNav()
 }
 
 /* -------------------------------------------------------------------
@@ -419,14 +487,6 @@ function decorateList() {
     }
     const text = count + '개'
     if (n.textContent !== text) n.textContent = text
-
-    /* 조회수 판 — 「128개」 옆. 머리띠는 폰에서 이미 꽉 차 있습니다 (§6-6). */
-    if (!controls.querySelector('.lim-views-btn')) {
-      const btn = el('button', 'lim-views-btn', '조회수')
-      btn.type = 'button'
-      btn.addEventListener('click', openViewsPanel)
-      controls.appendChild(btn)
-    }
   }
 
   /* 사이드바 컬렉션 줄에도 같은 숫자를 답니다 */
@@ -871,8 +931,9 @@ function onSaveIntent(e) {
 
 function onEscape(e) {
   if (e.key !== 'Escape') return
-  if (document.querySelector('.lim-views')) {
-    closeViewsPanel()
+  if (viewsPageOpen()) {
+    closeViewsPage()
+    markNav()
     return
   }
   if (document.querySelector('.lim-drafts')) {
@@ -1061,6 +1122,7 @@ function pass() {
   try {
     routeFlag()
     decorateHeader()
+    decorateNav()
     decorateList()
     layoutForm()
     editorTheme()
@@ -1276,7 +1338,15 @@ export function startSkin() {
   })
 
   /* 주소가 바뀌는 것(목록 ↔ 글 ↔ 검색결과)도 따로 챙깁니다 */
-  window.addEventListener('hashchange', () => setTimeout(pass, 0))
+  window.addEventListener('hashchange', () => {
+    /* 다른 화면으로 갔으면 대시보드는 걷습니다 (글 제목을 눌렀을 때도) */
+    if (viewsPageOpen()) closeViewsPage()
+    setTimeout(pass, 0)
+  })
+
+  /* 머리띠의 다른 탭을 누르면 대시보드를 걷습니다 — 주소가 그대로일 때도
+     넘어간 것처럼 보여야 합니다. */
+  document.addEventListener('click', onNavClick, true)
 
   watchToasts()
 

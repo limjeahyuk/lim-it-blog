@@ -1389,12 +1389,93 @@
         cursor: pointer;
       }
 
-      /* ── 조회수 판 (목록 화면의 「128개」 옆 단추 + 판) ───────────
-         ⚠ 머리띠가 아니라 여기 답니다 — 폰에서 머리띠는 이미 꽉 차 있습니다.
-         모양은 「쓰다 만 글」 판과 같습니다 (§6-6). */
-      .lim-views-btn {
-        margin-left: 10px;
-        padding: 4px 10px;
+      /* ── 조회수 대시보드 (머리띠의 탭 + 화면을 덮는 지면) ─────────
+         ⚠ 2026-09-08 에 목록 화면의 작은 단추 + 모달에서 탭 + 지면으로
+           옮겼습니다. 460px 짜리 판에는 순위·저자·날짜가 안 들어갑니다.
+         ⚠ Decap 이 `p`·`h2`·`h3` 에 글자색을 전역으로 깔아 둡니다 — 여기
+           글자색에 `!important` 가 붙어 있는 이유입니다 (§6-2). */
+
+      /* 탭은 콘텐츠·미디어와 같은 모양이어야 합니다 — 위의
+         [class*='AppHeaderNavLink'] 규칙을 그대로 옮겨 적습니다 */
+      .lim-views-tab {
+        padding: 7px 10px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--a-faint);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .lim-views-tab:hover {
+        color: var(--a-text);
+        background-color: var(--a-surface);
+      }
+      .lim-views-tab.is-on {
+        color: var(--a-text);
+        font-weight: 800;
+      }
+
+      /* ⚠ Decap 의 눌림 표시(header-link-active)는 주소를 보고 React 가
+         붙입니다 — 떼어도 다음 그리기에 돌아옵니다. 대시보드가 떠 있는
+         동안만 흐리게 덮어서 눌린 탭이 둘로 보이지 않게 합니다. */
+      html[data-lim-views] .header-link-active {
+        color: var(--a-faint) !important;
+        font-weight: 600 !important;
+      }
+
+      html.lim-dash-on,
+      html.lim-dash-on body {
+        overflow: hidden;
+      }
+
+      .lim-dash {
+        position: fixed;
+        top: 60px; /* 머리띠 높이 */
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 90; /* 모달(100000)보다 아래 — 저장·임시저장 판이 위입니다 */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        background-color: var(--a-bg);
+      }
+      .lim-dash:focus {
+        outline: none;
+      }
+      .lim-dash-in {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 24px 20px 60px;
+      }
+      .lim-dash-top {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .lim-dash-h {
+        margin: 0 !important;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: var(--a-text) !important;
+      }
+      .lim-dash-sub {
+        margin: 5px 0 0 !important;
+        font-size: 13px;
+        color: var(--a-faint) !important;
+      }
+      .lim-dash-acts {
+        display: flex;
+        gap: 8px;
+      }
+      .lim-dghost {
+        padding: 7px 12px;
         font: inherit;
         font-size: 12px;
         font-weight: 700;
@@ -1405,76 +1486,159 @@
         cursor: pointer;
         white-space: nowrap;
       }
-      .lim-views-btn:hover {
+      .lim-dghost:hover {
         color: var(--a-text);
       }
 
-      .lim-views {
-        position: fixed;
-        inset: 0;
-        z-index: 100000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
+      /* 숫자 칸 넷 */
+      .lim-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
       }
-      .lim-views-back {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
+      .lim-stat {
+        min-width: 0;
+        padding: 14px 16px;
+        background-color: var(--a-card);
+        border: 1px solid var(--a-border);
+        border-radius: 12px;
       }
-      .lim-views-card {
-        position: relative;
-        width: 100%;
-        max-width: 460px;
-        max-height: 80vh;
+      .lim-stat-k {
+        display: block;
+        font-size: 12px;
+        color: var(--a-faint);
+      }
+      .lim-stat-v {
         display: flex;
-        flex-direction: column;
-        padding: 22px;
-        background: var(--a-bg);
+        align-items: baseline;
+        gap: 3px;
+        margin-top: 4px;
+      }
+      .lim-stat-v b {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--a-text);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
+      }
+      .lim-stat-v i {
+        font-style: normal;
+        font-size: 13px;
+        color: var(--a-dim);
+      }
+      .lim-stat-note {
+        display: block;
+        margin-top: 4px;
+        font-size: 11px;
+        color: var(--a-faint);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* 묶음 카드 */
+      .lim-dcard {
+        margin-top: 14px;
+        padding: 16px 18px;
+        background-color: var(--a-card);
         border: 1px solid var(--a-border);
         border-radius: 14px;
       }
-      .lim-views-card:focus {
-        outline: none;
+      .lim-dcard-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
       }
-      .lim-views-title {
-        margin: 0 0 6px !important;
-        font-size: 17px;
+      .lim-dcard-head h3 {
+        margin: 0 !important;
+        font-size: 14px;
         font-weight: 800;
         color: var(--a-text) !important;
       }
-      .lim-views-hint {
-        margin: 0 0 16px !important;
-        font-size: 12px;
-        line-height: 1.6;
-        color: var(--a-faint) !important;
-      }
-      .lim-views-list {
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .lim-views-empty {
-        margin: 0 !important;
-        font-size: 13px;
+      .lim-dnote {
+        margin: 10px 0 0 !important;
+        font-size: 12.5px;
         line-height: 1.7;
         color: var(--a-faint) !important;
       }
-      .lim-views-row {
+      .lim-dfoot {
+        margin: 18px 0 0 !important;
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--a-faint) !important;
+      }
+
+      /* 최근 14일 막대 */
+      .lim-days {
+        display: flex;
+        align-items: flex-end;
+        gap: 5px;
+        margin-top: 14px;
+      }
+      .lim-day {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      .lim-day-rail {
+        width: 100%;
+        height: 92px;
+        display: flex;
+        align-items: flex-end;
+        background-color: var(--a-surface);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .lim-day-rail i {
+        display: block;
+        width: 100%;
+        background-color: var(--a-accent);
+        border-radius: 6px;
+      }
+      .lim-day span {
+        font-size: 10px;
+        color: var(--a-faint);
+        font-variant-numeric: tabular-nums;
+      }
+      .lim-day.is-today span {
+        color: var(--a-text);
+        font-weight: 800;
+      }
+
+      /* 몫 막대 (저자별·글별) */
+      .lim-bar {
+        flex: 0 0 120px;
+        height: 6px;
+        border-radius: 999px;
+        background-color: var(--a-surface);
+        overflow: hidden;
+      }
+      .lim-bar i {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background-color: var(--a-accent);
+      }
+
+      .lim-wrow {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 8px 2px;
+        padding: 9px 0;
         border-bottom: 1px solid var(--a-border);
       }
-      .lim-views-name {
+      .lim-wrow:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+      .lim-wrow-n {
         flex: 1;
         min-width: 0;
-      }
-      .lim-views-name b {
-        display: block;
         font-size: 13px;
         font-weight: 700;
         color: var(--a-text);
@@ -1482,32 +1646,132 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      .lim-views-name span {
-        display: block;
-        margin-top: 1px;
-        font-size: 11px;
+      .lim-wrow-v {
+        font-size: 12px;
+        color: var(--a-dim);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      /* 글별 — 찾기와 정렬 */
+      .lim-dtools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .lim-dsearch {
+        width: 180px;
+        padding: 6px 10px;
+        /* ⚠ 16px 미만이면 iOS 사파리가 탭할 때 화면을 확대합니다 (§6-2) */
+        font: inherit;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--a-border);
+        background-color: var(--a-bg);
+        color: var(--a-text);
+      }
+      .lim-dsort {
+        display: flex;
+        gap: 4px;
+      }
+      .lim-dsort-b {
+        padding: 6px 10px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid var(--a-border);
+        background: transparent;
+        color: var(--a-dim);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .lim-dsort-b.is-on {
+        color: var(--a-accent);
+        border-color: var(--a-accent);
+      }
+
+      .lim-drows {
+        margin-top: 8px;
+      }
+      /* 안 읽힌 글은 백 편이 넘을 수 있습니다 — 카드 안에서만 흐릅니다 */
+      .lim-drows.is-scroll {
+        max-height: 320px;
+        overflow-y: auto;
+      }
+      .lim-drow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--a-border);
+      }
+      .lim-drow:last-child {
+        border-bottom: 0;
+      }
+      .lim-drow-i {
+        flex: 0 0 26px;
+        font-size: 12px;
         color: var(--a-faint);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .lim-drow-m {
+        flex: 1;
+        min-width: 0;
+      }
+      .lim-drow-t {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--a-text);
+        text-decoration: none;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      .lim-views-n {
-        flex-shrink: 0;
+      a.lim-drow-t:hover {
+        text-decoration: underline;
+      }
+      .lim-drow-meta {
+        display: flex;
+        gap: 8px;
+        margin-top: 2px;
+        font-size: 11px;
+        color: var(--a-faint);
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      .lim-drow-s {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .lim-drow-gone {
+        color: var(--a-warn);
+        font-weight: 700;
+      }
+      .lim-drow-v {
+        flex: 0 0 auto;
+        min-width: 48px;
+        text-align: right;
         font-size: 14px;
         font-weight: 800;
         color: var(--a-text);
         font-variant-numeric: tabular-nums;
       }
-      .lim-views-ask {
+
+      /* 열쇠 묻기 */
+      .lim-dask {
         display: flex;
         flex-direction: column;
         gap: 10px;
+        max-width: 420px;
       }
-      .lim-views-askline {
+      .lim-daskline {
         display: flex;
         gap: 8px;
       }
-      .lim-views-key {
+      .lim-dkey {
         flex: 1;
         min-width: 0;
         padding: 8px 10px;
@@ -1516,39 +1780,47 @@
         font-size: 16px;
         border-radius: 8px;
         border: 1px solid var(--a-border);
-        background: var(--a-card);
+        background-color: var(--a-card);
         color: var(--a-text);
       }
-      .lim-views-foot {
-        margin-top: 16px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-      }
-      .lim-views-del {
-        padding: 8px 14px;
-        font: inherit;
-        font-size: 13px;
-        border-radius: 8px;
-        border: 1px solid var(--a-border);
-        background: none;
-        color: var(--a-faint);
-        cursor: pointer;
-      }
-      .lim-views-del:hover {
-        color: var(--a-danger, #fe6d6d);
-        border-color: var(--a-danger, #fe6d6d);
-      }
-      .lim-views-close {
+      .lim-dgo {
         padding: 8px 16px;
         font: inherit;
         font-size: 13px;
         font-weight: 700;
         border-radius: 8px;
         border: 1px solid var(--a-border);
-        background: var(--a-card);
+        background-color: var(--a-card);
         color: var(--a-text);
         cursor: pointer;
+      }
+
+      /* 폰 — 숫자 칸은 두 줄, 몫 막대는 뺍니다 (자리가 없습니다) */
+      @media (max-width: 640px) {
+        .lim-dash-in {
+          padding: 18px 12px 48px;
+        }
+        .lim-stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .lim-dcard {
+          padding: 14px 14px;
+        }
+        .lim-dtools {
+          width: 100%;
+        }
+        .lim-dsearch {
+          flex: 1;
+          width: auto;
+          min-width: 0;
+        }
+        .lim-drow .lim-bar,
+        .lim-wrow .lim-bar {
+          display: none;
+        }
+        .lim-drow-s {
+          display: none;
+        }
       }
 
       /* 폰에서는 단추가 글자 아래로 내려가고 화면 폭을 나눠 씁니다 */
@@ -1940,6 +2212,16 @@
         [class*='AppHeaderButton'] {
           padding: 7px 6px !important;
         }
+
+        /* ⚠ 「조회수」 탭이 늘면서 375px 에서 머리띠가 15px 넘쳤습니다 —
+           아바타(로그아웃)가 화면 밖으로 나갑니다. 탭 여백·탭 사이·이름
+           크기에서 조금씩 걷어 옵니다 (재서 확인). */
+        .lim-views-tab {
+          padding: 7px 6px !important;
+        }
+        [class*='AppHeaderNavList'] {
+          gap: 0 !important;
+        }
         [class*='QuickNewButton'] {
           padding: 8px 14px !important;
         }
@@ -1954,7 +2236,7 @@
           height: 30px;
         }
         .lim-brand b {
-          font-size: 15px;
+          font-size: 14px;
         }
         .lim-brand i,
         .lim-brand span {
