@@ -1,4 +1,10 @@
 // 사이트 전역 설정. 여기만 고치면 사이트 전체에 반영됩니다.
+//
+// ⚠ 저자(에디터)만 예외입니다 — 값은 src/data/authors.json 에 있고
+//   /admin 의 「에디터」에서 고칩니다. 아래 AUTHORS 는 그 파일을 읽어
+//   화면이 쓰는 모양으로 바꿔 놓기만 합니다.
+
+import authorsData from './data/authors.json'
 
 export const SITE_TITLE = "lim's World"
 export const SITE_DESCRIPTION =
@@ -24,60 +30,95 @@ export const OWNER = {
  * 따로 있었는데, 둘 다 없애고 **저자 하나**로 합쳤습니다. 글 하나는
  * 저자 한 명에게 속하고, 그게 전부입니다.
  *
- * ⚠ 저자는 화면 요소가 아니라 **글의 규약**입니다. 그래서 항목 하나가
- *   보이는 것(name·bio·color)과 안 보이는 것(voice)을 같이 들고
- *   있습니다. 두 개를 다른 파일에 두면 소개는 바꿨는데 말투는 그대로인
- *   일이 생깁니다.
+ * ⚠ **값은 여기 없습니다.** `src/data/authors.json` 에 있고 `/admin` 의
+ *   「에디터」에서 고칩니다 (2026-09-09). 예전에는 이 파일에 손으로 적어서,
+ *   에디터를 하나 늘리려면 노트북을 열어야 했습니다 — 글은 폰에서 쓰는데
+ *   쓰는 사람을 늘리는 것만 폰에서 안 되는 것이 이상했습니다.
  *
- * 순서가 그대로 화면 순서입니다.
- * 저자를 늘리려면 여기 한 덩어리 + public/admin/config.yml 의 select.
+ * ⚠ 그래서 색도 이름으로 고릅니다. 예전에는 `--who-<저자id>` 를 저자마다
+ *   global.css 에 두 줄씩 손으로 넣었는데, 그러면 `/admin` 에서 에디터를
+ *   더해도 색이 없어서 이름이 안 보입니다. 지금은 **팔레트에서 고르는
+ *   것**이고 그 다섯은 global.css 에 미리 깔려 있습니다 (§4).
+ *
+ * ⚠ `voice` 는 화면에 안 나옵니다 — 그 저자로 글을 쓸 때 지키는 말투입니다.
+ *   보이는 것과 같은 파일에 두는 이유는, 소개만 바꾸고 말투는 그대로 두는
+ *   일이 생기기 때문입니다.
+ *
+ * 순서가 그대로 화면 순서입니다 (「에디터」 화면에서 끌어 옮깁니다).
  */
-export const AUTHORS = [
-  {
-    id: 'student',
-    name: 'study Lim',
-    bio: '코딩 공부 기록 합니다.',
-    color: 'var(--who-student)', // 파랑 — 다크 400 / 라이트 700
-    /** 사진이 없을 때 아바타에 들어가는 글자 */
-    initial: 'S',
-    /**
-     * 얼굴 사진. `public/authors/<파일명>` 에 두고 여기 경로를 적습니다.
-     * 없으면 `initial` 로 글자 아바타를 그립니다 — 자리를 비워두지 않습니다.
-     */
-    avatar: undefined as string | undefined,
-    /**
-     * AI 에게 주는 말투 지시문. 화면에는 안 나옵니다.
-     * 공통 규약(-습니다체·"저"·이모지 없음)은 CLAUDE.md §1 에 있고,
-     * 여기에는 **저자마다 다른 것만** 적습니다.
-     */
-    voice: [
-      '배우는 중에 적는 필기입니다. 결론을 내리지 말고 이해한 데까지만 씁니다.',
-      '문장이 짧습니다. 코드와 화면을 먼저 놓고 설명을 붙입니다.',
-      '모르는 것은 모른다고 씁니다 — "왜 이렇게 되는지는 아직 모르겠습니다".',
-      '남을 가르치지 않습니다. 다시 볼 사람은 본인입니다.',
-    ],
-  },
-  {
-    id: 'developer',
-    name: '임데브',
-    bio: '개발을 하면서 생기는 것들 기록.',
-    color: 'var(--who-developer)', // 빨강 — 다크 400 / 라이트 700
-    initial: '임',
-    avatar: undefined as string | undefined,
-    voice: [
-      '문제부터 씁니다. 뭐가 불편했고 왜 손대야 했는지가 첫 문단에 옵니다.',
-      '무엇을 했는지보다 왜 그 선택이었는지를 씁니다.',
-      '구체적인 숫자와 이름을 씁니다 — "밸런스 조정"이 아니라 "20에서 50으로".',
-      '틀렸던 것과 되돌린 것을 반드시 씁니다. 그게 제일 읽을 만합니다.',
-      '끝에 다음에 읽을 사람(=본인)에게 쓸모 있는 문장을 한두 개 남깁니다.',
-    ],
-  },
-] as const
 
-export type Author = (typeof AUTHORS)[number]
-export type AuthorId = Author['id']
+/**
+ * 저자 색 팔레트. 값은 global.css 의 `--who-<이름>` 이고 테마마다 다릅니다.
+ *
+ * ⚠ 여기를 늘리려면 global.css 의 두 블록(다크·라이트)에 한 줄씩 같이
+ *   넣고 대비를 계산해 보세요. 400 단계 파스텔은 라이트에서 거의 항상
+ *   떨어집니다 (§4).
+ * ⚠ `public/admin/config.yml` 의 「색」 목록도 같이 늘립니다.
+ */
+export const AUTHOR_COLORS = ['blue', 'red', 'green', 'orange', 'teal'] as const
 
-export const AUTHOR_IDS = AUTHORS.map((a) => a.id) as [AuthorId, ...AuthorId[]]
+export type AuthorColor = (typeof AUTHOR_COLORS)[number]
+
+export type Author = {
+  id: string
+  name: string
+  bio: string
+  /** `--who-*` 를 가리키는 CSS 값 */
+  color: string
+  /** 사진이 없을 때 아바타에 들어가는 글자 */
+  initial: string
+  /** 얼굴 사진 주소. 없으면 `initial` 로 글자 아바타를 그립니다 */
+  avatar: string | undefined
+  /** AI 에게 주는 말투 지시문. 화면에는 안 나옵니다 */
+  voice: string[]
+}
+
+export type AuthorId = string
+
+/**
+ * ⚠ 모르는 색이 와도 빌드를 깨지 않습니다. 이 값은 `/admin` 의 목록에서
+ *   고르는 것이라 오타가 날 자리가 아니고, 폰에서 저장한 것 때문에 사이트가
+ *   통째로 안 나가는 쪽이 훨씬 나쁩니다 (§3 의 blankAsUndefined 와 같은
+ *   판단입니다). 이름 오타는 여전히 걸립니다 — `author` 는 enum 입니다.
+ */
+function colorVar(name: string): string {
+  const key = (AUTHOR_COLORS as readonly string[]).includes(name)
+    ? name
+    : AUTHOR_COLORS[0]
+  return `var(--who-${key})`
+}
+
+function toVoice(v: unknown): string[] {
+  const lines = Array.isArray(v) ? v : String(v ?? '').split('\n')
+  return lines.map((l) => String(l).trim()).filter(Boolean)
+}
+
+export const AUTHORS: Author[] = (authorsData.authors ?? [])
+  .filter((a) => a && a.id)
+  .map((a) => ({
+    id: a.id,
+    name: a.name || a.id,
+    bio: a.bio || '',
+    color: colorVar(a.color),
+    /* 사진이 없을 때 쓰는 글자. 비어 있으면 이름 첫 글자입니다 */
+    initial: a.initial || (a.name || a.id).slice(0, 1),
+    /* /admin 에서 지우면 키가 사라지지 않고 빈 문자열로 남습니다 (§3) */
+    avatar: a.avatar || undefined,
+    /* `/admin` 은 여러 줄 칸이라 줄바꿈 하나로 옵니다. 손으로 쓴 배열도
+       그대로 받습니다 — 2026-09-09 이전 파일이 그 모양이었습니다. */
+    voice: toVoice(a.voice),
+  }))
+
+/**
+ * `content.config.ts` 의 `z.enum()` 에 넘기는 목록입니다 — 글의 `author` 가
+ * 여기 없는 이름이면 빌드가 깨집니다 (의도한 것 — 오타를 배포 전에 잡습니다).
+ *
+ * ⚠ 그래서 **글이 딸린 에디터를 지우면 빌드가 깨집니다.** 지우기 전에 그
+ *   이름으로 쓴 글을 옮기세요.
+ */
+export const AUTHOR_IDS = (AUTHORS.length
+  ? AUTHORS.map((a) => a.id)
+  : ['']) as [AuthorId, ...AuthorId[]]
 
 export function getAuthor(id: string) {
   return AUTHORS.find((a) => a.id === id)

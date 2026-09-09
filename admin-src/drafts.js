@@ -125,10 +125,19 @@ function restore(fields) {
    어느 글인가 — 주소에서 뽑습니다
    ------------------------------------------------------------------- */
 
+/*
+  ⚠ **글만 남깁니다.** 컬렉션이 둘이 되면서(에디터 — 2026-09-09) 여기가
+    그쪽 폼에도 걸렸는데, 남길 칸(FIELDS)이 하나도 없어서 빈 것을 남기고
+    「쓰다 만 글」에 이름 없는 줄이 쌓입니다. 임시저장은 저장이 곧 커밋이라
+    오래 걸리는 **글**을 위한 것입니다 — 에디터 목록은 칸 몇 개짜리입니다.
+*/
+const POSTS = 'posts' /* config.yml 의 컬렉션 이름 */
+
 function entryKey() {
   const hash = (typeof location !== 'undefined' && location.hash) || ''
   const m = /^#\/collections\/([^/?]+)\/(new|entries\/[^/?#]+)/.exec(hash)
-  return m ? m[1] + '/' + m[2] : null
+  if (!m || m[1] !== POSTS) return null
+  return m[1] + '/' + m[2]
 }
 
 function isNewEntry(k) {

@@ -18,14 +18,14 @@
       ?v= 는 캐시 무효화용입니다. config.yml 은 주소가 늘 같아서 브라우저가
       오래 물고 있습니다. 폼을 고쳤는데 폰에서 안 바뀌면 이 숫자를 올리세요.
     -->
-    <link href="/admin/config.yml?v=14" type="text/yaml" rel="cms-config-url" />
+    <link href="/admin/config.yml?v=19" type="text/yaml" rel="cms-config-url" />
 
     <!--
       본문 편집기의 CSS. editor.js 를 묶을 때 esbuild 가 같이
       뽑아 놓습니다 — 둘 다 저장소에 커밋합니다 (Vercel 이 astro build 를
       직접 부르면 npm run admin 이 안 돌기 때문입니다).
     -->
-    <link rel="stylesheet" href="/admin/editor.css?v=9" />
+    <link rel="stylesheet" href="/admin/editor.css?v=14" />
 
     <!--
       테마를 그리기 전에 정합니다. 블로그와 같은 열쇠(localStorage 'theme')를
@@ -549,13 +549,28 @@
           바꿨을 때 React 가 화면에 없는 글자 노드에 새 제목을 써서, 줄이
           안 바뀝니다. font-size: 0 이면 자리도 안 차지합니다.
       */
-      [class*='ListCardTitle'] {
+      /* ⚠ `.lim-row` 가 붙은 줄에만 걸어야 합니다. 컬렉션이 둘이 되면서
+           (에디터 — 2026-09-09) 네 칸으로 가르지 않는 목록이 생겼는데,
+           거기까지 감추면 **줄이 통째로 빈칸으로 보입니다** (실제로 그랬습니다).
+           skin.js 가 칸을 담은 줄에만 그 클래스를 답니다. */
+      .lim-row [class*='ListCardTitle'] {
         /* ⚠ Decap 은 flex 로 그립니다 — 그대로 두면 새로 담은 네 칸이
              제 폭을 못 잡고 오른쪽 끝에 몰립니다. */
         display: block !important;
         font-size: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
+      }
+      /* 가르지 않은 목록(에디터)의 줄 — Decap 것을 그대로 두되 여백만 맞춥니다.
+         ⚠ `li` 를 꼭 붙이세요. `[class*='ListCard']` 는 줄(ListCard)뿐 아니라
+           그 안의 링크(ListCardLink)와 제목(ListCardTitle)까지 걸립니다 —
+           `:not(.lim-row)` 가 링크에서 참이 되면서 **글 목록의 원래 제목이
+           그대로 다시 보였습니다** (재현해서 고쳤습니다). */
+      li[class*='ListCard']:not(.lim-row) [class*='ListCardTitle'] {
+        margin: 0 !important;
+        padding: 15px 12px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
       }
       [class*='TitleIcons'] {
         display: none !important;
@@ -634,6 +649,13 @@
         font-size: 15px !important;
         font-weight: 800 !important;
         color: var(--a-text) !important;
+      }
+      /* ⚠ 컬렉션이 둘입니다 (2026-09-09). 에디터를 고치는 동안 위 띠에
+           「글 편집」이라고 적혀 있으면 무엇을 고치는 중인지 헷갈립니다. */
+      html[data-lim-collection='editors'] [class*='BackCollection']::before,
+      html[data-lim-collection='editors'][data-lim-route='new']
+        [class*='BackCollection']::before {
+        content: '에디터' !important;
       }
       [class*='BackStatus'] {
         background-color: transparent !important;
@@ -808,6 +830,72 @@
           max-width: 1120px;
         }
       }
+      /* ── 에디터 화면 ────────────────────────────────────────────────
+         글과 달리 skin.js 가 폼을 다시 세우지 않습니다 (필드가 목록 하나뿐
+         이라 세울 것이 없습니다). 그래서 `.lim-form` 이 주던 폭과 색을
+         여기서 직접 줍니다.
+
+         ⚠ **글 화면에는 걸리면 안 됩니다.** `data-lim-collection` 으로
+           갈라 두었습니다 (skin.js 의 routeFlag). 이름을 바꾸면 둘 다.
+         ------------------------------------------------------------- */
+      html[data-lim-collection='editors']
+        [class*='ControlPaneContainer']:not([class*='PreviewPaneContainer']) {
+        max-width: 940px !important;
+        margin: 0 auto !important;
+        padding-top: 24px !important;
+      }
+
+      /* 목록 머리 — "2 에디터" 와 「에디터 추가」 */
+      html[data-lim-collection='editors'] [class*='TopBarContainer'] {
+        background-color: transparent !important;
+        border: 0 !important;
+        padding: 0 0 8px !important;
+      }
+      html[data-lim-collection='editors'] [class*='ExpandButton'] {
+        color: var(--a-dim) !important;
+        font-size: 13px !important;
+      }
+      html[data-lim-collection='editors'] [class*='AddButton'] {
+        background-color: var(--a-accent) !important;
+        color: var(--a-accent-fg) !important;
+        border-radius: 999px !important;
+        font-weight: 700 !important;
+      }
+
+      /*
+        한 사람 = 한 줄. Decap 기본은 밝은 회색 판이라 다크에서 글자가
+        묻힙니다 (재 보니 배경 #f2f2f2 에 흐린 글자였습니다).
+      */
+      html[data-lim-collection='editors'] [class*='SortableListItem'] {
+        background-color: var(--a-card) !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 12px !important;
+        margin-bottom: 10px !important;
+        padding: 4px 12px 12px !important;
+      }
+      html[data-lim-collection='editors'] [class*='StyledListItemTopBar'] {
+        background-color: transparent !important;
+        border: 0 !important;
+      }
+      html[data-lim-collection='editors'] [class*='TopBarButton'] {
+        color: var(--a-dim) !important;
+      }
+      /* 접힌 줄에 보이는 이름 — config.yml 의 summary 입니다.
+         ⚠ Decap 이 여기에 밝은 회색 판을 깝니다 (#dfdfe3). 글자색만 고치면
+           다크에서 흰 판에 흰 글자가 됩니다 (재 보고 확인). */
+      html[data-lim-collection='editors'] [class*='NestedObjectLabel'] {
+        background-color: transparent !important;
+        color: var(--a-text) !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        padding: 0 4px 8px !important;
+      }
+      /* 펼쳤을 때 칸들을 담는 판. 이름이 없는 div 라(css 해시뿐) 자리로
+         잡습니다 — 줄 안의 바로 밑 자식입니다. 기본은 흰색입니다. */
+      html[data-lim-collection='editors'] [class*='SortableListItem'] > div {
+        background-color: transparent !important;
+      }
+
       .lim-main {
         min-width: 0;
       }
@@ -2294,9 +2382,24 @@
           background-color: transparent !important;
           border: 0 !important;
         }
-        [class*='SidebarHeading'],
-        [class*='SidebarNavList'] {
+        /* ⚠ 컬렉션 목록을 다시 켰습니다 (2026-09-09). 「글」 하나뿐일 때는
+           눌러도 갈 데가 없어서 숨겼는데, 「에디터」가 생기면서 폰에서
+           그리로 갈 길이 여기밖에 없습니다 — 머리띠는 이미 꽉 차 있어서
+           탭을 하나 더 달면 아바타가 화면 밖으로 나갑니다 (§6-6).
+           대신 세로로 쌓지 않고 **알약 두 개**로 눕힙니다. */
+        [class*='SidebarHeading'] {
           display: none !important;
+        }
+        [class*='SidebarNavList'] {
+          display: flex !important;
+          gap: 6px !important;
+          margin-bottom: 8px !important;
+        }
+        [class*='SidebarNavLink'] {
+          padding: 7px 14px !important;
+          border: 1px solid var(--a-border) !important;
+          border-radius: 999px !important;
+          font-size: 13px !important;
         }
         [class*='SearchContainer'] {
           margin-top: 0 !important;
@@ -2424,6 +2527,6 @@
       config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
       바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=20"></script>
+    <script src="/admin/editor.js?v=25"></script>
   </body>
 </html>

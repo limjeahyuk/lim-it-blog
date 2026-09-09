@@ -40,7 +40,46 @@ import { closeViewsPage, openViewsPage, viewsPageOpen } from './views.js'
    제목 128개에 이 글자가 들어간 것은 없습니다 (세어 봤습니다). */
 const SEP = ' · '
 
-const AUTHORS = { student: 'study Lim', developer: '임데브' }
+/*
+  목록 화면의 「작성자」 칸에 쓰는 id → 이름.
+
+  ⚠ 손으로 적지 마세요. `scripts/sync-authors.mjs` 가 src/data/authors.json
+    에서 뽑아 `authors.gen.js` 에 써 둡니다 (`npm run admin` 이 부릅니다).
+    여기에 적어 두면 「에디터」에서 이름을 바꿔도 목록만 옛 이름으로 남습니다 —
+    실제로 그랬습니다 (2026-09-09 이전).
+*/
+import { AUTHOR_NAMES as AUTHORS } from './authors.gen.js'
+
+/*
+  컬렉션 이름. config.yml 과 같아야 합니다.
+
+  ⚠ 아래 손질은 **글**을 겨냥한 것입니다 — 목록 한 줄을 네 칸으로 가르는
+    것도, 폼을 한 열로 세우고 나머지를 「발행 설정」으로 내리는 것도.
+    「에디터」 컬렉션(2026-09-09)에도 그대로 걸면 그쪽 칸이 전부 모달로
+    끌려 들어가서 화면에서 사라집니다. 그래서 주소를 먼저 봅니다.
+*/
+const POSTS = 'posts'
+
+/** 지금 화면이 글 편집인가 (새 글·고치기) */
+function inPostEntry() {
+  return new RegExp('^#/collections/' + POSTS + '/(new|entries/)').test(
+    (typeof location !== 'undefined' && location.hash) || '',
+  )
+}
+
+/**
+ * 지금 화면이 글 목록인가.
+ *
+ * ⚠ 검색 결과(`#/search/…`)도 같은 줄 모양이라 같이 봅니다. 안 그러면
+ *   검색해서 찾은 글이 네 칸이 아니라 한 덩어리로 보입니다.
+ */
+function inPostList() {
+  const hash = (typeof location !== 'undefined' && location.hash) || ''
+  return (
+    new RegExp('^#/collections/' + POSTS + '(/|$)').test(hash) ||
+    /^#\/search\//.test(hash)
+  )
+}
 
 const THEME_KEY = 'theme' /* ⚠ 블로그와 같은 열쇠입니다 (BaseHead.astro).
                              같은 주소라 localStorage 를 나눠 씁니다 —
@@ -136,7 +175,10 @@ function el(tag, className, text) {
 
 /** 지금 열려 있는 컬렉션 이름. 주소(#/collections/posts/...)에서 뽑습니다. */
 let collectionName = null
-function findCollection() {
+function findCollection(want) {
+  /* 찾는 컬렉션이 화면에 있으면 그것부터 — 컬렉션이 둘입니다 (글·에디터) */
+  if (want && document.querySelector("a[href*='#/collections/" + want + "']"))
+    return want
   if (collectionName) return collectionName
   const a = document.querySelector("a[href*='#/collections/']")
   if (!a) return null
@@ -415,7 +457,9 @@ function openDraftsPanel() {
 function quickNew(e) {
   const btn = e.target.closest && e.target.closest("[class*='QuickNewButton']")
   if (!btn) return
-  const name = findCollection()
+  /* ⚠ 「새 글」은 언제나 글입니다. 컬렉션이 둘이 되면서(에디터) 화면에
+     처음 보이는 링크를 따라가면 엉뚱한 곳에서 새 항목을 만듭니다. */
+  const name = findCollection(POSTS)
   if (!name) return
   e.preventDefault()
   e.stopPropagation()
@@ -432,6 +476,17 @@ function quickNew(e) {
 const COLS = ['제목', '작성자', '날짜', '상태']
 
 function decorateList() {
+  /*
+    ⚠ 글 목록에서만 가릅니다. 그리고 다른 목록(에디터)으로 넘어가면 여기서
+      단 것을 **걷어내야 합니다** — React 는 제가 만든 노드만 지웁니다.
+      안 걷으면 「에디터」 화면에 「제목·작성자·날짜·상태」 줄과 「131개」가
+      그대로 남습니다 (실제로 그랬습니다).
+  */
+  if (!inPostList()) {
+    for (const n of document.querySelectorAll('.lim-thead, .lim-count'))
+      n.remove()
+    return
+  }
   const grid = document.querySelector("[class*='CardsGrid']")
   if (!grid) return
 
@@ -564,6 +619,8 @@ function fieldName(box) {
 }
 
 function layoutForm() {
+  /* ⚠ 글만 이렇게 세웁니다 — 「에디터」 폼은 Decap 이 그린 그대로 둡니다. */
+  if (!inPostEntry()) return
   /*
     ⚠ ControlPaneContainer 라는 이름이 두 겹입니다 — 바깥
       (PreviewPaneContainer-ControlPaneContainer)과 필드를 담은 안쪽.
@@ -1049,6 +1106,15 @@ function routeFlag() {
   const now = isNew ? 'new' : 'edit'
   if (document.documentElement.getAttribute('data-lim-route') !== now) {
     document.documentElement.setAttribute('data-lim-route', now)
+  }
+
+  /* 어느 컬렉션인가 — 위 띠의 「글 편집」 글자가 여기서 갈립니다.
+     ⚠ 컬렉션이 둘입니다(글·에디터). 안 갈라 두면 에디터를 고치는 동안에도
+       「글 편집」이라고 적혀 있습니다. */
+  const m = /#\/collections\/([^/?]+)/.exec(window.location.hash)
+  const where = m ? m[1] : ''
+  if (document.documentElement.getAttribute('data-lim-collection') !== where) {
+    document.documentElement.setAttribute('data-lim-collection', where)
   }
 }
 

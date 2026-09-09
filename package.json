@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "npm run admin && astro dev",
     "build": "npm run admin && astro build",
-    "admin": "esbuild admin-src/index.js --bundle --format=iife --target=es2019 --minify --outfile=public/admin/editor.js",
+    "admin": "npm run authors && esbuild admin-src/index.js --bundle --format=iife --target=es2019 --minify --outfile=public/admin/editor.js",
+    "authors": "node scripts/sync-authors.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "post": "bash scripts/post.sh",
