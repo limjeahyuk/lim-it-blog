@@ -465,7 +465,11 @@
            DOM 차례는 그대로 두고 자리만 바꿉니다. */
       [class*='CollectionMain'] {
         display: grid !important;
-        grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+        /* ⚠ 오른쪽 칸을 `1fr` 로 두지 마세요. 화면이 좁아지면 그 칸이 먼저
+             줄어들면서 **찾기 칸이 돋보기만 남을 때까지 쪼그라듭니다**
+             (900px 짜리 창에서 그랬습니다). 오른쪽은 제 폭(auto)을 쓰고
+             줄어드는 것은 제목 쪽입니다 — 제목은 「글」 두 글자입니다. */
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         row-gap: 18px;
         min-width: 0 !important;
@@ -485,6 +489,13 @@
         border-radius: 0 !important;
         box-shadow: none !important;
         padding: 0 !important;
+      }
+      /* ⚠ Decap 은 제목 덩어리에 **폭을 반쪽**으로 박아 둡니다 (1360px 에서
+           682px). 그대로 두면 격자 왼쪽 칸이 안 줄어들어 오른쪽(찾기·정렬)이
+           대신 쪼그라들고, 에디터 목록에서는 「에디터 추가」가 화면 가운데에
+           멈춥니다. */
+      [class*='CollectionTopContainer'] {
+        width: 100% !important;
       }
       [class*='CollectionTopRow'] {
         display: flex !important;
@@ -559,8 +570,12 @@
          skin.js 가 사이드바에서 옮겨 온 것입니다. 옮겨 오기만 해서는
          사이드바에서 쓰던 모양(위에 선 하나 긋고 아래에 붙는)이 그대로라,
          제목 줄에 맞게 다시 그립니다. */
+      /* ⚠ 줄어들지 않습니다 (`0 0`). 창을 좁히면 이 칸부터 줄어서 안내글이
+           잘리고, 더 좁히면 돋보기만 남습니다 — 좁은 화면일수록 131편에서
+           찾을 일이 많은 자리라 폭을 못박습니다. 폰에서는 아래에서 한 줄을
+           통째로 씁니다. */
       .lim-find {
-        flex: 0 1 340px;
+        flex: 0 0 340px;
         min-width: 0;
       }
       .lim-find [class*='SearchContainer'] {
@@ -740,13 +755,7 @@
       html[data-lim-collection='editors'] [class*='CollectionTopRow'] {
         margin-bottom: 18px !important;
       }
-      /* ⚠ Decap 은 제목 덩어리에 **폭을 반쪽**으로 박아 둡니다 (1360px 에서
-           682px). 글 목록에서는 오른쪽 반이 찾기·정렬 자리라 그대로 두면
-           되는데, 에디터 목록에서는 「에디터 추가」가 화면 가운데에
-           멈춥니다. */
-      html[data-lim-collection='editors'] [class*='CollectionTopContainer'] {
-        width: 100% !important;
-      }
+
 
       /* ── 아바타 — 얼굴 사진이 없어서 글자 하나입니다 ────────────────
          ⚠ 동그라미 바탕은 **글자색을 14% 로 깐 것**입니다. 색이 다섯이라
@@ -2898,8 +2907,10 @@
           display: block !important;
           padding-left: 0 !important;
         }
+        /* ⚠ 격자가 풀리면 `row-gap` 도 같이 풀립니다 — 찾기 줄이 제목과
+             표에 딱 붙습니다. 위아래로 나눠 줍니다. */
         [class*='CollectionControlsContainer'] {
-          margin-top: 12px !important;
+          margin: 12px 0 14px !important;
         }
         .lim-find {
           flex: 1 1 auto;
