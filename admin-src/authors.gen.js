@@ -8,6 +8,7 @@
 export const AUTHOR_NAMES = {
   "student": "학생",
   "developer": "개발자",
+  "pm": "기획자",
 }
 
 /** 저자별 글 수. 「에디터」의 「글 N편」과 지울 수 있는지 판정에 씁니다. */
@@ -21,17 +22,25 @@ export const AUTHOR_LIST = [
   {
     "id": "student",
     "name": "학생",
-    "bio": "코딩 공부 기록 합니다.",
+    "bio": "임재혁, 코딩 및 AI 관련 공부를 진행 하는 중이에요! 🔥",
     "color": "blue",
-    "initial": "학",
+    "initial": "S",
     "count": 116
   },
   {
     "id": "developer",
     "name": "개발자",
-    "bio": "개발을 하면서 생기는 것들 기록.",
+    "bio": "임재혁, 개발을 하면서 생기는 것들 기록합니다.",
     "color": "red",
-    "initial": "개",
+    "initial": "D",
     "count": 15
+  },
+  {
+    "id": "pm",
+    "name": "기획자",
+    "bio": "임재혁, 새로운 것을 만들기 위한 기획을 정리 해보도록 할께요!",
+    "color": "green",
+    "initial": "P",
+    "count": 0
   }
 ]

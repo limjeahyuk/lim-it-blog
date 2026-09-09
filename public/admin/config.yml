@@ -126,6 +126,7 @@ collections:
           # <lim:authors> — scripts/sync-authors.mjs 가 채웁니다. 손으로 고치지 마세요.
           - { label: "학생", value: "student" }
           - { label: "개발자", value: "developer" }
+          - { label: "기획자", value: "pm" }
           # </lim:authors>
 
       - name: title
