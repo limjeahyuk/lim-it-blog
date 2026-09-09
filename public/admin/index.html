@@ -85,6 +85,16 @@
         --a-danger: #d13b34; /* 삭제 */
         --a-accent: #2563eb; /* 토글·포커스 (시안 파랑, 흰 배경 5.2:1) */
         --a-accent-fg: #ffffff;
+
+        /* 에디터 이름 색. 블로그의 --who-* 와 같은 다섯입니다 (§4).
+           ⚠ 여기서는 **글자색으로만** 씁니다 — 동그라미 바탕은 이 색을
+             14% 로 깔아서 만듭니다 (index.html 의 .lim-eav::before).
+             색 값을 바꿀 때 블로그 global.css 도 같이 보세요. */
+        --a-who-blue: #2563eb;
+        --a-who-red: #dc2626;
+        --a-who-green: #15803d;
+        --a-who-orange: #b45309;
+        --a-who-teal: #0f766e;
       }
 
       @media (prefers-color-scheme: dark) {
@@ -107,6 +117,16 @@
           --a-danger: #fe6d6d;
           --a-accent: #6ea8ff; /* 시안 파랑 (#111214 위 8.5:1) */
           --a-accent-fg: #111214;
+
+          /* 에디터 이름 색. 블로그의 --who-* 와 같은 다섯입니다 (§4).
+             ⚠ 여기서는 **글자색으로만** 씁니다 — 동그라미 바탕은 이 색을
+               14% 로 깔아서 만듭니다 (index.html 의 .lim-eav::before).
+               색 값을 바꿀 때 블로그 global.css 도 같이 보세요. */
+          --a-who-blue: #6ea8ff;
+          --a-who-red: #ff7070;
+          --a-who-green: #5bc25d;
+          --a-who-orange: #ffa64d;
+          --a-who-teal: #4ecdc4;
         }
       }
 
@@ -128,6 +148,16 @@
         --a-danger: #fe6d6d;
         --a-accent: #6ea8ff;
         --a-accent-fg: #111214;
+
+        /* 에디터 이름 색. 블로그의 --who-* 와 같은 다섯입니다 (§4).
+           ⚠ 여기서는 **글자색으로만** 씁니다 — 동그라미 바탕은 이 색을
+             14% 로 깔아서 만듭니다 (index.html 의 .lim-eav::before).
+             색 값을 바꿀 때 블로그 global.css 도 같이 보세요. */
+        --a-who-blue: #6ea8ff;
+        --a-who-red: #ff7070;
+        --a-who-green: #5bc25d;
+        --a-who-orange: #ffa64d;
+        --a-who-teal: #4ecdc4;
       }
 
       /* 블로그와 같은 폰트.
@@ -273,6 +303,24 @@
         font-weight: 800 !important;
       }
 
+      /*
+        Decap 의 「콘텐츠」 링크를 감춥니다 — 컬렉션 탭(글·에디터)이
+        대신합니다 (skin.js 의 collectionTabs).
+
+        ⚠ **지우지 않습니다.** React 가 그린 것이라 지우면 다음 그리기에
+          돌아옵니다.
+        ⚠ **주소로 못 가립니다** — 이 링크는 `#/collections/…` 가 아니라
+          `#/` 입니다 (첫 컬렉션으로 보냅니다). 그리고 `li` 를 꼭 붙이세요:
+          우리 탭은 `ul` 바로 밑의 `a` 라 `li` 가 없고, 「미디어」는 `li` 지만
+          안이 `button` 입니다 — 그래서 `li:has(> a)` 가 「콘텐츠」 하나만
+          잡습니다.
+        ⚠ 이 링크의 눌림 표시(`header-link-active`)는 컬렉션이 어느 쪽이든
+          켜져 있어서 못 씁니다. 그래서 감추고 우리가 답니다.
+      */
+      [class*='AppHeaderNavList'] > li:has(> a) {
+        display: none !important;
+      }
+
       [class*='AppHeaderActions'] {
         margin-left: auto !important;
         display: flex !important;
@@ -379,76 +427,56 @@
          여기서는 원래 글자를 감추고(font-size: 0) 새로 담은 칸을 놓습니다.
          =============================================================== */
 
+      /*
+        ⚠ Decap 은 **사이드바 + 본문**의 가로 두 칸입니다. 컬렉션 고르기가
+          머리띠 탭으로 올라가면서(2026-09-09 시안) 사이드바를 통째로
+          감췄고, 본문이 폭을 다 쓰게 한 칸으로 폅니다.
+      */
       [class*='CollectionContainer'] {
+        display: block !important;
         max-width: 1440px !important;
         margin: 0 auto !important;
-        padding: 28px 20px !important;
-        gap: 24px !important;
+        /* ⚠ 머리띠(0 20px)보다 한 칸 더 들어옵니다 — 시안이 그렇습니다.
+             조회수 지면(.lim-dash-in)도 같은 값이어야 탭을 옮길 때 안 튑니다. */
+        padding: 28px 40px !important;
       }
 
-      /* ── 왼쪽 컬렉션 카드 ──────────────────────────────────────────
-         Decap 의 차례는 제목 → 검색 → 목록인데 시안은 제목 → 목록 → 검색
-         입니다. order 로 바꿉니다 (DOM 은 그대로 둡니다). */
+      /* ── 왼쪽 컬렉션 카드 — 감춥니다 ──────────────────────────────
+         시안에는 사이드바가 없습니다. 컬렉션은 머리띠의 탭(글·에디터)이
+         고르고, 그 안에 있던 찾기 칸은 skin.js 가 제목 줄로 옮깁니다
+         (moveSearch).
+
+         ⚠ **지우지 않고 감춥니다** — React 가 그린 것입니다. 찾기 칸만
+           빠져나가고 껍데기는 그 자리에 그대로 둡니다.
+         ⚠ 이 규칙 하나에 기대고 있습니다. 사이드바를 되살리려면 컬렉션
+           탭(collectionTabs)과 찾기 칸 옮기기를 같이 되돌리세요 — 안 그러면
+           같은 것이 화면에 둘씩 보입니다. */
       [class*='SidebarContainer'] {
-        display: flex !important;
-        flex-direction: column !important;
-        background-color: var(--a-card) !important;
-        border: 1px solid var(--a-border) !important;
-        border-radius: 14px !important;
-        padding: 14px !important;
-        box-shadow: none !important;
-        color: var(--a-text) !important;
-      }
-      [class*='SidebarHeading'] {
-        order: 0 !important;
-        margin: 2px 4px 10px !important;
-        font-size: 12px !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.04em !important;
-        color: var(--a-faint) !important;
-      }
-      [class*='SidebarNavList'] {
-        order: 1 !important;
-      }
-      [class*='SearchContainer'] {
-        order: 2 !important;
-        margin-top: 12px !important;
-        padding-top: 12px !important;
-        border-top: 1px solid var(--a-border) !important;
-      }
-      [class*='SidebarNavLink'] {
-        display: flex !important;
-        align-items: center !important;
-        gap: 8px !important;
-        border: 0 !important;
-        border-radius: 10px !important;
-        padding: 9px 12px !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        color: var(--a-dim) !important;
-      }
-      [class*='SidebarNavLink'] [class*='IconWrapper'] {
         display: none !important;
-      }
-      [class*='SidebarNavLink']:hover {
-        background-color: var(--a-surface) !important;
-        color: var(--a-text) !important;
-      }
-      .sidebar-active {
-        background-color: var(--a-surface) !important;
-        color: var(--a-text) !important;
-      }
-      /* 글 개수. skin.js 가 세어서 넣습니다 (걸러도 따라 줄어듭니다). */
-      .lim-n {
-        margin-left: auto;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--a-faint);
       }
 
       /* ── 목록 머리 ────────────────────────────────────────────────
-         "글" 과 "정렬 기준 · 128개" 를 한 줄에 놓습니다. Decap 은 둘을
-         위아래 두 덩어리로 그려서, 아래 것을 끌어올립니다. */
+         시안은 한 줄입니다 — [글 131개] ‥‥ [찾기] [정렬 기준].
+
+         Decap 은 제목(CollectionTopContainer)과 정렬 줄
+         (CollectionControlsContainer)을 위아래 **두 덩어리**로 그립니다.
+         ⚠ 예전에는 아래 것을 `margin-top: -33px` 로 끌어올렸는데, 찾기 칸이
+           들어오면서 높이가 달라져 줄이 어긋납니다. 격자로 나란히 세웁니다 —
+           DOM 차례는 그대로 두고 자리만 바꿉니다. */
+      [class*='CollectionMain'] {
+        display: grid !important;
+        grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+        align-items: center;
+        row-gap: 18px;
+        min-width: 0 !important;
+        padding-left: 0 !important;
+      }
+      /* 표(와 에디터 카드)는 아랫줄에서 두 칸을 다 씁니다 */
+      [class*='CollectionMain'] > div:last-child {
+        grid-column: 1 / -1;
+        min-width: 0;
+      }
+
       /* 검색결과 머리("글 컬랙션에서 …")도 같은 자리입니다 */
       [class*='SearchResultContainer'],
       [class*='CollectionTopContainer'] {
@@ -458,8 +486,18 @@
         box-shadow: none !important;
         padding: 0 !important;
       }
+      [class*='CollectionTopRow'] {
+        display: flex !important;
+        align-items: center !important;
+        /* ⚠ Decap 은 space-between 입니다 (제목과 「새 글」을 양끝으로).
+             그대로 두면 제목 옆 개수가 화면 오른쪽 끝까지 밀려납니다. */
+        justify-content: flex-start !important;
+        gap: 10px !important;
+        margin: 0 !important;
+      }
       [class*='SearchResultHeading'],
       [class*='CollectionTopHeading'] {
+        margin: 0 !important;
         font-size: 30px !important;
         font-weight: 800 !important;
         letter-spacing: -0.02em !important;
@@ -470,32 +508,41 @@
         font-size: 20px !important;
         margin-bottom: 14px !important;
       }
+      /* 제목 옆 개수 — "글 131개" · "에디터 3명" (skin.js · editors.js) */
+      .lim-count,
+      .lim-ecnt {
+        font-size: 13px;
+        color: var(--a-faint);
+      }
 
       /* 새 글은 머리글의 검은 단추가 대신합니다 (시안) */
       [class*='CollectionTopNewButton'] {
         display: none !important;
       }
+
       [class*='CollectionControlsContainer'] {
         display: flex !important;
         /* ⚠ Decap 은 row-reverse 입니다 — 그대로 두면 flex-end 가 왼쪽이 됩니다 */
         flex-direction: row !important;
         /* ⚠ 폭도 제 것을 씁니다 (사이드바만큼 짧습니다). 그대로 두면 오른쪽으로
-             붙여도 표 오른쪽 끝보다 278px 앞에서 멈춥니다. */
+             붙여도 표 오른쪽 끝보다 앞에서 멈춥니다. */
         width: 100% !important;
         max-width: none !important;
         align-items: center !important;
         justify-content: flex-end !important;
-        gap: 10px !important;
-        margin-top: -33px !important;
-        margin-bottom: 16px !important;
+        gap: 12px !important;
+        margin: 0 !important;
+      }
+      /* ⚠ 에디터 목록에는 찾을 것이 둘뿐이라 시안에 이 줄이 없습니다.
+           찾기 칸은 글 목록에서만 옮겨 오는데(skin.js 의 moveSearch), 화면을
+           옮겨도 이 칸은 그대로 남아 있어서 여기서 줄째 감춥니다. */
+      html[data-lim-collection='editors']
+        [class*='CollectionControlsContainer'] {
+        display: none !important;
       }
       /* 격자/줄 바꾸는 단추 — 시안에 없고, 줄 모양만 씁니다 */
       [class*='ViewControlsSection'] {
         display: none !important;
-      }
-      .lim-count {
-        font-size: 13px;
-        color: var(--a-faint);
       }
       [class*='CollectionControlsContainer'] [class*='StyledDropdownButton'] {
         background-color: transparent !important;
@@ -505,9 +552,55 @@
         padding: 0 20px 0 0 !important;
         font-size: 13px !important;
         color: var(--a-dim) !important;
+        white-space: nowrap !important;
       }
 
-      /* ── 표 ──────────────────────────────────────────────────────── */
+      /* ── 찾기 칸 ──────────────────────────────────────────────────
+         skin.js 가 사이드바에서 옮겨 온 것입니다. 옮겨 오기만 해서는
+         사이드바에서 쓰던 모양(위에 선 하나 긋고 아래에 붙는)이 그대로라,
+         제목 줄에 맞게 다시 그립니다. */
+      .lim-find {
+        flex: 0 1 340px;
+        min-width: 0;
+      }
+      .lim-find [class*='SearchContainer'] {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+      }
+      .lim-find [class*='InputContainer'] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        height: 38px !important;
+        padding: 0 12px !important;
+        border-radius: 10px !important;
+      }
+      /* ⚠ 돋보기는 Decap 이 `position: absolute` 로 칸 안에 띄웁니다 —
+           그대로 두면 안내글 위에 겹칩니다 (칸 왼쪽 여백을 0 으로 줄였으니). */
+      .lim-find [class*='IconWrapper'] {
+        position: static !important;
+        flex: none !important;
+        color: var(--a-faint) !important;
+      }
+      .lim-find [class*='SearchInput'] {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        font-size: 14px !important;
+      }
+      /* ── 표 ────────────────────────────────────────────────────────
+         시안은 머리 줄과 줄들이 **판 하나** 안에 들어 있습니다. 감싸개는
+         Decap 이 클래스 없이 그린 div 라, skin.js 가 `.lim-table` 이라는
+         이름을 붙여 줍니다 (글 목록에서만 — 에디터 카드는 판을 안 두릅니다). */
+      .lim-table {
+        background-color: var(--a-card);
+        border: 1px solid var(--a-border);
+        border-radius: 14px;
+      }
       .lim-thead,
       .lim-cells {
         display: grid;
@@ -516,8 +609,10 @@
         align-items: center;
       }
       .lim-thead {
-        padding: 0 12px 10px;
+        padding: 13px 18px;
+        background-color: var(--a-surface);
         border-bottom: 1px solid var(--a-border);
+        border-radius: 13px 13px 0 0; /* 판보다 1px 안쪽입니다 (테두리) */
         font-size: 12px;
         font-weight: 600;
         color: var(--a-faint);
@@ -537,8 +632,24 @@
         margin: 0 !important;
         width: auto !important;
       }
+      /*
+        ⚠ 마지막 줄에는 밑줄을 안 긋습니다 — 판의 테두리와 겹쳐 두 줄이
+          됩니다. `:last-child` 로 잡습니다.
+      */
+      li[class*='ListCard']:last-child {
+        border-bottom: 0 !important;
+      }
+      /*
+        마우스를 올린 줄은 살짝 떠오릅니다 (시안). 판이 `overflow: hidden`
+        이 아니라서 그림자가 안 잘립니다 — ⚠ 판에 그걸 걸면 이 그림자가
+        네모로 잘립니다.
+      */
       [class*='ListCard']:hover {
         background-color: var(--a-surface) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1) !important;
+        position: relative;
+        z-index: 1;
       }
       [class*='ListCardLink'] {
         display: block !important;
@@ -568,15 +679,20 @@
            그대로 다시 보였습니다** (재현해서 고쳤습니다). */
       li[class*='ListCard']:not(.lim-row) [class*='ListCardTitle'] {
         margin: 0 !important;
-        padding: 15px 12px !important;
+        padding: 15px 18px !important;
         font-size: 14px !important;
         font-weight: 600 !important;
       }
       [class*='TitleIcons'] {
         display: none !important;
       }
+      /* 검색결과 줄 앞의 컬렉션 이름(「글」) — 네 칸에 그것까지 놓을 자리가
+         없습니다. 어느 컬렉션인지는 지면 제목이 이미 말하고 있습니다. */
+      .lim-row [class*='CollectionLabel'] {
+        display: none !important;
+      }
       .lim-cells {
-        padding: 15px 12px;
+        padding: 15px 18px;
       }
       .lim-cells span:nth-child(1) {
         font-size: 15px;
@@ -600,6 +716,412 @@
         font-size: 12px;
         font-weight: 600;
         color: var(--a-faint);
+      }
+
+      /* ===============================================================
+         2-2. 에디터 — 목록의 카드 · 고치는 화면의 줄
+
+         그리는 것은 admin-src/editors.js 입니다. Decap 이 그리는 것은
+         **파일 하나짜리 줄**(목록)과 **목록 위젯**(고치는 화면)이라,
+         사람이 몇인지도 누가 있는지도 화면에서 안 읽혔습니다.
+         =============================================================== */
+
+      /* ⚠ Decap 의 「에디터」 줄 하나를 감춥니다 — 우리가 그린 카드가
+           그 자리를 대신합니다. 지우지는 않습니다 (React 것입니다). */
+      html[data-lim-collection='editors'] [class*='CardsGrid'] {
+        display: none !important;
+      }
+      /* ⚠ 목록 머리를 두 칸 격자로 세운 것은 **글 목록** 때문입니다
+           (제목 줄 오른쪽에 찾기·정렬을 놓으려고). 에디터 목록에는 그 줄이
+           없어서, 격자로 두면 「에디터 추가」와 카드가 왼쪽 반쪽 안에만
+           갇힙니다. 한 칸으로 되돌립니다. */
+      html[data-lim-collection='editors'] [class*='CollectionMain'] {
+        display: block !important;
+      }
+      html[data-lim-collection='editors'] [class*='CollectionTopRow'] {
+        margin-bottom: 18px !important;
+      }
+      /* ⚠ Decap 은 제목 덩어리에 **폭을 반쪽**으로 박아 둡니다 (1360px 에서
+           682px). 글 목록에서는 오른쪽 반이 찾기·정렬 자리라 그대로 두면
+           되는데, 에디터 목록에서는 「에디터 추가」가 화면 가운데에
+           멈춥니다. */
+      html[data-lim-collection='editors'] [class*='CollectionTopContainer'] {
+        width: 100% !important;
+      }
+
+      /* ── 아바타 — 얼굴 사진이 없어서 글자 하나입니다 ────────────────
+         ⚠ 동그라미 바탕은 **글자색을 14% 로 깐 것**입니다. 색이 다섯이라
+           색마다 바탕 값을 또 적으면 열 줄이 되고, `color-mix` 는 iOS
+           16.2 부터입니다 (이 화면은 15.4 의 `:has()` 까지 씁니다).
+           그래서 같은 색을 반투명으로 한 겹 깝니다 — ::before 를 글자
+           **뒤로** 보내려면 부모가 쌓임 맥락을 만들어야 합니다(z-index: 0). */
+      .lim-eav {
+        position: relative;
+        z-index: 0;
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--a-who-blue);
+      }
+      .lim-eav::before {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        inset: 0;
+        border-radius: inherit;
+        background-color: currentColor;
+        opacity: 0.14;
+      }
+      .lim-eav[data-who='red'] {
+        color: var(--a-who-red);
+      }
+      .lim-eav[data-who='green'] {
+        color: var(--a-who-green);
+      }
+      .lim-eav[data-who='orange'] {
+        color: var(--a-who-orange);
+      }
+      .lim-eav[data-who='teal'] {
+        color: var(--a-who-teal);
+      }
+
+      /* 이름 + 아이디 — 카드·줄·펼친 판이 같이 씁니다 */
+      .lim-ename {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        line-height: 1.35;
+      }
+      .lim-ename b {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--a-text);
+      }
+      .lim-ename i {
+        font-style: normal;
+        font-size: 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--a-faint);
+      }
+
+      /* ── 목록 — 사람마다 카드 ────────────────────────────────────── */
+      .lim-eds {
+        display: grid;
+        /* 1360px 에서 셋씩입니다 (시안). 좁아지면 둘 · 하나로 접힙니다. */
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 16px;
+      }
+      .lim-ed {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 18px;
+        background-color: var(--a-card);
+        border: 1px solid var(--a-border);
+        border-radius: 14px;
+      }
+      .lim-ed-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .lim-ed-bio {
+        /* ⚠ Decap 이 p 에 글자색을 전역으로 깝니다 — 이기려면 !important */
+        margin: 14px 0 16px !important;
+        flex: 1 0 auto;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--a-dim) !important;
+      }
+      .lim-ed-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding-top: 12px;
+        border-top: 1px solid var(--a-border);
+      }
+      .lim-ecount {
+        font-size: 12px;
+        color: var(--a-faint);
+        white-space: nowrap;
+      }
+      .lim-ed-btns {
+        display: flex;
+        gap: 6px;
+      }
+      .lim-ed-edit,
+      .lim-ed-del {
+        padding: 6px 12px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        border: 1px solid var(--a-border);
+        border-radius: 8px;
+        background-color: var(--a-card);
+        color: var(--a-dim);
+        cursor: pointer;
+      }
+      .lim-ed-edit:hover {
+        background-color: var(--a-surface);
+        color: var(--a-text);
+      }
+      /* 지우는 것은 되돌릴 수 없습니다 — 색으로 갈라 둡니다 */
+      .lim-ed-del {
+        color: var(--a-danger);
+      }
+      .lim-ed-del:hover {
+        background-color: var(--a-surface);
+      }
+
+      /* 「에디터 추가」 — 머리글의 「새 글」과 같은 검은 단추 */
+      .lim-eadd {
+        margin-left: auto;
+        padding: 9px 16px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        border: 0;
+        border-radius: 10px;
+        background-color: var(--a-pri);
+        color: var(--a-pri-fg);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      /* ── 고치는 화면 — 머리 ───────────────────────────────────────
+         Decap 은 필드 라벨(「에디터」)과 목록 위 줄(「2 에디터」)로 이름을
+         두 번 적습니다. 시안은 목록 화면과 같은 머리 하나입니다. */
+      html[data-lim-collection='editors'] [class*='TopBarContainer'] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 0 0 18px !important;
+        background-color: transparent !important;
+        border: 0 !important;
+      }
+      /* 「2 에디터」와 전부 펼치기 화살표 — 우리 머리가 대신합니다 */
+      html[data-lim-collection='editors'] [class*='ExpandButtonContainer'] {
+        display: none !important;
+      }
+      /* 필드 라벨도 같은 이유로 감춥니다 (바깥 것 하나만 — 안쪽 칸의
+         라벨까지 걸리면 폼이 통째로 이름을 잃습니다) */
+      html[data-lim-collection='editors']
+        [class*='ControlContainer']:has([class*='TopBarContainer'])
+        > [class*='ControlTopbar'] {
+        display: none !important;
+      }
+      .lim-ehd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .lim-ehd b {
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--a-text);
+      }
+      .lim-ehd span {
+        font-size: 13px;
+        color: var(--a-faint);
+      }
+      /* 「에디터 추가」 — 목록 화면의 검은 단추와 같은 모양 */
+      html[data-lim-collection='editors'] [class*='AddButton'] {
+        margin-left: auto !important;
+        padding: 9px 16px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        background-color: var(--a-pri) !important;
+        color: var(--a-pri-fg) !important;
+        box-shadow: none !important;
+        white-space: nowrap !important;
+      }
+      /* 「+」 아이콘은 뺍니다 — 목록 화면의 같은 단추에는 없습니다 */
+      html[data-lim-collection='editors'] [class*='AddButton'] svg {
+        display: none !important;
+      }
+      /*
+        목록 위젯을 담은 흰 판을 걷어냅니다 — 줄마다 제 카드를 두르고
+        있어서 판 안의 판이 됩니다 (시안에는 바깥 판이 없습니다).
+
+        ⚠ **바깥 하나만** 골라야 합니다. 「위젯 상자」 규칙(§6-2)은 필드마다
+          걸리는데, 줄 안의 입력칸도 같은 규칙으로 그려집니다 — 다 벗기면
+          칸의 테두리까지 없어집니다. 목록 위젯만 `TopBarContainer` 를
+          품고 있어서 그것으로 가릅니다.
+      */
+      /* ⚠ 「위젯 상자」 규칙(§6-2)은 `:not()` 을 여섯 개 달고 있어서
+           특이도가 (0,7,0) 입니다. 그냥 쓰면 이 규칙이 져서 판이 그대로
+           남습니다 (실제로 그랬습니다 — !important 는 둘 다 붙어 있습니다).
+           같은 `:not()` 들을 달아 특이도를 넘깁니다. */
+      html[data-lim-collection='editors']
+        [class*='ControlContainer']:has([class*='TopBarContainer'])
+        > *:not([class*='ControlTopbar']):not([class*='ControlHint']):not(
+          .lim-pills
+        ):not(.lim-radios):not(.lim-foot):not(.lim-cover-drop) {
+        background-color: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* ── 고치는 화면 — 목록 위젯의 줄 ─────────────────────────────
+         Decap 은 줄을 [접기] [끌개] [✕] + 요약 글자로 그립니다. 시안의
+         줄은 [끌개] [얼굴] [이름/아이디] ‥ [글 N편] [펼치기] [✕] 라,
+         얼굴·이름·글 수를 띠에 얹고(editors.js) 차례는 `order` 로 세웁니다.
+
+         ⚠ **차례를 DOM 으로 바꾸지 마세요.** 단추 둘은 React 것입니다 —
+           옮기면 다음 그리기에 제자리로 돌아옵니다. */
+      html[data-lim-collection='editors'] [class*='SortableListItem'] {
+        margin-bottom: 12px !important;
+        padding: 0 !important;
+        background-color: var(--a-card) !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
+      }
+      html[data-lim-collection='editors'] [class*='StyledListItemTopBar'] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 13px 14px !important;
+        background-color: transparent !important;
+        border: 0 !important;
+      }
+      /* ⚠ 단추 둘은 생김새가 같습니다 — **차례**로 가릅니다.
+           첫째가 접기, 마지막이 지우기입니다 (Decap 3.9 · editors.js 도
+           같은 기준으로 누릅니다). */
+      html[data-lim-collection='editors']
+        [class*='StyledListItemTopBar']
+        > button:first-of-type {
+        order: 3;
+        /* ⚠ 이 단추는 원래 화살표 하나라 폭이 좁습니다. 글자를 넣으면
+             「펼 치 기」로 세로로 접힙니다 (실제로 그랬습니다). */
+        white-space: nowrap !important;
+        width: auto !important;
+        padding: 6px 11px !important;
+        border: 1px solid var(--a-border) !important;
+        border-radius: 8px !important;
+        background-color: var(--a-card) !important;
+        color: var(--a-dim) !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+      }
+      html[data-lim-collection='editors']
+        [class*='StyledListItemTopBar']
+        > button:first-of-type:hover {
+        background-color: var(--a-surface) !important;
+        color: var(--a-text) !important;
+      }
+      /* 화살표 아이콘은 뺍니다 — 「펼치기/접기」 글자가 대신합니다 */
+      html[data-lim-collection='editors']
+        [class*='StyledListItemTopBar']
+        > button:first-of-type
+        [class*='IconWrapper'] {
+        display: none !important;
+      }
+      html[data-lim-collection='editors']
+        [class*='StyledListItemTopBar']
+        > button:last-of-type {
+        order: 4;
+        color: var(--a-faint) !important;
+        background-color: transparent !important;
+      }
+      html[data-lim-collection='editors']
+        [class*='StyledListItemTopBar']
+        > button:last-of-type:hover {
+        color: var(--a-danger) !important;
+      }
+      html[data-lim-collection='editors'] [class*='DragIcon'] {
+        color: var(--a-faint) !important;
+      }
+      .lim-erow {
+        order: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      /* ⚠ 줄에 있는 것만 오른쪽으로 밉니다. 카드 아래에도 같은 이름이
+           있는데(글 N편 · 편집 · 삭제), 거기까지 걸면 개수가 단추 뒤로
+           넘어갑니다 (실제로 그랬습니다). */
+      [class*='StyledListItemTopBar'] > .lim-ecount {
+        order: 2;
+        margin-left: auto;
+      }
+      /* 요약 글자("학생 · student") — 이름을 띠에 얹었으니 두 번 나옵니다 */
+      html[data-lim-collection='editors'] [class*='NestedObjectLabel'] {
+        display: none !important;
+      }
+
+      /* ── 펼친 판 ──────────────────────────────────────────────────
+         이름을 한 번 더 얹고(누구를 고치는 중인지) 칸을 두 줄로 세웁니다. */
+      .lim-epanel {
+        padding: 0 16px 16px !important;
+      }
+      .lim-ehead {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 0 14px;
+        border-top: 1px solid var(--a-border);
+      }
+      .lim-ehead b {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--a-text);
+      }
+      .lim-enote {
+        margin-left: auto;
+        font-size: 12px;
+        color: var(--a-faint);
+      }
+      .lim-egrid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 18px;
+      }
+      .lim-egrid [class*='ControlContainer'] {
+        margin-top: 0 !important;
+        margin-bottom: 16px !important;
+        min-width: 0;
+      }
+      /* 차례는 시안대로입니다 — [이름|아이디] [색|아바타 글자] 다음에
+         한 줄을 다 쓰는 것들. ⚠ `data-field` 는 editors.js 가 답니다. */
+      .lim-egrid [data-field='name'] {
+        order: 1;
+      }
+      .lim-egrid [data-field='id'] {
+        order: 2;
+      }
+      .lim-egrid [data-field='color'] {
+        order: 3;
+      }
+      .lim-egrid [data-field='initial'] {
+        order: 4;
+      }
+      .lim-egrid [data-field='bio'] {
+        order: 5;
+      }
+      .lim-egrid [data-field='avatar'] {
+        order: 6;
+      }
+      .lim-egrid [data-field='voice'] {
+        order: 7;
+      }
+      .lim-egrid [data-field='bio'],
+      .lim-egrid [data-field='avatar'],
+      .lim-egrid [data-field='voice'] {
+        grid-column: 1 / -1;
       }
 
       /* ===============================================================
@@ -845,53 +1367,11 @@
         padding-top: 24px !important;
       }
 
-      /* 목록 머리 — "2 에디터" 와 「에디터 추가」 */
-      html[data-lim-collection='editors'] [class*='TopBarContainer'] {
-        background-color: transparent !important;
-        border: 0 !important;
-        padding: 0 0 8px !important;
-      }
-      html[data-lim-collection='editors'] [class*='ExpandButton'] {
-        color: var(--a-dim) !important;
-        font-size: 13px !important;
-      }
-      html[data-lim-collection='editors'] [class*='AddButton'] {
-        background-color: var(--a-accent) !important;
-        color: var(--a-accent-fg) !important;
-        border-radius: 999px !important;
-        font-weight: 700 !important;
-      }
-
-      /*
-        한 사람 = 한 줄. Decap 기본은 밝은 회색 판이라 다크에서 글자가
-        묻힙니다 (재 보니 배경 #f2f2f2 에 흐린 글자였습니다).
-      */
-      html[data-lim-collection='editors'] [class*='SortableListItem'] {
-        background-color: var(--a-card) !important;
-        border: 1px solid var(--a-border) !important;
-        border-radius: 12px !important;
-        margin-bottom: 10px !important;
-        padding: 4px 12px 12px !important;
-      }
-      html[data-lim-collection='editors'] [class*='StyledListItemTopBar'] {
-        background-color: transparent !important;
-        border: 0 !important;
-      }
-      html[data-lim-collection='editors'] [class*='TopBarButton'] {
-        color: var(--a-dim) !important;
-      }
-      /* 접힌 줄에 보이는 이름 — config.yml 의 summary 입니다.
-         ⚠ Decap 이 여기에 밝은 회색 판을 깝니다 (#dfdfe3). 글자색만 고치면
-           다크에서 흰 판에 흰 글자가 됩니다 (재 보고 확인). */
-      html[data-lim-collection='editors'] [class*='NestedObjectLabel'] {
-        background-color: transparent !important;
-        color: var(--a-text) !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        padding: 0 4px 8px !important;
-      }
-      /* 펼쳤을 때 칸들을 담는 판. 이름이 없는 div 라(css 해시뿐) 자리로
-         잡습니다 — 줄 안의 바로 밑 자식입니다. 기본은 흰색입니다. */
+      /* 줄·머리·펼친 판의 모양은 **2-2 절**에 모여 있습니다 (2026-09-09
+         시안). 여기에는 폼 폭만 남깁니다 — 같은 것을 두 곳에서 칠하면
+         한쪽만 고쳤을 때 어느 쪽이 이기는지 특이도로 갈립니다.
+         ⚠ 펼쳤을 때 칸들을 담는 판은 기본이 흰색입니다 (이름이 없는 div 라
+           자리로 잡습니다 — 줄 안의 바로 밑 자식). */
       html[data-lim-collection='editors'] [class*='SortableListItem'] > div {
         background-color: transparent !important;
       }
@@ -1485,7 +1965,8 @@
 
       /* 탭은 콘텐츠·미디어와 같은 모양이어야 합니다 — 위의
          [class*='AppHeaderNavLink'] 규칙을 그대로 옮겨 적습니다 */
-      .lim-views-tab {
+      .lim-views-tab,
+      .lim-ctab {
         padding: 7px 10px;
         font: inherit;
         font-size: 14px;
@@ -1497,13 +1978,19 @@
         cursor: pointer;
         white-space: nowrap;
       }
-      .lim-views-tab:hover {
+      .lim-views-tab:hover,
+      .lim-ctab:hover {
         color: var(--a-text);
         background-color: var(--a-surface);
       }
-      .lim-views-tab.is-on {
+      .lim-views-tab.is-on,
+      .lim-ctab.is-on {
         color: var(--a-text);
         font-weight: 800;
+      }
+      /* 링크라 밑줄이 기본으로 붙습니다 */
+      .lim-ctab {
+        text-decoration: none;
       }
 
       /* ⚠ Decap 의 눌림 표시(header-link-active)는 주소를 보고 React 가
@@ -1521,7 +2008,10 @@
 
       .lim-dash {
         position: fixed;
-        top: 60px; /* 머리띠 높이 */
+        /* ⚠ 머리띠 높이입니다 — skin.js 가 재서 넣습니다 (headHeight).
+             폰에서는 탭 줄이 둘째 줄로 내려가 81px 쯤 됩니다. 여기에 숫자를
+             적어 두면 한쪽만 고쳤을 때 지면 위가 잘립니다. */
+        top: var(--lim-head, 60px);
         right: 0;
         bottom: 0;
         left: 0;
@@ -1536,7 +2026,9 @@
       .lim-dash-in {
         max-width: 1440px;
         margin: 0 auto;
-        padding: 24px 20px 60px;
+        /* ⚠ 목록 지면(CollectionContainer)과 같은 값입니다 — 탭을 옮길 때
+             왼쪽 끝이 움직이면 지면이 통째로 튀어 보입니다. */
+        padding: 28px 40px 60px;
       }
       .lim-dash-top {
         display: flex;
@@ -1548,7 +2040,9 @@
       }
       .lim-dash-h {
         margin: 0 !important;
-        font-size: 22px;
+        /* 목록 지면의 제목과 같은 크기입니다 — 탭을 옮길 때 제목만 작아지면
+           다른 화면처럼 보입니다 (2026-09-09 시안). */
+        font-size: 30px;
         font-weight: 800;
         letter-spacing: -0.01em;
         color: var(--a-text) !important;
@@ -2301,14 +2795,37 @@
           padding: 7px 6px !important;
         }
 
-        /* ⚠ 「조회수」 탭이 늘면서 375px 에서 머리띠가 15px 넘쳤습니다 —
-           아바타(로그아웃)가 화면 밖으로 나갑니다. 탭 여백·탭 사이·이름
-           크기에서 조금씩 걷어 옵니다 (재서 확인). */
-        .lim-views-tab {
-          padding: 7px 6px !important;
+        /*
+          ⚠ **탭 줄을 두 번째 줄로 내립니다.**
+
+          탭이 넷이 되면서(글·에디터·미디어·조회수 — 2026-09-09) 375px 에서는
+          한 줄에 못 들어갑니다. 재 보면 이름·탭·해달·새 글·아바타가 390px 이라
+          아바타가 15px 잘리고, 「쓰다 만 글」이 뜨면 30px 이 더 밀립니다.
+          글자를 줄이고 여백을 걷어 봐도 402px 이라 계산이 안 맞습니다.
+
+          그래서 접습니다 — 첫 줄은 이름과 오른쪽 단추들, 둘째 줄이 탭입니다.
+          탭을 옆으로 흘려서 감추는 쪽(가로 스크롤)과 견줬는데, 넷 중 둘이
+          화면 밖에 있으면 있는 줄도 모릅니다.
+
+          ⚠ **둘째 줄 높이를 못박아 둡니다 (40px).** 조회수 지면(.lim-dash)이
+            머리띠 아래에 붙는데, 그 값이 `top: 100px` 으로 여기 높이에
+            기대고 있습니다 — 한쪽만 고치면 지면 위가 잘리거나 뜹니다.
+        */
+        [class*='AppHeaderContent'] {
+          flex-wrap: wrap !important;
+        }
+        [class*='AppHeaderContent'] > nav {
+          order: 3 !important;
+          width: 100% !important;
+          min-height: 40px !important;
         }
         [class*='AppHeaderNavList'] {
-          gap: 0 !important;
+          gap: 2px !important;
+          margin-left: -5px !important; /* 첫 탭을 이름과 세로로 맞춥니다 */
+        }
+        .lim-views-tab,
+        .lim-ctab {
+          padding: 7px 8px !important;
         }
         [class*='QuickNewButton'] {
           padding: 8px 14px !important;
@@ -2329,6 +2846,10 @@
         .lim-brand i,
         .lim-brand span {
           display: none; /* "| Admin" 은 폰에서 자리만 먹습니다 */
+        }
+        .lim-brand {
+          /* 탭이 아래로 내려가면서 이름이 첫 줄을 혼자 씁니다 */
+          margin-right: auto;
         }
 
         [class*='ToolbarSectionMain'],
@@ -2366,51 +2887,49 @@
           font-size: 16px !important;
         }
 
-        /* ── 2. 글 목록에서 검색을 살립니다 ──────────────────────────
-           검색창이 사이드바 안에 들어 있어서, 사이드바를 통째로 숨기던
-           예전 규칙이 검색까지 같이 지우고 있었습니다. 글이 128편이라
-           검색 없이는 고칠 글을 찾을 수가 없습니다.
-           컬렉션 목록("글" 하나뿐)만 숨기고 검색창은 위에 남깁니다. */
-        /* 목록만 남기고 상자를 벗깁니다 — 검색칸이 이미 제 테두리를
-           들고 있어서 카드까지 두르면 테두리가 두 겹입니다. */
-        [class*='SidebarContainer'] {
-          position: static !important;
-          width: auto !important;
-          max-width: none !important;
-          margin: 0 0 4px !important;
-          padding: 0 !important;
-          background-color: transparent !important;
-          border: 0 !important;
-        }
-        /* ⚠ 컬렉션 목록을 다시 켰습니다 (2026-09-09). 「글」 하나뿐일 때는
-           눌러도 갈 데가 없어서 숨겼는데, 「에디터」가 생기면서 폰에서
-           그리로 갈 길이 여기밖에 없습니다 — 머리띠는 이미 꽉 차 있어서
-           탭을 하나 더 달면 아바타가 화면 밖으로 나갑니다 (§6-6).
-           대신 세로로 쌓지 않고 **알약 두 개**로 눕힙니다. */
-        [class*='SidebarHeading'] {
-          display: none !important;
-        }
-        [class*='SidebarNavList'] {
-          display: flex !important;
-          gap: 6px !important;
-          margin-bottom: 8px !important;
-        }
-        [class*='SidebarNavLink'] {
-          padding: 7px 14px !important;
-          border: 1px solid var(--a-border) !important;
-          border-radius: 999px !important;
-          font-size: 13px !important;
-        }
-        [class*='SearchContainer'] {
-          margin-top: 0 !important;
-          padding-top: 0 !important;
-          border-top: 0 !important;
-        }
+        /* ── 2. 목록 머리 ───────────────────────────────────────────
+           제목 줄 오른쪽에 찾기 칸까지 놓을 폭이 없습니다 — 두 칸 격자를
+           풀고 찾기·정렬을 제목 아래로 내립니다.
+
+           ⚠ 폰에서 컬렉션을 고르는 길은 이제 **머리띠 탭**입니다
+             (2026-09-09 시안). 예전에는 사이드바를 알약 둘로 눕혀 놨는데,
+             컬렉션이 머리띠로 올라가면서 그 알약이 같은 것을 두 번
+             보여 주게 됐습니다. */
         [class*='CollectionMain'] {
+          display: block !important;
           padding-left: 0 !important;
+        }
+        [class*='CollectionControlsContainer'] {
+          margin-top: 12px !important;
+        }
+        .lim-find {
+          flex: 1 1 auto;
         }
         [class*='CollectionTopHeading'] {
           font-size: 24px !important;
+        }
+        .lim-thead,
+        .lim-cells {
+          padding-left: 12px !important;
+          padding-right: 12px !important;
+        }
+
+        /* 에디터 — 카드는 한 줄에 하나, 줄에서는 「글 N편」을 뺍니다
+           (끌개·얼굴·이름·펼치기·✕ 까지 놓으면 이름이 두세 글자만 보입니다) */
+        .lim-eds {
+          grid-template-columns: 1fr;
+        }
+        html[data-lim-collection='editors'] .lim-erow ~ .lim-ecount {
+          display: none;
+        }
+        html[data-lim-collection='editors'] .lim-erow {
+          margin-right: auto;
+        }
+        .lim-epanel {
+          padding: 0 12px 12px !important;
+        }
+        .lim-egrid {
+          grid-template-columns: minmax(0, 1fr);
         }
 
         /* ── 3. 폼을 짧게 ────────────────────────────────────────────
@@ -2527,6 +3046,6 @@
       config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
       바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=25"></script>
+    <script src="/admin/editor.js?v=26"></script>
   </body>
 </html>

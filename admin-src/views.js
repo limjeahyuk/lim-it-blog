@@ -82,13 +82,19 @@ function shift(day, back) {
 }
 
 /**
- * 글 편집 화면 주소. 컬렉션 이름은 머리띠의 「콘텐츠」 링크에서 뽑습니다.
+ * 글 편집 화면 주소. 컬렉션 이름은 머리띠의 「글」 탭에서 뽑습니다.
  *
+ * ⚠ **아무 컬렉션 링크나 잡으면 안 됩니다.** 머리띠에 탭이 둘이고
+ *   (글·에디터 — 2026-09-09) 사이드바에도 같은 링크가 남아 있어서,
+ *   차례가 바뀌면 조용히 **에디터 화면으로 가는 링크**가 됩니다. 여기
+ *   목록은 언제나 글이니 「글」 탭을 집어서 씁니다.
  * ⚠ 못 찾으면 빈 문자열입니다 — 그때 제목은 링크가 아니라 글자로만 나옵니다.
  *   조회수를 보는 일이 글을 여는 것 때문에 막히면 안 됩니다.
  */
 function entryHref(slug) {
-  const a = document.querySelector("a[href*='#/collections/']")
+  const a =
+    document.querySelector(".lim-ctab[data-lim-c='posts']") ||
+    document.querySelector("a[href*='#/collections/']")
   const m = a && /#\/collections\/([^/]+)/.exec(a.getAttribute('href') || '')
   return m ? '#/collections/' + m[1] + '/entries/' + slug : ''
 }

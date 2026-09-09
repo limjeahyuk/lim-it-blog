@@ -34,6 +34,8 @@ import {
   registerPort,
 } from './drafts.js'
 import { closeViewsPage, openViewsPage, viewsPageOpen } from './views.js'
+import { editorsPass } from './editors.js'
+import { say } from './say.js'
 
 /* 목록 요약(config.yml 의 summary)을 이 글자로 이어 붙여 놨습니다.
    ⚠ 여기를 고치면 config.yml 의 summary 도 같이 고쳐야 합니다.
@@ -59,6 +61,9 @@ import { AUTHOR_NAMES as AUTHORS } from './authors.gen.js'
     끌려 들어가서 화면에서 사라집니다. 그래서 주소를 먼저 봅니다.
 */
 const POSTS = 'posts'
+
+/** ⚠ config.yml 과 editors.js 의 이름과 같아야 합니다. */
+const EDITORS = 'editors'
 
 /** 지금 화면이 글 편집인가 (새 글·고치기) */
 function inPostEntry() {
@@ -215,6 +220,28 @@ function decorateHeader() {
   paintDraftsButton()
 }
 
+/*
+  머리띠 높이를 CSS 에 알려 줍니다 (`--lim-head`).
+
+  조회수 지면(.lim-dash)은 머리띠 **아래**에 딱 붙는 고정 판이라 그 높이를
+  알아야 합니다. 예전에는 60px 으로 못박아 뒀는데, 폰에서 탭 줄이 둘째 줄로
+  내려가면서(2026-09-09) 81px 이 됐습니다 — 숫자를 CSS 에 또 적으면 한쪽만
+  고쳤을 때 지면 위가 잘리거나 목록이 비쳐 보입니다. 재서 넘깁니다.
+
+  ⚠ 손질 한 바퀴마다 부르므로 **값이 바뀔 때만** 씁니다. 안 그러면 스타일을
+    건드릴 때마다 MutationObserver 가 다시 깨어나 제자리 도는 고리가 됩니다.
+*/
+let headH = 0
+
+function headHeight() {
+  const bar = document.querySelector("header[class*='AppHeader']")
+  if (!bar) return
+  const h = Math.round(bar.getBoundingClientRect().height)
+  if (!h || h === headH) return
+  headH = h
+  document.documentElement.style.setProperty('--lim-head', h + 'px')
+}
+
 /* -------------------------------------------------------------------
    머리띠의 「조회수」 탭 — 콘텐츠 · 미디어 옆
 
@@ -232,9 +259,44 @@ function decorateHeader() {
      흐리게 덮습니다 (index.html).
    ------------------------------------------------------------------- */
 
+/*
+  컬렉션 탭 — 「글」 · 「에디터」.
+
+  Decap 은 컬렉션 전부를 「콘텐츠」 링크 **하나**로 묶고, 어느 컬렉션인지는
+  왼쪽 사이드바에서 고르게 합니다. 컬렉션이 둘뿐인데 그 사이드바가 화면
+  왼쪽을 300px 씩 차지하고 있었습니다 — 시안에는 사이드바가 없고 컬렉션이
+  머리띠에 나란히 섭니다 (2026-09-09).
+
+  ⚠ **Decap 의 「콘텐츠」 링크는 지우지 않고 감춥니다** — React 가 그린
+    것입니다 (index.html 의 `li:has(a[href*='#/collections/'])`).
+  ⚠ **눌림 표시도 우리가 답니다.** Decap 이 「콘텐츠」에 붙이는
+    `header-link-active` 는 어느 컬렉션이든 켜져 있어서 둘을 못 가릅니다.
+  ⚠ **조회수 탭과 다르게 진짜 주소입니다** (`#/collections/<이름>`). 그쪽은
+    Decap 이 모르는 길이라 화면을 덮는 것이고, 이건 Decap 이 아는 길이라
+    새로고침해도 그대로 남습니다.
+*/
+const TABS = [
+  { id: POSTS, label: '글' },
+  { id: EDITORS, label: '에디터' },
+]
+
+function collectionTabs(list) {
+  for (let i = 0; i < TABS.length; i += 1) {
+    const t = TABS[i]
+    if (list.querySelector('.lim-ctab[data-lim-c="' + t.id + '"]')) continue
+    const a = el('a', 'lim-ctab', t.label)
+    a.href = '#/collections/' + t.id
+    a.setAttribute('data-lim-c', t.id)
+    /* 차례는 시안대로 글 · 에디터 · 미디어 · 조회수 — Decap 것 앞에 놓습니다 */
+    list.insertBefore(a, list.children[i] || null)
+  }
+}
+
 function decorateNav() {
   const list = document.querySelector("[class*='AppHeaderNavList']")
   if (!list) return
+
+  collectionTabs(list)
 
   let tab = list.querySelector('.lim-views-tab')
   if (!tab) {
@@ -251,13 +313,26 @@ function decorateNav() {
   markNav()
 }
 
-/** 탭 눌림 표시. 지면이 열려 있는 동안만 켭니다. */
+/**
+ * 탭 눌림 표시. 조회수는 지면이 열려 있는 동안, 컬렉션은 주소를 보고 켭니다.
+ *
+ * ⚠ 조회수 지면이 떠 있으면 컬렉션 탭은 **둘 다 끕니다.** 주소는 여전히
+ *   `#/collections/…` 인데(그 지면은 화면을 덮기만 합니다) 그대로 두면
+ *   눌린 탭이 둘로 보입니다.
+ */
 function markNav() {
   const on = viewsPageOpen()
   const tab = document.querySelector('.lim-views-tab')
   if (tab) tab.classList.toggle('is-on', on)
   if (on) document.documentElement.setAttribute('data-lim-views', '1')
   else document.documentElement.removeAttribute('data-lim-views')
+
+  const m = /^#\/collections\/([^/?]+)/.exec(
+    (typeof location !== 'undefined' && location.hash) || '',
+  )
+  const where = m ? m[1] : ''
+  for (const a of document.querySelectorAll('.lim-ctab'))
+    a.classList.toggle('is-on', !on && a.getAttribute('data-lim-c') === where)
 }
 
 /*
@@ -485,6 +560,11 @@ function decorateList() {
   if (!inPostList()) {
     for (const n of document.querySelectorAll('.lim-thead, .lim-count'))
       n.remove()
+    /* 표를 두르던 판도 풉니다 — 지금은 React 가 감싸개를 새로 그려서
+       저절로 없어지지만, 그것에 기대면 언젠가 에디터 카드에 표 테두리가
+       둘러쳐집니다. */
+    for (const n of document.querySelectorAll('.lim-table'))
+      n.classList.remove('lim-table')
     return
   }
   const grid = document.querySelector("[class*='CardsGrid']")
@@ -498,11 +578,18 @@ function decorateList() {
     for (const c of COLS) head.appendChild(el('span', null, c))
     parent.insertBefore(head, grid)
   }
+  /* 머리 줄과 줄들을 한 판 안에 넣습니다 (시안). 감싸개는 Decap 이 클래스
+     없이 그린 div 라 CSS 에서 잡을 이름이 없어서, 여기서 붙입니다.
+     ⚠ React 는 이 div 에 className 을 주지 않으므로 덮어쓰지 않습니다. */
+  if (parent) parent.classList.add('lim-table')
 
   let count = 0
   for (const li of grid.children) {
     count += 1
-    const h2 = li.querySelector('h2')
+    /* ⚠ 검색결과에는 `h2` 가 **둘**입니다 — 앞엣것은 컬렉션 이름(「글」)이고
+         제목은 뒤엣것입니다. 그냥 첫 번째를 잡으면 줄마다 제목 자리에
+         「글」만 적히고 날짜·작성자가 빕니다 (실제로 그랬습니다). */
+    const h2 = li.querySelector("h2[class*='ListCardTitle']") || li.querySelector('h2')
     if (!h2) continue
 
     /* summary 는 h2 의 글자 노드입니다 (그 뒤에 아이콘 div 가 붙습니다) */
@@ -532,29 +619,63 @@ function decorateList() {
     spans[3].className = cells[3] === '초안' ? 'lim-draft' : 'lim-live'
   }
 
-  /* "128개" — 정렬 단추 옆. 목록이 걸러지면 같이 줄어듭니다. */
-  const controls = document.querySelector("[class*='CollectionControlsContainer']")
-  if (controls) {
-    let n = controls.querySelector('.lim-count')
+  /* "131개" — 제목 바로 옆입니다 (시안). 목록이 걸러지면 같이 줄어듭니다.
+     ⚠ 에디터 목록의 「3명」(editors.js 의 `.lim-ecnt`)과 **다른 이름**입니다.
+       같은 이름을 쓰면 손질 한 바퀴마다 서로를 지웁니다. */
+  const top = document.querySelector("[class*='CollectionTopRow']")
+  if (top) {
+    let n = top.querySelector('.lim-count')
     if (!n) {
       n = el('span', 'lim-count')
-      controls.appendChild(n) /* 정렬 단추 뒤 */
+      top.appendChild(n)
     }
     const text = count + '개'
     if (n.textContent !== text) n.textContent = text
   }
+}
 
-  /* 사이드바 컬렉션 줄에도 같은 숫자를 답니다 */
-  const link = document.querySelector("[class*='SidebarNavLink']")
-  if (link) {
-    let b = link.querySelector('.lim-n')
-    if (!b) {
-      b = el('span', 'lim-n')
-      link.appendChild(b)
-    }
-    const text = String(count)
-    if (b.textContent !== text) b.textContent = text
+/*
+  찾기 칸을 제목 줄로 옮깁니다.
+
+  Decap 은 찾기 칸을 **사이드바 안에** 그립니다(모든 컬렉션에서 검색).
+  컬렉션 탭이 머리띠로 올라가면서 사이드바에 남은 것이 이 칸뿐이라,
+  시안 자리(제목 줄 오른쪽 · 「정렬 기준」 왼쪽)로 옮기고 사이드바는
+  통째로 감춥니다.
+
+  ⚠ **React 가 그린 노드를 옮기는 것입니다.** 지우지는 않습니다 — 폼 필드를
+    「발행 설정」 모달로 옮기는 것과 같은 방법입니다 (layoutForm). React 는
+    사이드바를 걷을 때 `aside` 하나만 지우므로 빠져나간 이 칸을 따로 찾지
+    않습니다.
+
+  ⚠ **글 목록에서만 옮깁니다.** 에디터 목록에는 찾을 것이 둘뿐이라 시안에도
+    찾기 칸이 없습니다 — 그쪽에서는 「정렬 기준」 줄을 통째로 감춥니다
+    (index.html 의 `html[data-lim-collection='editors']`).
+*/
+const SEARCH_HINT = '제목·작성자로 찾기'
+
+function moveSearch() {
+  if (!inPostList()) return
+  const controls = document.querySelector(
+    "[class*='CollectionControlsContainer']",
+  )
+  if (!controls) return
+
+  let slot = controls.querySelector('.lim-find')
+  if (!slot) {
+    slot = el('div', 'lim-find')
+    controls.insertBefore(slot, controls.firstChild)
   }
+
+  /* ⚠ `aside` 를 꼭 붙이세요 — 사진 고르는 창에도 같은 이름의 칸이 있습니다 */
+  const box = document.querySelector("aside [class*='SearchContainer']")
+  if (box) {
+    /* 사이드바가 다시 그려진 것입니다 — 옛 칸은 버리고 새 것을 씁니다 */
+    slot.textContent = ''
+    slot.appendChild(box)
+  }
+
+  const input = slot.querySelector('input')
+  if (input && input.placeholder !== SEARCH_HINT) input.placeholder = SEARCH_HINT
 }
 
 /* -------------------------------------------------------------------
@@ -873,24 +994,6 @@ function waitForMenu() {
 }
 
 /*
-  우리가 직접 띄우는 한 줄. Decap 의 알림이 **안 뜨는 경우**에만 씁니다
-  (저장이 시작조차 안 됐을 때). 판정이 있는 것은 Decap 알림에 맡깁니다 —
-  같은 말을 두 곳에서 하면 언젠가 어긋납니다.
-*/
-let sayTimer = null
-function say(text) {
-  let box = document.querySelector('.lim-say')
-  if (!box) {
-    box = el('div', 'lim-say')
-    document.body.appendChild(box)
-  }
-  box.textContent = text
-  box.classList.add('is-on')
-  if (sayTimer) clearTimeout(sayTimer)
-  sayTimer = setTimeout(() => box.classList.remove('is-on'), 8000)
-}
-
-/*
   「저장하는 중…」.
 
   ⚠ **단추 글자만 바꾸지 말고 눌리지 않게 막으세요.** 안 막으면 기다리는
@@ -1188,8 +1291,11 @@ function pass() {
   try {
     routeFlag()
     decorateHeader()
+    headHeight()
     decorateNav()
     decorateList()
+    moveSearch()
+    editorsPass()
     layoutForm()
     editorTheme()
     statusPill()
@@ -1402,6 +1508,10 @@ export function startSkin() {
     attributeFilter: ['aria-checked', 'class'],
     characterData: true,
   })
+
+  /* 폰을 돌리면 머리띠가 한 줄 ↔ 두 줄로 바뀝니다 — 그 높이에 기대는 것이
+     있어서(--lim-head) 다시 잽니다. DOM 은 안 바뀌니 감시자로는 못 잡습니다. */
+  window.addEventListener('resize', () => setTimeout(pass, 0))
 
   /* 주소가 바뀌는 것(목록 ↔ 글 ↔ 검색결과)도 따로 챙깁니다 */
   window.addEventListener('hashchange', () => {
