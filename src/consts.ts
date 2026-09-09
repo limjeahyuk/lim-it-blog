@@ -6,7 +6,20 @@
 
 import authorsData from './data/authors.json'
 
-export const SITE_TITLE = "lim's World"
+export const SITE_TITLE = 'lim-it'
+
+/**
+ * 홈 `<title>` 과 홈 화면 아이콘 이름에만 붙는 설명.
+ *
+ * ⚠ **사이트 이름이 아닙니다.** `og:site_name` 과 JSON-LD 의 `name` 은
+ *   `SITE_TITLE` 만 씁니다 — 구글이 검색 결과에 사이트 이름을 표시할 때
+ *   도메인(`lim-it`)과 같은 값이어야 그대로 씁니다.
+ *
+ * 홈만 붙이는 이유: 이름이 여섯 글자뿐이라 `<title>` 이 `lim-it` 하나면
+ * 검색 결과에서 뭐 하는 곳인지 알 수가 없습니다. 글 지면은 제목이 이미
+ * 그 일을 하고 있어서 안 붙입니다 (`<글 제목> — lim-it`).
+ */
+export const SITE_TAGLINE = '개발 매거진'
 export const SITE_DESCRIPTION =
   '만들면서 부딪힌 것들을 적어둡니다. 왜 그렇게 고쳤는지, 그래서 뭐가 터졌는지.'
 export const SITE_URL = 'https://lim-it.vercel.app'

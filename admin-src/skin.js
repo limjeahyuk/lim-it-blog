@@ -12,7 +12,7 @@
   - 편집 화면은 필드 아홉 개가 **한 줄로 쭉** 놓입니다. 시안처럼 왼쪽(제목·주소·
     본문) / 오른쪽 카드(나머지)로 가르려면 감싸는 상자가 있어야 하는데,
     grid 로는 본문이 세로로 길어서 오른쪽 칸이 같이 늘어납니다.
-  - 머리글의 "lim's World | Admin" 과 테마 단추는 Decap 에 아예 없습니다.
+  - 머리글의 "lim-it | Admin" 과 테마 단추는 Decap 에 아예 없습니다.
 
   ⚠ React 가 그린 DOM 을 옮깁니다. 지켜야 할 것 두 가지:
 
@@ -201,7 +201,7 @@ function decorateHeader() {
   if (!content || content.querySelector('.lim-brand')) return
 
   const brand = el('div', 'lim-brand')
-  brand.appendChild(el('b', null, "lim's World"))
+  brand.appendChild(el('b', null, 'lim-it'))
   brand.appendChild(el('i'))
   brand.appendChild(el('span', null, 'Admin'))
   content.insertBefore(brand, content.firstChild)
