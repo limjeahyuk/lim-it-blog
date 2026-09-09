@@ -640,16 +640,15 @@
         border-bottom: 0 !important;
       }
       /*
-        마우스를 올린 줄은 살짝 떠오릅니다 (시안). 판이 `overflow: hidden`
-        이 아니라서 그림자가 안 잘립니다 — ⚠ 판에 그걸 걸면 이 그림자가
-        네모로 잘립니다.
+        마우스를 올린 줄은 바탕색만 바뀝니다.
+
+        ⚠ **모서리를 둥글리지 마세요.** 떠오르는 것처럼 보이라고 radius 와
+          그림자를 줬다가 걷어냈습니다 — 줄이 판의 좌우 끝까지 닿아 있어서,
+          둥근 모서리가 판 테두리와 어긋나 한 칸만 안으로 접힌 것처럼
+          보입니다.
       */
       [class*='ListCard']:hover {
         background-color: var(--a-surface) !important;
-        border-radius: 10px !important;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1) !important;
-        position: relative;
-        z-index: 1;
       }
       [class*='ListCardLink'] {
         display: block !important;
