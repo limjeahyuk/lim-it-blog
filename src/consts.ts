@@ -12,6 +12,27 @@ export const SITE_DESCRIPTION =
 export const SITE_URL = 'https://lim-it.vercel.app'
 
 /**
+ * 검색엔진 소유확인 코드. 각 도구에서 받은 문자열만 여기 적으면
+ * `BaseHead` 가 메타태그를 답니다. **빈 값이면 태그를 아예 안 답니다** —
+ * 빈 태그가 붙어 있으면 확인이 실패한 것으로 잡힙니다.
+ *
+ * ⚠ **확인이 끝나도 지우지 마세요.** 세 곳 다 주기적으로 다시 확인하고,
+ *   사라져 있으면 속성이 해제되어 색인 현황과 검색어 데이터를 못 봅니다.
+ *   `vercel.app` 서브도메인이라 DNS 방식을 못 써서 이 태그가 유일한 끈입니다.
+ *   커스텀 도메인으로 옮기면 그때는 DNS 로 갈아타고 빼도 됩니다.
+ *
+ * 받는 곳:
+ *   google — search.google.com/search-console (이미 확인됨)
+ *   naver  — searchadvisor.naver.com  → 웹마스터 도구 → 사이트 등록
+ *   bing   — bing.com/webmasters      → Google Search Console 에서 가져오기
+ */
+export const SITE_VERIFICATION = {
+  google: 'Ffob80AWXLpXej-uyeBIuTQ0gZaRF8ifUQQuxlJBjhM',
+  naver: '',
+  bing: '',
+}
+
+/**
  * 사이트 주인. 글의 저자(AUTHORS)와는 다른 것입니다.
  *
  * 화면에 남은 건 Contact 의 링크 두 개와 맨 아래 저작권 줄뿐입니다 —

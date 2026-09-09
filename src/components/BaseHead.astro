@@ -1,7 +1,12 @@
 ---
 import '../styles/global.css'
 import { Font } from 'astro:assets'
-import { OWNER, SITE_DESCRIPTION, SITE_TITLE } from '../consts'
+import {
+  OWNER,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+  SITE_VERIFICATION,
+} from '../consts'
 
 interface Props {
   title: string
@@ -13,6 +18,8 @@ interface Props {
   updatedDate?: Date
   /** 글을 쓴 저자 이름 (화면 byline 과 같은 값). 없으면 사이트 주인으로 떨어집니다. */
   authorName?: string
+  /** 검색엔진에 이 페이지를 넣지 않습니다. 내용이 브라우저에서 채워지는 지면용. */
+  noindex?: boolean
 }
 
 const {
@@ -23,6 +30,7 @@ const {
   pubDate,
   updatedDate,
   authorName,
+  noindex = false,
 } = Astro.props as Props
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
@@ -99,16 +107,27 @@ const schema =
 <meta name="generator" content={Astro.generator} />
 
 {/*
-  Google Search Console 소유권 확인. 확인이 끝난 뒤에도 지우면 안 됩니다 —
-  구글이 주기적으로 다시 확인하고, 사라져 있으면 속성이 해제됩니다.
-  vercel.app 서브도메인이라 DNS 방식을 못 써서 이 태그로 잡았습니다.
+  검색엔진 소유권 확인. 값은 `consts.ts` 의 SITE_VERIFICATION 에 있습니다 —
+  ⚠ 확인이 끝난 뒤에도 지우면 안 됩니다 (거기 이유를 적어 뒀습니다).
+  빈 값은 태그를 아예 안 답니다. 빈 태그는 확인 실패로 잡힙니다.
 */}
-<meta
-  name="google-site-verification"
-  content="Ffob80AWXLpXej-uyeBIuTQ0gZaRF8ifUQQuxlJBjhM"
-/>
+{SITE_VERIFICATION.google && (
+  <meta name="google-site-verification" content={SITE_VERIFICATION.google} />
+)}
+{SITE_VERIFICATION.naver && (
+  <meta name="naver-site-verification" content={SITE_VERIFICATION.naver} />
+)}
+{SITE_VERIFICATION.bing && (
+  <meta name="msvalidate.01" content={SITE_VERIFICATION.bing} />
+)}
 
 <Font cssVariable="--font-pretendard" preload />
+
+{/*
+  ⚠ `follow` 는 남겨 둡니다 — 이 지면을 색인하지 말라는 것이지
+  여기서 나가는 링크를 따라가지 말라는 것이 아닙니다.
+*/}
+{noindex && <meta name="robots" content="noindex, follow" />}
 
 <link rel="canonical" href={canonicalURL} />
 

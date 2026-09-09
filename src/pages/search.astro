@@ -12,7 +12,13 @@ import BaseLayout from '../components/BaseLayout.astro'
 import { AUTHORS } from '../consts'
 ---
 
-<BaseLayout title="검색" description="글 검색">
+{/*
+  ⚠ 색인에 넣지 않습니다. 결과가 브라우저에서 채워지는 지면이라 검색엔진이
+    받아 가는 HTML 에는 빈 입력칸뿐입니다 — 그대로 색인되면 내용 없는 지면이
+    하나 늘고, 검색 결과에서 그게 글 대신 뜹니다.
+    `astro.config.mjs` 의 사이트맵 filter 와 한 쌍입니다.
+*/}
+<BaseLayout title="검색" description="글 검색" noindex>
   <div class="wrap">
     <h1>검색</h1>
 

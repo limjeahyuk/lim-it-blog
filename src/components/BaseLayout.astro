@@ -14,6 +14,8 @@ interface Props {
   pubDate?: Date
   updatedDate?: Date
   authorName?: string
+  /** 검색엔진에 이 페이지를 넣지 않습니다 (BaseHead 로 그대로 넘어갑니다). */
+  noindex?: boolean
 }
 
 const head = Astro.props as Props
