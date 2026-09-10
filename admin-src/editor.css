@@ -402,16 +402,36 @@
   font-size: inherit;
 }
 
+/*
+  ⚠ **`table-layout: fixed` 입니다** (2026-09-10). 기본값(auto)은 칸 너비를
+    **내용 길이가** 정해서, 글자를 칠 때마다 칸이 들썩이고 짧은 칸은 쥐어짜집니다.
+    고정으로 두면 칸은 똑같이 나뉘고 넘치는 글은 다음 줄로 넘어갑니다.
+
+  ⚠ **블로그(`global.css` 의 `.prose table`)와 같이 고치세요.** 한쪽만 바꾸면
+    편집기에서 본 모양과 올라간 글이 갈라집니다.
+
+  ⚠ 칸 너비를 준 표는 `<colgroup>` 이 붙어 그 값으로 섭니다 (table.js).
+*/
 .lim-md-editor .ProseMirror table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.9375rem;
+}
+
+/* 표가 지면보다 넓어지면 표만 옆으로 흐릅니다 (블로그의 `.table-wrap` 자리) */
+.lim-md-editor .ProseMirror .tableWrapper {
+  overflow-x: auto;
 }
 
 .lim-md-editor .ProseMirror :where(th, td) {
   border: 1px solid var(--a-border);
   padding: 0.5em 0.75em;
   text-align: left;
+  vertical-align: top;
+  /* ⚠ 주소처럼 띄어쓰기 없는 긴 글자도 칸 안에서 끊습니다 — 안 그러면 그 칸
+       하나가 표를 통째로 밀어냅니다. */
+  overflow-wrap: anywhere;
 }
 
 .lim-md-editor .ProseMirror th {
@@ -581,6 +601,41 @@ html[data-theme='dark'] .lim-md-editor .ProseMirror mark {
 
 .lim-tbl-item.is-danger {
   color: var(--a-danger, #fe6d6d);
+}
+
+/*
+  칸 너비 손잡이 — 열 경계에 선 세로 막대.
+
+  ⚠ **누르는 자리는 12px, 보이는 선은 2px 입니다.** 선만 두면 손가락으로 못
+    잡습니다 (사진 손잡이와 같은 방법 · resize.js).
+  ⚠ **`touch-action: none` 이 있어야** 폰에서 끌 때 지면이 같이 안 움직입니다.
+*/
+.lim-tbl-size {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translateX(-50%);
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.lim-tbl-size::after {
+  content: '';
+  width: 2px;
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--a-accent);
+  opacity: 0;
+}
+
+.lim-tbl-size:hover::after,
+.lim-tbl-size.is-on::after {
+  opacity: 1;
 }
 
 /* ── 사진 크기 손잡이 (resize.js) ─────────────────────

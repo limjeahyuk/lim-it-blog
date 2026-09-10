@@ -29,8 +29,8 @@
 import { Editor, Extension, Mark, wrappingInputRule } from '@tiptap/core'
 import { Markdown } from '@tiptap/markdown'
 import Image from '@tiptap/extension-image'
-import { TableKit } from '@tiptap/extension-table'
-import { TableGrips } from './table.js'
+import { TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
+import { LimTable, TableGrips } from './table.js'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
 import StarterKit from '@tiptap/starter-kit'
 import { BLOCKS, blockAt, setBlock } from './blocks.js'
@@ -234,7 +234,8 @@ export const EXTENSIONS = makeExtensions()
 /**
  * tiptap 확장 묶음.
  *
- * ⚠ **확장을 뺄 때 조심하세요.** 표(`TableKit`)를 안 넣었더니 표가 있는 글을
+ * ⚠ **확장을 뺄 때 조심하세요.** 표(`LimTable`·`TableRow`·`TableHeader`·
+ *   `TableCell`)를 안 넣었더니 표가 있는 글을
  *   열었다 저장할 때 표가 통째로 사라졌습니다. StarterKit 에 없는 것은 직접
  *   넣어야 합니다.
  */
@@ -248,7 +249,16 @@ export function makeExtensions({ pickImage, pickLink, upload } = {}) {
     LimImage,
     /* 사진 가장자리를 끌어 크기를 바꾸는 손잡이 (resize.js) */
     ImageGrips,
-    TableKit,
+    /*
+      ⚠ **`TableKit` 을 쓰지 않고 넷을 직접 넣습니다.** 키트는 `Table` 을
+        자기 것으로 넣는데, 우리는 칸 너비를 저장하려고 그 자리에 `LimTable`
+        을 넣어야 합니다 (table.js). **넷 중 하나라도 빠지면 표가 통째로
+        사라집니다** — 예전에 그렇게 잃은 적이 있습니다.
+    */
+    LimTable,
+    TableRow,
+    TableHeader,
+    TableCell,
     TableGrips,
     TaskList,
     TaskItem.configure({ nested: true }),

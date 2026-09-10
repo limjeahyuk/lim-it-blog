@@ -27,8 +27,10 @@
     2026-09-07 에 「합치기」를 뺐습니다. 다만 **옛 글에 손으로 쓴 HTML 표**가
     있을 수 있어서, 자리를 잴 때는 합쳐진 칸도 견디게 해 뒀습니다.
 */
-import { Extension } from '@tiptap/core'
+import { Extension, generateHTML } from '@tiptap/core'
+import { Table, renderTableToMarkdown } from '@tiptap/extension-table'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { htmlExtensions } from './align.js'
 import {
   CellSelection,
   TableMap,
@@ -43,6 +45,10 @@ import {
 /** 손잡이 두께(px)와 표에서 띄우는 간격(px). */
 const GRIP = 14
 const GAP = 4
+
+/** 칸 너비 손잡이의 누르는 자리(px)와 더 못 줄이는 폭(px). */
+const SIZER = 12
+const MIN_COL = 48
 
 const key = new PluginKey('limTableGrips')
 
@@ -127,10 +133,75 @@ function repCell(view, info, map, index, axis) {
   return null
 }
 
+/**
+ * 화면의 `<col>` 을 문서와 맞춥니다.
+ *
+ * ⚠ **되돌리기로 너비가 사라져도 `<col>` 에 옛 `width` 가 남습니다.**
+ *   라이브러리는 너비가 없어지면 `min-width` 만 덮어쓰고 `width` 를 안 지웁니다
+ *   (`TableView.updateColumns` — 재현해서 확인했습니다). 그러면 문서에는 너비가
+ *   없는데 화면은 그대로라, ⌘Z 를 눌러도 아무 일도 안 일어난 것처럼 보입니다.
+ */
+function syncCols(tableEl, node) {
+  const colgroup = tableEl.querySelector('colgroup')
+  const row = node && node.firstChild
+  if (!colgroup || !row) return
+  let i = 0
+  for (let c = 0; c < row.childCount; c += 1) {
+    const cell = row.child(c)
+    const span = cell.attrs.colspan || 1
+    for (let j = 0; j < span; j += 1, i += 1) {
+      const el = colgroup.children[i]
+      if (!el) continue
+      const w = cell.attrs.colwidth && cell.attrs.colwidth[j]
+      if (!w && el.style.width) el.style.removeProperty('width')
+    }
+  }
+}
+
 /** 문서 안 칸의 위치 → 그 자리를 가리키는 resolved position. */
 function cellPos(state, info, map, row, col) {
   return state.doc.resolve(info.start + map.map[row * map.width + col])
 }
+
+/* -------------------------------------------------------------------
+   칸 너비를 저장하는 법.
+
+   ⚠ **GFM 표에는 너비를 적을 자리가 없습니다.** `| 가 | 나 |` 가 전부입니다.
+     그래서 **너비를 준 표만** HTML 한 덩어리로 내보냅니다 — 사진 크기를
+     `<img width>` 로, 정렬을 `<div class="ta-center">` 로 내보내는 것과 같은
+     방식입니다 (§6-2). 너비를 안 준 표는 하나도 안 건드립니다 (GFM 그대로).
+
+   ⚠ **`.table-wrap` 으로 감쌉니다.** 블로그는 빌드할 때 표를 그 판으로 감싸서
+     좁은 화면에서 가로로만 스크롤되게 하는데(astro.config.mjs), 그 일을 하는
+     rehype 플러그인은 **마크다운이 만든 표만** 봅니다. 손으로 적어 넣은 HTML
+     표는 그냥 지나쳐서, 감싸지 않으면 폰에서 지면이 통째로 옆으로 밀립니다
+     (빌드해서 확인했습니다).
+
+   ⚠ **되읽는 것은 tiptap 이 알아서 합니다.** 칸에 `colwidth="260"` 이 그대로
+     붙어 나가고, `parseHTML` 이 그것을 도로 읽습니다 (재 보고 확인).
+   ------------------------------------------------------------------- */
+
+/**
+ * 칸 너비를 하나라도 준 표인가.
+ *
+ * ⚠ **여기 오는 `node` 는 ProseMirror 노드가 아니라 JSON 입니다** — `content`
+ *   가 배열이고 `descendants()` 같은 것이 없습니다 (`node.descendants is not a
+ *   function` 으로 한 번 걸렸습니다). 사진(`LimImage`)·정렬(`align.js`)의
+ *   `renderMarkdown` 도 `attrs`·`content` 만 보고 있습니다.
+ */
+function hasColWidth(node) {
+  if (!node) return false
+  if (node.attrs && node.attrs.colwidth) return true
+  return Array.isArray(node.content) && node.content.some(hasColWidth)
+}
+
+export const LimTable = Table.extend({
+  renderMarkdown(node, h) {
+    if (!hasColWidth(node)) return renderTableToMarkdown(node, h)
+    const html = generateHTML({ type: 'doc', content: [node] }, htmlExtensions())
+    return `<div class="table-wrap">${html}</div>`
+  },
+})
 
 class GripLayer {
   constructor(view) {
@@ -145,19 +216,31 @@ class GripLayer {
     */
     this.open = null
     this.timer = null
+    /* 지금 끌고 있는 칸 너비 (null 이면 안 끄는 중). */
+    this.sizing = null
 
     this.root = document.createElement('div')
     this.root.className = 'lim-tbl'
     if (this.host) this.host.appendChild(this.root)
 
     this.onMove = (e) => {
+      if (this.sizing) return
       const el = e.target instanceof Element ? e.target.closest('table') : null
       if (el !== this.hover) {
         this.hover = el
         this.schedule()
       }
     }
-    this.onLeave = () => {
+
+    /*
+      ⚠ **손잡이 위로 옮겨간 것은 "나간 것"이 아닙니다.** 손잡이는 본문
+        (`.ProseMirror`) 위에 겹쳐 놓은 판이지 그 자식이 아니라서, 잡으러 가는
+        순간 본문에 `mouseleave` 가 납니다 — 그대로 지우면 손잡이가 손끝에서
+        사라집니다 (사진 손잡이에서 실제로 그랬습니다 · resize.js).
+    */
+    this.onLeave = (e) => {
+      if (this.sizing) return
+      if (e && e.relatedTarget && this.root && this.root.contains(e.relatedTarget)) return
       if (!this.hover) return
       this.hover = null
       this.schedule()
@@ -213,6 +296,8 @@ class GripLayer {
   /** 표 하나를 골라 그 위에 손잡이를 그립니다. */
   draw() {
     if (!this.root) return
+    /* 너비를 끄는 중에는 다시 그리지 않습니다 — 잡고 있던 손잡이가 사라집니다. */
+    if (this.sizing) return
     this.root.textContent = ''
 
     if (!this.view.editable) return
@@ -234,6 +319,7 @@ class GripLayer {
     if (!info) return
 
     const map = TableMap.get(info.node)
+    syncCols(tableEl, info.node)
     const base = this.host.getBoundingClientRect()
     const box = tableEl.getBoundingClientRect()
     const top = box.top - base.top
@@ -261,6 +347,14 @@ class GripLayer {
         left: left - GRIP - GAP,
         width: GRIP,
       })
+    }
+
+    /* 칸 너비 — 열 경계마다 세로 손잡이. */
+    for (let c = 0; c < map.width; c += 1) {
+      const dom = repCell(this.view, info, map, c, 'col')
+      if (!dom) continue
+      const r = dom.getBoundingClientRect()
+      this.addSizer(c, { left: r.right - base.left, top, height: box.height })
     }
 
     this.addPlus('col', info, map, {
@@ -319,6 +413,149 @@ class GripLayer {
       this.cmd(axis === 'col' ? 'addColumnAfter' : 'addRowAfter')
     })
     this.root.appendChild(el)
+  }
+
+  /* ---------------------------------------------------------------
+     칸 너비 손잡이.
+
+     ⚠ **prosemirror-tables 의 `columnResizing` 을 안 씁니다.** 그쪽은
+       `mousedown`·`mousemove` 만 듣습니다 — iOS 는 손가락으로 끌 때 그 이벤트를
+       안 내주므로 **폰에서 아예 안 됩니다.** 글은 대부분 폰에서 씁니다(§6-2).
+       그래서 사진 손잡이(resize.js)와 같은 길(Pointer Events)로 직접 답니다.
+
+     ⚠ **끄는 동안에는 문서를 안 건드립니다.** `<col>` 의 style 만 바꿔서 보여
+       주고, 손을 뗄 때 **한 번** 속성(`colwidth`)으로 넣습니다 — 움직일 때마다
+       고치면 되돌리기 한 번에 1px 씩 돌아갑니다.
+
+     ⚠ **움직인 거리가 아니라 포인터가 있는 자리로 폭을 냅니다** (resize.js 와
+       같은 이유). 왼쪽 가장자리는 끄는 동안 안 움직입니다 — 넓히면 오른쪽
+       열들이 줄어들 뿐입니다.
+     --------------------------------------------------------------- */
+
+  addSizer(col, at) {
+    const el = document.createElement('button')
+    el.className = 'lim-tbl-size'
+    el.type = 'button'
+    el.dataset.col = String(col)
+    el.title = '끌어서 칸 너비 바꾸기'
+    el.setAttribute('aria-label', col + 1 + '번째 칸 너비')
+    el.style.left = at.left + 'px'
+    el.style.top = at.top + 'px'
+    el.style.height = at.height + 'px'
+    el.style.width = SIZER + 'px'
+    el.addEventListener('pointerdown', (e) => this.startSize(e, col))
+    this.root.appendChild(el)
+  }
+
+  startSize(e, col) {
+    if (e.button > 0) return
+    const tableEl = this.hover || tableOfSelection(this.view)
+    if (!tableEl) return
+    const info = tableAt(this.view, tableEl)
+    if (!info) return
+    const map = TableMap.get(info.node)
+    const dom = repCell(this.view, info, map, col, 'col')
+    if (!dom) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    const r = dom.getBoundingClientRect()
+    this.open = null
+    this.sizing = {
+      col,
+      tableEl,
+      info,
+      map,
+      handle: e.currentTarget,
+      base: this.host.getBoundingClientRect(),
+      leftEdge: r.left,
+      grab: e.clientX - r.right,
+      width: Math.round(r.width),
+    }
+
+    this.onSizeMove = (ev) => this.moveSize(ev)
+    this.onSizeUp = (ev) => this.endSize(ev)
+    e.currentTarget.setPointerCapture(e.pointerId)
+    e.currentTarget.addEventListener('pointermove', this.onSizeMove)
+    e.currentTarget.addEventListener('pointerup', this.onSizeUp)
+    e.currentTarget.addEventListener('pointercancel', this.onSizeUp)
+    e.currentTarget.classList.add('is-on')
+  }
+
+  moveSize(e) {
+    const d = this.sizing
+    if (!d) return
+    const width = Math.max(MIN_COL, Math.round(e.clientX - d.grab - d.leftEdge))
+    d.width = width
+    this.previewSize(width)
+    /* 손잡이도 새 경계로 옮깁니다 — 안 옮기면 손끝에서 뒤처집니다. */
+    if (d.handle) d.handle.style.left = d.leftEdge - d.base.left + width + 'px'
+  }
+
+  /** 보여 주기만 합니다 — `TableView.updateColumns` 와 같은 규칙입니다. */
+  previewSize(width) {
+    const d = this.sizing
+    const colgroup = d.tableEl.querySelector('colgroup')
+    if (!colgroup) return
+    const one = colgroup.children[d.col]
+    if (one) {
+      one.style.removeProperty('min-width')
+      one.style.width = width + 'px'
+    }
+    const widths = [...colgroup.children].map((c) => parseFloat(c.style.width) || 0)
+    if (widths.every((w) => w > 0)) {
+      d.tableEl.style.removeProperty('min-width')
+      d.tableEl.style.width = widths.reduce((a, b) => a + b, 0) + 'px'
+    }
+  }
+
+  endSize(e) {
+    const d = this.sizing
+    if (!d) return
+    const el = e.currentTarget
+    if (el) {
+      el.removeEventListener('pointermove', this.onSizeMove)
+      el.removeEventListener('pointerup', this.onSizeUp)
+      el.removeEventListener('pointercancel', this.onSizeUp)
+      el.classList.remove('is-on')
+      try {
+        el.releasePointerCapture(e.pointerId)
+      } catch {
+        /* 이미 놓였으면 그만입니다 */
+      }
+    }
+    this.sizing = null
+    this.applySize(d)
+    this.schedule()
+  }
+
+  /*
+    칸에 `colwidth` 를 넣습니다.
+
+    ⚠ **합쳐진 칸을 견뎌야 합니다.** 옛 글에 손으로 쓴 HTML 표가 있을 수
+      있습니다(위). 격자 여러 자리에 같은 칸이 들어 있으므로 **시작하는 줄에서만**
+      쓰고, 그 칸이 몇 번째 열에서 시작하는지 보고 안쪽 자리를 고릅니다.
+  */
+  applySize(d) {
+    const { state } = this.view
+    const tr = state.tr
+    for (let row = 0; row < d.map.height; row += 1) {
+      const idx = row * d.map.width + d.col
+      const pos = d.map.map[idx]
+      if (row > 0 && d.map.map[idx - d.map.width] === pos) continue
+      const abs = d.info.start + pos
+      const cell = state.doc.nodeAt(abs)
+      if (!cell) continue
+      const span = cell.attrs.colspan || 1
+      const widths = cell.attrs.colwidth ? cell.attrs.colwidth.slice() : new Array(span).fill(0)
+      const at = d.col - d.map.colCount(pos)
+      if (at < 0 || at >= widths.length) continue
+      if (widths[at] === d.width) continue
+      widths[at] = d.width
+      tr.setNodeMarkup(abs, undefined, Object.assign({}, cell.attrs, { colwidth: widths }))
+    }
+    if (tr.docChanged) this.view.dispatch(tr)
   }
 
   /** 손잡이를 누르면 그 줄을 고르고 메뉴를 엽니다. */

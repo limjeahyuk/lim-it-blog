@@ -43,6 +43,11 @@ export function setAlignExtensions(list) {
   EXTENSIONS_FOR_HTML = list
 }
 
+/** 같은 묶음을 표(table.js)도 씁니다 — 칸 너비를 준 표는 HTML 로 나갑니다. */
+export function htmlExtensions() {
+  return EXTENSIONS_FOR_HTML
+}
+
 export const Align = Node.create({
   name: 'align',
   group: 'block',

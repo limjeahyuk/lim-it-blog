@@ -541,8 +541,20 @@ html.has-copy .prose .code-copy {
   overflow-x: auto;
 }
 
+/*
+  ⚠ **`table-layout: fixed` 입니다** (2026-09-10). 기본값(auto)은 칸 너비를
+    내용 길이가 정해서, 긴 문장이 든 칸 하나가 나머지를 쥐어짭니다. 고정으로
+    두면 칸이 똑같이 나뉘고 넘치는 글은 다음 줄로 넘어갑니다.
+
+  ⚠ **`/admin` 편집기(`admin-src/editor.css`)와 같이 고치세요** — 한쪽만
+    바꾸면 쓸 때와 올린 뒤가 갈라집니다 (§6-2).
+
+  ⚠ 칸 너비를 준 표는 HTML 로 나가면서 `<colgroup>` 과 인라인 `width` 를
+    달고 옵니다 (§6-2). 그때는 이 `width: 100%` 를 그 값이 이깁니다.
+*/
 .prose table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.9375rem;
 }
@@ -552,6 +564,9 @@ html.has-copy .prose .code-copy {
   border: 1px solid var(--border);
   padding: 0.5em 0.75em;
   text-align: left;
+  vertical-align: top;
+  /* ⚠ 주소처럼 띄어쓰기 없는 긴 글자도 칸 안에서 끊습니다 */
+  overflow-wrap: anywhere;
 }
 
 .prose th {
