@@ -41,7 +41,7 @@ export const SITE_URL = 'https://lim-it.vercel.app'
  */
 export const SITE_VERIFICATION = {
   google: 'Ffob80AWXLpXej-uyeBIuTQ0gZaRF8ifUQQuxlJBjhM',
-  naver: '',
+  naver: 'be8b888da1692a83fd730a641bfcbdd31da675cb',
   bing: '',
 }
 
