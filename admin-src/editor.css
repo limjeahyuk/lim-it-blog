@@ -19,6 +19,28 @@
 }
 
 /*
+  도구 띠는 **위에 붙습니다** (2026-09-10). 긴 글을 쓰다 보면 띠가 화면 위로
+  나가서, 굵게 하나 넣으려고 맨 위까지 올라갔다 내려와야 했습니다.
+
+  ⚠ **`top: 0` 이 맞습니다.** 스크롤하는 판(`PreviewPaneContainer-
+    ControlPaneContainer`)이 Decap 의 위 띠(66px) **아래에서 시작합니다** —
+    재 보면 그 판의 위쪽이 화면 66px 자리입니다. 여기에 66px 을 또 주면
+    도구 띠가 그만큼 내려앉습니다.
+
+  ⚠ **`.lim-md` 안에서만 붙어 있습니다.** 본문이 끝나면 같이 올라갑니다 —
+    아래 「발행 설정」까지 따라다니지 않습니다.
+
+  ⚠ **z-index 는 표·사진 손잡이(2)보다 높아야 합니다.** 낮으면 손잡이가
+    도구 띠 위로 비쳐 올라옵니다.
+*/
+.lim-md-head {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background-color: var(--a-surface);
+}
+
+/*
   ⚠ **줄바꿈합니다.** 넘치는 단추를 "..." 안으로 숨기지 마세요 — Toast 를
     쓰던 동안 제일 자주 쓰는 「사진」이 거기 숨어서 매번 두 번 눌렀습니다.
 */
@@ -559,4 +581,67 @@ html[data-theme='dark'] .lim-md-editor .ProseMirror mark {
 
 .lim-tbl-item.is-danger {
   color: var(--a-danger, #fe6d6d);
+}
+
+/* ── 사진 크기 손잡이 (resize.js) ─────────────────────
+   ⚠ 표 손잡이(.lim-tbl)와 같은 자리에 얹힙니다 — 둘 다 `.lim-md-editor` 의
+     자식이고 z-index 는 도구 띠(.lim-md-head · 5)보다 낮아야 합니다. */
+.lim-img {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/*
+  ⚠ **누르는 자리는 18px, 보이는 것은 6px 입니다.** 6px 짜리 막대만 두면
+    폰에서 손가락으로 못 잡습니다 — 넓은 단추를 투명하게 두고 안에 막대를
+    그립니다.
+  ⚠ **`touch-action: none` 이 있어야** 폰에서 끌 때 지면이 같이 스크롤되지
+    않습니다.
+*/
+.lim-img-grip {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translateX(-50%);
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.lim-img-grip::after {
+  content: '';
+  width: 6px;
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--a-accent);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.3);
+  opacity: 0.8;
+}
+
+.lim-img-grip:hover::after,
+.lim-img-grip:active::after {
+  opacity: 1;
+}
+
+/* 끄는 동안만 뜹니다 — 고른 뒤의 숫자는 도구 띠 아래 「사진 크기」에 있습니다 */
+.lim-img-size {
+  position: absolute;
+  transform: translate(-100%, -100%);
+  margin: -6px 0 0 -6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background-color: var(--a-accent);
+  color: var(--a-accent-fg);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }

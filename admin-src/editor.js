@@ -37,6 +37,7 @@ import { BLOCKS, blockAt, setBlock } from './blocks.js'
 import { BlockShortcuts, ImeShortcuts, ToolShortcuts } from './shortcuts.js'
 import { ALIGNS, Align, setAlignExtensions } from './align.js'
 import { ImageUpload, imagesIn, readCloudinary, uploadImage } from './upload.js'
+import { ImageGrips, boxWidth } from './resize.js'
 import { registerPort } from './drafts.js'
 
 /* -------------------------------------------------------------------
@@ -245,6 +246,8 @@ export function makeExtensions({ pickImage, pickLink, upload } = {}) {
       link: { openOnClick: false },
     }),
     LimImage,
+    /* 사진 가장자리를 끌어 크기를 바꾸는 손잡이 (resize.js) */
+    ImageGrips,
     TableKit,
     TableGrips,
     TaskList,
@@ -649,10 +652,17 @@ function registerWidget(CMS, h) {
      이미 스물셋입니다.
      --------------------------------------------------------------- */
 
-  /** 사진 크기의 기준이 되는 본문 폭. 편집기 안쪽 폭(좌우 여백 뺀 것)입니다. */
+  /*
+    사진 크기의 기준이 되는 본문 폭 — 좌우 여백을 뺀 안쪽 폭입니다.
+
+    ⚠ **손잡이(resize.js)와 같은 함수를 씁니다.** 둘이 다른 값을 쓰면 끌어서
+      100% 를 만들어도 슬라이더는 97% 라고 적습니다. 예전에는 여기서 28px 을
+      빼고 있었는데, 표 손잡이 때문에 여백이 14 → 22px 로 넓어진(2026-09-07)
+      뒤로 16px 이 어긋나 있었습니다 — 「100%」가 가득이 아니었습니다.
+  */
   P.contentWidth = function () {
     const dom = this.editor && this.editor.view && this.editor.view.dom
-    const w = dom ? dom.clientWidth - 28 : 0
+    const w = boxWidth(dom)
     return w > 80 ? w : 640
   }
 
@@ -1094,9 +1104,20 @@ function registerWidget(CMS, h) {
     return h(
       'div',
       { className: (p.classNameWrapper || '') + ' lim-md' },
-      h('div', { className: 'lim-md-bar' }, groups),
-      palette,
-      this.renderContext(),
+      /*
+        도구 띠·색판·「고른 것」 줄을 한 덩어리로 묶습니다. 이 덩어리가 위에
+        붙습니다 (`.lim-md-head` · position: sticky).
+
+        ⚠ **셋을 따로 두면 안 됩니다.** 아래로 내려가서 사진을 골랐을 때
+          「사진 크기」 줄이 저 위 제자리에 그려져서 화면 밖에 있게 됩니다.
+      */
+      h(
+        'div',
+        { className: 'lim-md-head' },
+        h('div', { className: 'lim-md-bar' }, groups),
+        palette,
+        this.renderContext()
+      ),
       raw && this.state.uploading
         ? h(
             'p',
