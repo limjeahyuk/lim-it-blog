@@ -1,0 +1,80 @@
+---
+/**
+ * 사이트 로고 — 필기체 워드마크. 글자가 아니라 그림입니다.
+ *
+ * ⚠ 한 장으로는 안 됩니다. 워드마크 색이 #1a1a1a / #e8eaed 로 박혀 있어서
+ *   한 장만 쓰면 한쪽 테마에서 반드시 배경에 묻힙니다. 그래서 테마마다
+ *   한 장씩 두고 CSS 로 갈아 끼웁니다 — `data-theme` 은 BaseHead 의
+ *   인라인 스크립트가 **페인트 전에** 붙이니 깜빡이지 않습니다.
+ *
+ * ⚠ SVG 로 못 뽑았습니다. 받은 원본이 래스터뿐이라 필기체를 따라 그리면
+ *   획이 달라집니다. `fill` 을 `currentColor` 로 돌려 `--text` 를 따라가게
+ *   하는 길(Icon.astro 와 같은 방법)은 벡터 원본이 생기면 그때 갑니다.
+ *   그때는 파란 줄만 `--accent` 로 빼면 이 파일의 두 장이 한 장이 됩니다.
+ *
+ * ⚠ 파비콘·홈화면 아이콘·공유 카드는 이 워드마크가 아닙니다 — 가로로 긴
+ *   글씨라 16px 정사각형에서 뭉갭니다. Lim 원형 로고 그대로입니다.
+ *
+ * 링크로 감싸는 것은 부르는 쪽(Header)이 합니다. 여기는 그림만 그립니다.
+ */
+import { Image } from 'astro:assets'
+import logoLight from '../assets/logo/logo.png'
+import logoDark from '../assets/logo/logo-dark.png'
+
+interface Props {
+  /** 그려지는 높이(px). 폭은 비율대로 따라옵니다. */
+  height?: number
+}
+
+const { height = 28 } = Astro.props as Props
+
+/* 896 × 405 원본의 비율. 두 장이 같은 틀입니다. */
+const width = Math.round(height * (896 / 405))
+---
+
+<span class="logo" style={`--logo-h:${height}px`}>
+  <Image
+    class="mark light"
+    src={logoLight}
+    alt=""
+    width={width}
+    height={height}
+    densities={[2]}
+    loading="eager"
+  />
+  <Image
+    class="mark dark"
+    src={logoDark}
+    alt=""
+    width={width}
+    height={height}
+    densities={[2]}
+    loading="eager"
+  />
+</span>
+
+<style>
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+
+  .mark {
+    display: block;
+    height: var(--logo-h);
+    width: auto;
+  }
+
+  /* 기본(:root)은 다크입니다 — global.css 의 토큰과 같은 규칙 */
+  .light {
+    display: none;
+  }
+
+  :global(html[data-theme='light']) .light {
+    display: block;
+  }
+
+  :global(html[data-theme='light']) .dark {
+    display: none;
+  }
+</style>

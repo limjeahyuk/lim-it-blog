@@ -13,6 +13,7 @@
  * ⚠ 막대는 헤더에만 둡니다. 페이지에서 한 번 더 그리면 겹칩니다.
  */
 import Icon from './Icon.astro'
+import Logo from './Logo.astro'
 import ThemeToggle from './ThemeToggle.astro'
 import { AUTHORS, OWNER, PROJECTS, SITE_TITLE } from '../consts'
 import { countByAuthor, getPublishedPosts } from '../lib/posts'
@@ -23,7 +24,7 @@ const counts = countByAuthor(posts)
 
 <header>
   <div class="bar">
-    <a class="logo" href="/">{SITE_TITLE}</a>
+    <a class="home" href="/" aria-label={SITE_TITLE}><Logo /></a>
 
     <button
       class="burger"
@@ -45,7 +46,7 @@ const counts = countByAuthor(posts)
 
 <aside id="menu" class="panel" aria-label="메뉴" tabindex="-1">
   <div class="panel-top">
-    <a class="logo" href="/">{SITE_TITLE}</a>
+    <a class="home" href="/" aria-label={SITE_TITLE}><Logo /></a>
     <div class="tools">
       <ThemeToggle />
       <button class="close" type="button" aria-label="메뉴 닫기">
@@ -115,12 +116,10 @@ const counts = countByAuthor(posts)
     padding: 0 1.25rem;
   }
 
-  .logo {
-    font-size: 1rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+  /* 로고는 글자가 아니라 그림입니다 — 두 테마의 갈림은 Logo.astro 안에 */
+  .home {
+    display: flex;
     text-decoration: none;
-    color: var(--text);
   }
 
   /* 햄버거 — 줄 세 개를 직접 그립니다 (아이콘 팩에 없습니다) */
