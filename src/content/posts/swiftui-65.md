@@ -82,7 +82,7 @@ var body: some View {
 
 **Spacer()**
 
-spacer()라는 것을 사용합니다.  
+spacer()라는 것을 사용합니다.  
 설명보다는 예시를 보는 것이 이해가 빠르겠지요?
 
 ```swift

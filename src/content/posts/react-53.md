@@ -89,7 +89,7 @@ return {}
 
 reducer 함수 기본 틀입니다.
 
-**state는 저장되어있는 값. action은 위에 dispatch를 사용하여 변경되는 값을 뜻합니다.**
+**state는 저장되어있는 값. action은 위에 dispatch를 사용하여 변경되는 값을 뜻합니다.**
 
 **reducer 함수는 무조건 useReducer를 이용해서 얻은 값으로만 작동하기에**   
 **컴포넌트 함수 바깥에 만들었습니다.**
@@ -153,7 +153,7 @@ return (
 
 -   useReducer에 reducer 함수와 기본값을 지정해줬습니다. > value : '' , isValid : null
 -   reducer 함수가 실행될 때 값이 변하도록 지정해줬습니다 > value: '', isValid: false
--   email input에 값을 넣게 되면 type : 'USER\_INPUT' 과 함께 reducer 함수에 값을 보냅니다.
+-   email input에 값을 넣게 되면 type : 'USER\_INPUT' 과 함께 reducer 함수에 값을 보냅니다.
 -   reducer함수에서는 USER\_INPUT에서 걸리며 action.val을 value에 넣어주는 작업과  
     action.val의 유효성 검사를 진행하여 isValid를 변경하는 작업을 합니다.
 -   input창에 변화가 있을 때마다 validateEmailHandler에서는 type:'INPUT\_BLUR'를 함수로 보냅니다.  

@@ -1,4 +1,22 @@
 /**
+ * XML·JSON 에 못 들어가는 제어문자를 걷어냅니다 (탭·개행·복귀는 남깁니다).
+ *
+ * 티스토리에서 옮겨온 글 8편에 백스페이스(U+0008)가 박혀 있었습니다 —
+ * 화면에서는 안 보이는데 **RSS 를 통째로 깨뜨립니다.** XML 1.0 이 이
+ * 문자들을 아예 금지해서, 한 글자 때문에 피드 전체가 파싱 실패가 됩니다
+ * (2026-09-10 에 네이버가 "RSS 형식이 올바르지 않다"로 잡아냈습니다).
+ *
+ * ⚠ 자바스크립트의 `\s` 는 이것들을 안 잡습니다 — 아래 `\s+` 로 공백을
+ *   모으는 것만으로는 안 없어집니다. 그래서 따로 걷습니다.
+ *
+ * 파일 8편은 그때 고쳤지만, 이건 **다음 한 글자를 막는 자리**입니다.
+ * 폰에서 글을 쓰다 붙여넣은 것에 섞여 들어와도 피드가 안 깨집니다.
+ */
+export function stripControl(text: string): string {
+  return text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')
+}
+
+/**
  * 본문 앞부분을 잘라 meta description 으로 씁니다.
  *
  * 티스토리에서 옮겨온 116개에는 `description` 이 거의 없습니다. 그렇다고
@@ -11,7 +29,7 @@
 export function excerpt(body: string | undefined, max = 155): string {
   if (!body) return ''
 
-  const text = body
+  const text = stripControl(body)
     .replace(/```[\s\S]*?```/g, ' ') // 코드 블록
     .replace(/`[^`]*`/g, ' ') // 인라인 코드
     .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ') // 이미지

@@ -42,7 +42,7 @@ draft: false
 
 \- 왼쪽 ( Double Slider )
 
-1\. 아래에 있는 content가 먼저 올라오고 이어서 위에 있는 content가 올라옵니다.
+1\. 아래에 있는 content가 먼저 올라오고 이어서 위에 있는 content가 올라옵니다.
 
 2\. 아래의 content는 webView를 사용해서 loading이 완료되어있어야 합니다.
 

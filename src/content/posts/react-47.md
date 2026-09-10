@@ -313,7 +313,7 @@ app.put('/update/:id', function (req, res) {
     id 값을 받아와서 쿼리문을 돌립니다.
 -   잘 작동되었다면 res.json으로 good을 프론트에 전달합니다.
 
-**프론트**
+**프론트**
 
 ```javascript
 const submitHandler = (e) => {

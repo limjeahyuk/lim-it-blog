@@ -86,7 +86,7 @@ npm init -y 로 프로젝트 초기화시켜줬습니다. 초기화를 하게 �
 
 scripts 안에 start를 만들어 줍니다.
 
-이렇게 되면 node index를 사용해서 서버를 시작할 수 있게 됩니다.
+이렇게 되면 node index를 사용해서 서버를 시작할 수 있게 됩니다.
 
 express를 설치해줄 것입니다. npm install express
 

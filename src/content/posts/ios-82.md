@@ -42,7 +42,7 @@ Slider를 만들 것입니다.
 ```swift
 import UIKit
 
-public class customSlider: UIViewController {
+public class customSlider: UIViewController {
     private let contentView: UIView
     private let rootViewController: UIViewController
     
@@ -242,7 +242,7 @@ slider class에 public함수로 만들어줍니다.
 이렇게 만들고 나면 사용자 쪽에서는 
 
 ```swift
-    private lazy var customSlider: customSlider = {
+    private lazy var customSlider: customSlider = {
         let vc = customSlider(rootVC: self, contentView: DashBoardView())
         return vc
     }()
