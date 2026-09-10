@@ -1042,7 +1042,48 @@ function finishSave(ok) {
     } catch (e) {
       if (window.console) console.warn('[lim admin skin] 임시저장 비우기', e)
     }
+    leaveToList()
   }
+}
+
+/*
+  저장이 끝나면 목록으로 나갑니다 (2026-09-10).
+
+  Decap 은 저장한 뒤에도 그 글에 그대로 서 있습니다. 오른쪽 위에 "항목
+  저장됨" 이 잠깐 떴다 사라지고 나면 화면이 저장 전과 똑같아서, **나가도
+  되는지 알 수가 없었습니다** — 위 띠의 "변경사항 저장됨" 은 글자가 작고
+  긴 글에서는 화면 밖입니다.
+
+  ⚠ **성공했을 때만입니다.** 실패하면 그 자리에 남아야 어디가 틀렸는지
+    고칩니다.
+
+  ⚠ **바로 안 나갑니다.** 새 글은 저장이 끝나면 **Decap 이 먼저** 주소를
+    `posts/new` → `posts/entries/<주소>` 로 옮깁니다. 같은 순간에 목록으로
+    바꾸면 그 이동이 우리를 도로 글로 끌고 옵니다. 한 박자 쉬고, 그러고도
+    글로 돌아와 있으면 **한 번만 더** 내보냅니다.
+
+  ⚠ **그새 사람이 딴 데로 갔으면 그대로 둡니다.** 저장하자마자 다른 글을
+    열었는데 목록으로 튕기면 그게 더 나쁩니다.
+*/
+const ENTRY_ROUTE = /^#\/collections\/([^/]+)\/(new|entries\/)/
+
+function leaveToList() {
+  const m = ENTRY_ROUTE.exec(location.hash)
+  if (!m) return
+  const list = '#/collections/' + m[1]
+
+  const go = () => {
+    const now = ENTRY_ROUTE.exec(location.hash)
+    if (!now || now[1] !== m[1]) return false
+    location.hash = list
+    return true
+  }
+
+  setTimeout(() => {
+    if (!go()) return
+    /* Decap 이 뒤늦게 글로 돌아왔을 때를 위한 한 번 더. */
+    setTimeout(go, 500)
+  }, 700)
 }
 
 function watchToasts() {
