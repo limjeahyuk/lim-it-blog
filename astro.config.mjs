@@ -90,22 +90,37 @@ function rehypeCodeChrome() {
 }
 
 /**
- * 글 주소마다 마지막으로 손댄 날짜를 모읍니다 (사이트맵의 `lastmod`).
+ * 주소마다 마지막으로 손댄 날짜를 모읍니다 (사이트맵의 `lastmod`).
  *
- * 안 적으면 검색엔진이 131편을 언제 다시 긁을지 판단할 근거가 없습니다.
+ * 안 적으면 검색엔진이 언제 다시 긁을지 판단할 근거가 없습니다.
  * 값은 `updatedDate ?? pubDate` — **실제로 파일에 적힌 날짜만** 씁니다.
  * 빌드 시각을 넣으면 배포할 때마다 전부 "오늘 바뀜"이 되고, 구글은 그렇게
  * 늘 거짓말하는 lastmod 를 통째로 무시합니다.
  *
+ * **글 지면**은 그 글의 날짜입니다.
+ * **목록 지면**은 거기 실리는 글 중 제일 최근 것입니다 — 새 글이 나면 그
+ * 목록이 실제로 바뀌니 거짓말이 아닙니다 (2026-09-10 에 더했습니다. 그전에는
+ * 홈·서고·저자·서비스 열 쪽에 lastmod 가 아예 없어서, 이름을 바꿔도 구글이
+ * 다시 볼 이유를 못 찾았습니다).
+ *
+ * ⚠ **`/projects/<id>/about/` 에는 안 답니다.** 그 지면은 `consts.ts` 의
+ *   소개·기능·링크로 그려지고 devlog 와 무관합니다 — devlog 날짜를 적으면
+ *   안 바뀐 지면을 바뀌었다고 말하는 셈입니다.
+ *
+ * ⚠ **초안은 목록 계산에서 뺍니다.** 목록에 안 실리는 글의 날짜로 "바뀜"
+ *   이라고 말하게 됩니다 (글 지면 쪽은 그대로 담습니다 — 어차피 사이트맵에
+ *   그 주소가 없어서 안 쓰입니다).
+ *
  * ⚠ 여기서 frontmatter 를 직접 읽습니다. astro.config 는 `astro:content` 를
  *   못 불러서(설정이 먼저 로드됩니다) 파일을 여는 것 말고 길이 없습니다.
- *   그래서 **주소 모양(`/posts/<slug>/`)을 여기서 한 번 더 알고 있습니다** —
- *   §3 의 slug 규칙이 바뀌면 이 함수도 같이 보세요. 못 찾은 글은 lastmod 만
- *   빠지고 사이트맵에는 그대로 남습니다 (빌드를 깨지 않습니다).
+ *   그래서 **주소 모양을 여기서 한 번 더 알고 있습니다** — §3 의 slug 규칙이나
+ *   지면 주소가 바뀌면 이 함수도 같이 보세요. 못 찾은 것은 lastmod 만 빠지고
+ *   사이트맵에는 그대로 남습니다 (빌드를 깨지 않습니다).
  */
 function postLastmod() {
   const dir = './src/content/posts'
   const map = new Map()
+  const listed = []
 
   for (const file of fs.readdirSync(dir)) {
     if (!/\.mdx?$/.test(file)) continue
@@ -113,15 +128,41 @@ function postLastmod() {
     const head = fs.readFileSync(path.join(dir, file), 'utf-8').split('---')[1]
     if (!head) continue
 
-    const pick = (key) => head.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'))?.[1].trim()
+    /* 값에 붙은 따옴표를 뗍니다 — `author: 'student'` 처럼 적힌 것이 있습니다. */
+    const pick = (key) =>
+      head
+        .match(new RegExp(`^${key}:\\s*(.+)$`, 'm'))?.[1]
+        .trim()
+        .replace(/^['"]|['"]$/g, '')
 
     const slug = pick('slug')
     const date = pick('updatedDate') ?? pick('pubDate')
     if (!slug || !date) continue
 
     const d = new Date(date)
-    if (!Number.isNaN(d.getTime())) map.set(`/posts/${slug}/`, d.toISOString())
+    if (Number.isNaN(d.getTime())) continue
+
+    map.set(`/posts/${slug}/`, d.toISOString())
+
+    if (pick('draft') === 'true') continue
+    listed.push({ at: d.getTime(), author: pick('author'), project: pick('project') })
   }
+
+  /* 고른 글 중 제일 최근 것. 한 편도 없으면 아무것도 안 답니다. */
+  const put = (url, posts) => {
+    if (!posts.length) return
+    map.set(url, new Date(Math.max(...posts.map((p) => p.at))).toISOString())
+  }
+  const ids = (posts, key) => new Set(posts.map((p) => p[key]).filter(Boolean))
+
+  for (const url of ['/', '/posts/', '/authors/']) put(url, listed)
+  for (const id of ids(listed, 'author'))
+    put(`/authors/${id}/`, listed.filter((p) => p.author === id))
+
+  const devlogs = listed.filter((p) => p.project)
+  put('/projects/', devlogs)
+  for (const id of ids(devlogs, 'project'))
+    put(`/projects/${id}/`, devlogs.filter((p) => p.project === id))
 
   return map
 }
