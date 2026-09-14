@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 4321
+    },
+    {
+      "name": "cms",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["decap-server"],
+      "port": 8081
     }
   ]
 }
