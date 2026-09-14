@@ -41,8 +41,8 @@ const fullTitle =
     ? `${SITE_TITLE} — ${SITE_TAGLINE}`
     : `${title} — ${SITE_TITLE}`
 
-// 글에 heroImage 가 없을 때 공유 카드가 텅 비지 않게 프로필 이미지를 씁니다.
-const ogImage = new URL(image ?? '/avatar-512.png', Astro.site)
+// 글에 heroImage 가 없을 때 공유 카드가 텅 비지 않게 로고 카드(1200×630)를 씁니다.
+const ogImage = new URL(image ?? '/og-default.png', Astro.site)
 
 /**
  * 구조화 데이터. 구글이 이 페이지가 "글"인지 "사이트"인지 알아보게 합니다.
@@ -157,7 +157,7 @@ const schema =
 
 <meta
   name="twitter:card"
-  content={image ? 'summary_large_image' : 'summary'}
+  content="summary_large_image"
 />
 
 <script
