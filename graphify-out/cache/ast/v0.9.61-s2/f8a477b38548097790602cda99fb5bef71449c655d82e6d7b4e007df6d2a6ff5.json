@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_src_components_formatteddate_astro", "label": "FormattedDate.astro", "file_type": "code", "source_file": "src/components/FormattedDate.astro", "source_location": "L1"}], "edges": [], "raw_calls": [], "parse_errors": {"first_error_line": 2, "multiline_error": false}}

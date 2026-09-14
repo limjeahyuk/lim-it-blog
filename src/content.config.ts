@@ -15,7 +15,7 @@ const blankAsUndefined = <T extends z.ZodTypeAny>(schema: T) =>
   z.preprocess((v) => (v === '' ? undefined : v), schema)
 
 const posts = defineCollection({
-  loader: glob({ base: './src/content/posts', pattern: '**/*.{md,mdx}' }),
+  loader: glob({ base: './src/content/posts', pattern: '**/*.md' }),
   schema: () =>
     z.object({
       title: z.string(),

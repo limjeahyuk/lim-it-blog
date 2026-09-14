@@ -35,6 +35,7 @@ import {
 import { closeViewsPage, openViewsPage, viewsPageOpen } from './views.js'
 import { editorsPass } from './editors.js'
 import { buildSaveModal, closeSaveModal, onSaveIntent, watchToasts } from './save.js'
+import { el } from './say.js'
 
 /* 목록 요약(config.yml 의 summary)을 이 글자로 이어 붙여 놨습니다.
    ⚠ 여기를 고치면 config.yml 의 summary 도 같이 고쳐야 합니다.
@@ -169,13 +170,6 @@ function themeButton() {
 }
 
 /* ------------------------------------------------------------------- */
-
-function el(tag, className, text) {
-  const node = document.createElement(tag)
-  if (className) node.className = className
-  if (text != null) node.textContent = text
-  return node
-}
 
 /** 지금 열려 있는 컬렉션 이름. 주소(#/collections/posts/...)에서 뽑습니다. */
 let collectionName = null

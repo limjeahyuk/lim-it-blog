@@ -764,12 +764,12 @@ magazine-b·folin)을 보고 정한 것입니다. 상자를 겹겹이 쌓는 것
 # 티스토리에서 옮겨왔습니다: https://hyuk-todayfeelsogood.tistory.com/122
 ```
 
-- 옮긴 도구는 [`scripts/import-tistory.mjs`](scripts/import-tistory.mjs) 입니다. 한 번 쓰고 끝이지만, 다시 긁어야 할 때를 위해 남겨뒀습니다.
+- 옮긴 도구(`scripts/import-tistory.mjs`)는 2026-09-14 에 지웠습니다 — 한 번 쓰고 끝난 것이고, 쓰던 `turndown` 도 이미 의존성에 없어서 그대로는 돌지도 않았습니다. 다시 봐야 하면 `git show fb97e10:scripts/import-tistory.mjs`.
 - 파일명은 **`<옛 카테고리 잎>-<티스토리 글번호>`** 입니다 (`flutter-122`, `swiftui-68`, `sdk-90`).
 - 이미지 404장은 `public/images/<slug>/` 에 **받아서** 넣었습니다 (48MB).
   ⚠ **티스토리 CDN 주소를 그대로 쓰면 안 됩니다.** 서명된 URL 이라 `expires` 가 지나면 전부 404 가 되고, 서명을 뗀 주소도 404 입니다. 그래서 받아온 것입니다.
 - `description` 은 대부분 비어 있습니다. 원본에 없었기 때문입니다 — 지어내지 말고, 손볼 때 채우세요.
-- 티스토리에서 카테고리가 안 달려 있던 글 5개는 제목을 보고 정했습니다. 근거가 약한 곳이라 `import-tistory.mjs` 의 `UNCATEGORIZED` 표에 모아뒀습니다.
+- 티스토리에서 카테고리가 안 달려 있던 글 5개는 제목을 보고 정했습니다 — `javascript-52` · `storyboard-61` · `ios-79` · `sdk-90` · `study-111`. 근거가 약한 곳이라 여기 적어 둡니다.
 
 ---
 
@@ -1676,7 +1676,6 @@ node scripts/check-md-roundtrip.mjs   # 마크다운 왕복 검사
 
 npm run icons     # limSystem 아이콘 다시 긁어오기
 
-node scripts/import-tistory.mjs --dry    # 티스토리 이관 (한 번 쓰고 끝났습니다)
 ```
 
 `npm run authors` 는 `src/data/authors.json` 을 읽어 `public/admin/config.yml` 의 「저자」 목록(`<lim:authors>` 표시 사이)과 `admin-src/authors.gen.js` 를 다시 씁니다. **`npm run admin` 이 먼저 부르니 따로 돌릴 일은 거의 없습니다** — `/admin` 에서 에디터를 고친 뒤 그 이름이 글의 저자 목록에 안 보일 때만 쓰세요 (§3).
@@ -2441,7 +2440,7 @@ Toast UI · Milkdown 셋을 나란히 띄워 놓고 골랐습니다. **Toast 로
 - **Works 를 Live Service 로 바꿨습니다.** 이름만 바뀌었고 `PROJECTS` 는 그대로입니다.
 - **`/authors` 에 얼굴을 넣었습니다.** 사진이 없어서 글자 아바타로 채웠습니다 — 자세한 건 §3. 머리글은 `Editors` 하나만 둡니다 (설명 문장을 붙였다 뺐습니다).
 - **Editors 를 오른쪽으로 옮기고 왼쪽은 비웠습니다.** 저자 목록이 왼쪽 끝에 혼자 있으면 지면과 멀어서, 프로젝트·연락처와 한 열에 모았습니다.
-- **Profile 카드를 뺐습니다.** 저자 이름으로 굴러가는 지면에서 오른쪽에 얼굴과 실명 소개가 따로 서 있으면 두 체계가 겹칩니다. `OWNER` 는 Contact 링크와 저작권 줄에만 남았고, `role`·`bio` 는 쓰는 데가 없어져서 지웠습니다. ⚠ `public/avatar.svg` 는 이제 아무 데서도 안 씁니다 — `avatar-512.png` 는 공유 카드 기본 이미지라 계속 필요합니다.
+- **Profile 카드를 뺐습니다.** 저자 이름으로 굴러가는 지면에서 오른쪽에 얼굴과 실명 소개가 따로 서 있으면 두 체계가 겹칩니다. `OWNER` 는 Contact 링크와 저작권 줄에만 남았고, `role`·`bio` 는 쓰는 데가 없어져서 지웠습니다. `public/avatar.svg` 는 그 뒤로 아무 데서도 안 써서 2026-09-14 에 지웠습니다 — `avatar-512.png` 는 공유 카드 기본 이미지라 계속 필요합니다.
 
 ### 2026-08-13 · 글 상세에 사이드바를 붙였다가 뺐습니다
 
@@ -2593,3 +2592,13 @@ react-select 가 **보이지 않는 입력칸을 값 글자와 같은 칸에 겹
 으로 앞부분을 흘리면 잠근 의미가 없습니다. RSS 는 비밀글을 아예 빼고 있어서
 괜찮지만, **본문에서 뭔가를 뽑아 쓰는 코드를 새로 넣을 때는 `secret` 을 같이
 확인하세요.**
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

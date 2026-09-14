@@ -26,6 +26,8 @@
     막대는 전부 강조색이고 저자는 글자로만 갈립니다.
 */
 
+import { el } from './say.js'
+
 const TOKEN_KEY = 'lim.views.token'
 
 /* 「최근 N일」 막대 개수. 폰(375px)에서 이만큼이 한 줄에 들어갑니다. */
@@ -46,13 +48,6 @@ function setToken(value) {
   } catch (e) {
     /* 사생활 보호 창 — 이번 지면에서만 쓰고 맙니다 */
   }
-}
-
-function el(tag, className, text) {
-  const node = document.createElement(tag)
-  if (className) node.className = className
-  if (text != null) node.textContent = text
-  return node
 }
 
 function num(n) {

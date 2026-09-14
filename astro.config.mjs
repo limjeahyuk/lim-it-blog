@@ -2,7 +2,6 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import { defineConfig, fontProviders } from 'astro/config'
 
@@ -123,7 +122,7 @@ function postLastmod() {
   const listed = []
 
   for (const file of fs.readdirSync(dir)) {
-    if (!/\.mdx?$/.test(file)) continue
+    if (!file.endsWith('.md')) continue
 
     const head = fs.readFileSync(path.join(dir, file), 'utf-8').split('---')[1]
     if (!head) continue
@@ -173,7 +172,6 @@ const LASTMOD = postLastmod()
 export default defineConfig({
   site: 'https://lim-it.vercel.app',
   integrations: [
-    mdx(),
     sitemap({
       /**
        * ⚠ `/search` 를 뺍니다. 결과가 브라우저에서 채워지는 지면이라

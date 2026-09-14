@@ -84,11 +84,6 @@
      limSystem 에 보라·분홍 계열이 없어서 6개를 다 다른 계열로 못 뽑았습니다.
      대신 명도로 갈립니다 (대비 7.7:1 vs 10.1:1). 나란히 두지 마세요. */
 
-  /* 강조색 — 프로젝트 색으로 쓰지 마세요. */
-  --nj-accent: var(--lim-teal-500); /* 다크 인용문 선  — 8.4:1  */
-  --nj-accent-text: var(--lim-teal-300); /* 다크 링크       — 12.6:1 */
-  --nj-accent-deep: var(--lim-teal-700); /* 라이트 공용     —  4.6:1 */
-
   /* Radius — limSystem 원본 */
   --radius-none: 0px;
   --radius-sm: 4px;

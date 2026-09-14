@@ -23,6 +23,8 @@
     DOM 으로 밀어 넣는 것은 리덕스와 어긋납니다.
 */
 
+import { el } from './say.js'
+
 const KEY_PREFIX = 'lim.draft.v1:'
 
 /** 남겨 두는 글 수. 넘치면 오래된 것부터 버립니다. */
@@ -219,13 +221,6 @@ function ago(at) {
   const h = Math.round(m / 60)
   if (h < 24) return h + '시간 전'
   return Math.round(h / 24) + '일 전'
-}
-
-function el(tag, className, text) {
-  const node = document.createElement(tag)
-  if (className) node.className = className
-  if (text != null) node.textContent = text
-  return node
 }
 
 /* -------------------------------------------------------------------

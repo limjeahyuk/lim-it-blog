@@ -13,9 +13,9 @@ export const AUTHOR_NAMES = {
 
 /** 저자별 글 수. 「에디터」의 「글 N편」과 지울 수 있는지 판정에 씁니다. */
 export const AUTHOR_COUNTS = {
-  "developer": 15,
+  "developer": 16,
   "pm": 1,
-  "student": 116,
+  "student": 118,
 }
 
 /** 「에디터」 카드에 그리는 명단. 순서는 authors.json 그대로입니다. */
@@ -26,7 +26,7 @@ export const AUTHOR_LIST = [
     "bio": "임재혁, 코딩 및 AI 관련 공부를 진행 하는 중이에요! 🔥",
     "color": "blue",
     "initial": "S",
-    "count": 116
+    "count": 118
   },
   {
     "id": "developer",
@@ -34,7 +34,7 @@ export const AUTHOR_LIST = [
     "bio": "임재혁, 개발을 하면서 생기는 것들 기록합니다.",
     "color": "red",
     "initial": "D",
-    "count": 15
+    "count": 16
   },
   {
     "id": "pm",
