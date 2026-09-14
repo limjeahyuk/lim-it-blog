@@ -5,6 +5,7 @@ slug: shapespider-setting
 description: ShapeSpider 프로젝트 세팅 및 AI 세팅
 heroImage: https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1789109175/ihhnmhquzitprvzuvfyj.png
 pubDate: 2026-09-10
+project: shapespider
 draft: false
 secret: false
 ---

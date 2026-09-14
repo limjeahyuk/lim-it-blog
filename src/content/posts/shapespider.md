@@ -5,6 +5,7 @@ slug: shapespider
 description: SHAPE SPIDER 기획 작성해보기
 heroImage: ""
 pubDate: 2026-09-09
+project: shapespider
 draft: false
 secret: false
 ---

@@ -26,9 +26,14 @@ import { el, say } from './say.js'
    누름을 가로채 모달을 열고, 모달의 「저장」이 원래 순서(단추 → 첫 메뉴
    항목)를 대신 밟습니다.
 
-   ⚠ **`PublishButton` 일 때만 가로챕니다.** 고칠 것이 없는 글에서는 같은
-     자리가 `PublishedToolbarButton`(메뉴에 「복제」뿐)이라, 그때까지
-     가로채면 복제를 못 하게 됩니다. 두 이름은 서로 부분문자열이 아닙니다.
+   ⚠ **고칠 것이 없는 글의 단추(`PublishedToolbarButton`)도 가로챕니다**
+     (2026-09-14). 그 자리는 메뉴에 「복제」뿐인데, 프로젝트·초안·비밀글이
+     모달 안에만 있어서 **다른 칸을 먼저 건드리지 않으면 발행 설정을 바꿀
+     길이 없었습니다** — 옛 글에 프로젝트만 붙이려다 막혔습니다. 모달에서
+     무엇을 바꾸면 Decap 이 단추를 `PublishButton` 으로 갈아 끼우니 저장은
+     그대로 나가고, 안 바꿨으면 모달만 닫습니다(나갈 것이 없습니다).
+     ⚠ 그래서 「복제」는 이제 못 누릅니다 — 「게시하고 복제」와 같은 판단입니다.
+     두 이름은 서로 부분문자열이 아닙니다.
    ⚠ **`document` 의 캡처 단계에서 잡습니다.** React 는 루트 컨테이너에
      듣기 때문에 그보다 먼저 걸립니다 — 여기서 stopPropagation 을 해야
      드롭다운이 안 열립니다.
@@ -42,6 +47,8 @@ import { el, say } from './say.js'
    ------------------------------------------------------------------- */
 
 const SAVE_BUTTON = "[class*='ToolbarSectionMain'] [class*='PublishButton']"
+/** 가로채는 자리 — 고친 것이 없을 때의 단추까지. */
+const TOOLBAR_BUTTON = SAVE_BUTTON + ", [class*='ToolbarSectionMain'] [class*='PublishedToolbarButton']"
 
 /** 모달을 거치지 않고 통과시키는 동안만 켭니다 (모달의 「저장」이 켭니다). */
 let passingThrough = false
@@ -100,7 +107,7 @@ export function closeSaveModal() {
   /* 눌렀던 자리로 초점을 돌려줍니다 — 키보드로 다니는 사람이 길을 잃습니다.
      ⚠ **열려 있었을 때만.** 안 그러면 엉뚱한 때에 초점을 뺏습니다. */
   if (!wasOpen) return
-  const btn = document.querySelector(SAVE_BUTTON)
+  const btn = document.querySelector(TOOLBAR_BUTTON)
   if (btn && btn.focus) btn.focus()
 }
 
@@ -114,7 +121,11 @@ export function closeSaveModal() {
 */
 function confirmSave() {
   const btn = document.querySelector(SAVE_BUTTON)
-  if (!btn) return
+  /* 고친 것이 없으면 Decap 이 저장 단추를 안 그립니다 — 나갈 것도 없습니다. */
+  if (!btn) {
+    closeSaveModal()
+    return
+  }
 
   /*
     ⚠ **모달을 바로 닫지 않습니다.** 배포에서 쓰는 GitHub 백엔드는 저장이
@@ -326,7 +337,7 @@ export function onSaveIntent(e) {
     escapeNext = false
     return
   }
-  const target = e.target && e.target.closest ? e.target.closest(SAVE_BUTTON) : null
+  const target = e.target && e.target.closest ? e.target.closest(TOOLBAR_BUTTON) : null
   if (!target) return
   if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return
   if (!document.querySelector('.lim-modal')) return /* 못 세웠으면 Decap 것 그대로 */
