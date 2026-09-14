@@ -2,7 +2,8 @@
 /**
  * 프로젝트 하나 — 위에 소개 머리, 아래에 devlog.
  *
- * Service 목록과 같은 폭·같은 여백을 씁니다 (오른쪽 열 없음 + 아래 띠).
+ * 껍데기(폭·빵부스러기)와 받는 곳 버튼은 /about 과 같이 씁니다
+ * (ProjectPage · ProjectLinks).
  *
  * ⚠ 숫자 띠의 플랫폼과 "최근 업데이트"는 코드가 채웁니다 — 가운데
  *   칸만 consts.ts 의 `stats` 입니다. 거기에 없는 사실을 쓰지 마세요.
@@ -11,14 +12,14 @@
  *   정적 사이트라 스토어 배포일을 알 방법이 없어서, 셀 수 있는 것만
  *   셉니다 (홈의 번호를 순위로 안 쓰는 것과 같은 이유 — §4).
  */
-import BaseLayout from '../../../components/BaseLayout.astro'
 import Cover from '../../../components/Cover.astro'
 import Icon from '../../../components/Icon.astro'
+import ProjectLinks from '../../../components/ProjectLinks.astro'
+import ProjectPage from '../../../components/ProjectPage.astro'
 import { PROJECTS, getAuthor, type Project } from '../../../consts'
 import { coverOf } from '../../../lib/cover'
 import { getPublishedPosts, postsByProject, type Post } from '../../../lib/posts'
 import { leadSentence } from '../../../lib/sentence'
-import type { IconName } from '../../../lib/icon-names'
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts()
@@ -31,13 +32,6 @@ export async function getStaticPaths() {
 type Props = { project: Project; posts: Post[] }
 
 const { project, posts } = Astro.props as Props
-
-/** 링크 종류별 아이콘. consts.ts 의 links[].kind 와 짝입니다. */
-const LINK_ICON: Record<string, IconName> = {
-  web: 'play-circle',
-  appstore: 'download',
-  support: 'circle-question',
-}
 
 /*
   숫자 띠. 날짜는 UTC 로 읽습니다 — pubDate 는 시각 없이 들어와서
@@ -56,143 +50,92 @@ const stats = [
 ]
 ---
 
-<BaseLayout
+<ProjectPage
   title={project.name}
   description={`${project.name} — ${project.tagline}`}
+  project={project}
 >
-  <div class="wrap">
-    <nav class="crumb">
-      <a href="/projects">Service</a>
-      <span class="sep">/</span>
-      <span aria-current="page">{project.name}</span>
-    </nav>
+  <header class="hero">
+    <div class="intro">
+      <h1>
+        {project.name}
+        {project.active && <span class="live">LIVE</span>}
+      </h1>
 
-    <header class="hero">
-      <div class="intro">
-        <h1>
-          {project.name}
-          {project.active && <span class="live">LIVE</span>}
-        </h1>
+      <p class="tagline">{project.tagline}. {leadSentence(project.summary)}</p>
 
-        <p class="tagline">{project.tagline}. {leadSentence(project.summary)}</p>
+      <ul class="stack">
+        {project.stack.map((tech) => <li class="pill">{tech}</li>)}
+      </ul>
 
-        <ul class="stack">
-          {project.stack.map((tech) => <li class="pill">{tech}</li>)}
-        </ul>
+      <ProjectLinks project={project} about />
+    </div>
 
-        <div class="cta">
-          {
-            project.links.map((link) => (
-              <a class="btn primary" href={link.href} target="_blank" rel="noopener">
-                <Icon name={LINK_ICON[link.kind] ?? 'link-external'} size={17} />
-                {link.label}
-              </a>
-            ))
-          }
-          <a class="btn ghost" href={`/projects/${project.id}/about`}>소개 보기</a>
+    <div class="shot">
+      <Cover
+        cover={posts[0] ? coverOf(posts[0]) : { kind: 'none' }}
+        alt=""
+        ratio="16 / 10"
+        sizes="(min-width: 900px) 1280px, 100vw"
+        tint={project.color}
+      />
+    </div>
+  </header>
+
+  <dl class="stats" style={`--cells:${stats.length}`}>
+    {
+      stats.map((s) => (
+        <div class="cell">
+          <dt>{s.value}</dt>
+          <dd>{s.label}</dd>
         </div>
-      </div>
+      ))
+    }
+  </dl>
 
-      <div class="shot">
-        <Cover
-          cover={posts[0] ? coverOf(posts[0]) : { kind: 'none' }}
-          alt=""
-          ratio="16 / 10"
-          sizes="(min-width: 900px) 1280px, 100vw"
-          tint={project.color}
-        />
-      </div>
+  <section class="devlog">
+    <header class="sec">
+      <h2>Devlog</h2>
+      <span class="n">{posts.length}개</span>
     </header>
 
-    <dl class="stats" style={`--cells:${stats.length}`}>
-      {
-        stats.map((s) => (
-          <div class="cell">
-            <dt>{s.value}</dt>
-            <dd>{s.label}</dd>
-          </div>
-        ))
-      }
-    </dl>
+    {
+      posts.length === 0 ? (
+        <p class="empty">아직 이 프로젝트의 글이 없습니다.</p>
+      ) : (
+        <div class="rows">
+          {posts.map((post) => (
+            <a class="row" href={`/posts/${post.id}/`}>
+              <span class="date">{dot(post.data.pubDate)}</span>
 
-    <section class="devlog">
-      <header class="sec">
-        <h2>Devlog</h2>
-        <span class="n">{posts.length}개</span>
-      </header>
-
-      {
-        posts.length === 0 ? (
-          <p class="empty">아직 이 프로젝트의 글이 없습니다.</p>
-        ) : (
-          <div class="rows">
-            {posts.map((post) => (
-              <a class="row" href={`/posts/${post.id}/`}>
-                <span class="date">{dot(post.data.pubDate)}</span>
-
-                <span class="text">
-                  <span class="title">
-                    {post.data.secret && (
-                      <span class="lock" title="비밀글">
-                        <Icon name="lock" size={13} />
-                      </span>
-                    )}
-                    {post.data.title}
-                  </span>
-                  {post.data.description && (
-                    <span class="sub">{post.data.description}</span>
+              <span class="text">
+                <span class="title">
+                  {post.data.secret && (
+                    <span class="lock" title="비밀글">
+                      <Icon name="lock" size={13} />
+                    </span>
                   )}
+                  {post.data.title}
                 </span>
-
-                {post.data.author && (
-                  <span class="who" style={`color:${getAuthor(post.data.author)?.color}`}>
-                    {getAuthor(post.data.author)?.name}
-                  </span>
+                {post.data.description && (
+                  <span class="sub">{post.data.description}</span>
                 )}
-              </a>
-            ))}
-          </div>
-        )
-      }
-    </section>
-  </div>
-</BaseLayout>
+              </span>
+
+              {post.data.author && (
+                <span class="who" style={`color:${getAuthor(post.data.author)?.color}`}>
+                  {getAuthor(post.data.author)?.name}
+                </span>
+              )}
+            </a>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</ProjectPage>
 
 <style>
-  .wrap {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 1.5rem 1.25rem 0;
-  }
-
-  /* ── 빵부스러기 ───────────────────────────────────────── */
-
-  .crumb {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--text-dim);
-  }
-
-  .crumb a {
-    color: var(--text-dim);
-    text-decoration: none;
-  }
-
-  .crumb a:hover {
-    color: var(--text);
-  }
-
-  .crumb [aria-current] {
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .sep {
-    color: var(--text-faint);
-  }
-
   /* ── 머리 ─────────────────────────────────────────────── */
 
   .hero {
@@ -231,52 +174,6 @@ const stats = [
   .stack .pill {
     font-weight: 700;
     color: var(--text-dim);
-  }
-
-  .cta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.625rem 1.125rem;
-    border-radius: var(--radius-md);
-    font-size: 0.9375rem;
-    font-weight: 700;
-    text-decoration: none;
-    transition: opacity 200ms ease;
-  }
-
-  /*
-    ⚠ 2026-09-08 시안부터 주 버튼은 **프로젝트 색이 아니라 강조색**입니다.
-      프로젝트 색으로 칠하면 버튼이 프로젝트마다 다른 색이 되어, 같은 자리의
-      같은 동작("지금 해보기")이 지면마다 다르게 읽혔습니다. 프로젝트 색은
-      알약과 Service 목록의 점에 그대로 남아 있습니다.
-    글자는 --accent-fg 입니다 — 다크는 밝은 파랑 위 어두운 글자, 라이트는
-    진한 파랑 위 흰 글자로 갈립니다 (global.css).
-  */
-  .primary {
-    color: var(--accent-fg);
-    background-color: var(--accent);
-  }
-
-  .primary:hover {
-    opacity: 0.85;
-  }
-
-  .ghost {
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-  }
-
-  .ghost:hover {
-    color: var(--text);
-    background-color: var(--surface);
   }
 
   .shot :global(.frame) {
@@ -447,10 +344,6 @@ const stats = [
   }
 
   @media (min-width: 900px) {
-    .wrap {
-      padding: 2.5rem 2rem 0;
-    }
-
     .hero {
       gap: 2rem;
       margin-top: 2.25rem;

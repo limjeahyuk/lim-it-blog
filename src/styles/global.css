@@ -217,13 +217,6 @@ kbd {
    레이아웃
 --------------------------------------------------------------- */
 
-.container {
-  width: 100%;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
 main {
   flex: 1;
   width: 100%;
@@ -232,22 +225,6 @@ main {
 /* ---------------------------------------------------------------
    공용 조각
 --------------------------------------------------------------- */
-
-.side-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem;
-  margin-bottom: 0.75rem;
-  font-size: 0.9375rem;
-}
-
-/* 아이콘 + 글자를 한 줄로. 목록 머리글에 씁니다. */
-.title-ico {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
 
 .card {
   border-radius: var(--radius-card);
@@ -309,12 +286,6 @@ a.pill:hover {
   line-height: 1.4;
   color: var(--live-fg);
   background-color: var(--live-bg);
-}
-
-.muted {
-  color: var(--text-faint);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
 }
 
 /*

@@ -296,12 +296,9 @@ export const LIM_ICON_NAMES = [
   'zoom-out',
 ] as const
 
-/** limSystem 에 없어서 손으로 넣은 것 — src/assets/icons-extra/ (5개) */
+/** limSystem 에 없어서 손으로 넣은 것 — src/assets/icons-extra/ (2개) */
 export const EXTRA_ICON_NAMES = [
-  'book-open',
-  'chat-circle-dots',
   'moon',
-  'smile',
   'sun',
 ] as const
 

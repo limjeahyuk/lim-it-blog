@@ -1,0 +1,82 @@
+---
+/**
+ * /projects/<id> 와 /projects/<id>/about 의 껍데기 — 폭·여백·빵부스러기.
+ *
+ * 둘이 오가는 자리라 폭이나 여백이 다르면 넘어갈 때마다 지면이 튑니다.
+ * ⚠ 목록(/projects)은 이걸 안 씁니다. 폭(1280px)·여백을 고치면 거기도 보세요.
+ */
+import BaseLayout from './BaseLayout.astro'
+import type { Project } from '../consts'
+
+interface Props {
+  title: string
+  description: string
+  project: Project
+  /** 프로젝트 아래 한 칸 더 들어간 지면이면 그 이름 (예: "소개") */
+  page?: string
+}
+
+const { title, description, project, page } = Astro.props
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="wrap">
+    <nav class="crumb">
+      <a href="/projects">Service</a>
+      <span class="sep">/</span>
+      {
+        page ? (
+          <>
+            <a href={`/projects/${project.id}`}>{project.name}</a>
+            <span class="sep">/</span>
+            <span aria-current="page">{page}</span>
+          </>
+        ) : (
+          <span aria-current="page">{project.name}</span>
+        )
+      }
+    </nav>
+
+    <slot />
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 0;
+  }
+
+  .crumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-dim);
+  }
+
+  .crumb a {
+    color: var(--text-dim);
+    text-decoration: none;
+  }
+
+  .crumb a:hover {
+    color: var(--text);
+  }
+
+  .crumb [aria-current] {
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .sep {
+    color: var(--text-faint);
+  }
+
+  @media (min-width: 900px) {
+    .wrap {
+      padding: 2.5rem 2rem 0;
+    }
+  }
+</style>

@@ -323,32 +323,29 @@ limSystem 은 별도 Next.js 앱(`private: true`)이라 패키지로 못 가져�
 
 ### 아이콘 — 이모지 대신 씁니다
 
-목록 머리글·사이드바 제목·버튼에는 **limSystem SVG** 를 씁니다. 이모지는 OS마다 그림이 달라서 다크 테마에서 혼자 튀거든요.
+자물쇠·버튼·메뉴에는 **limSystem SVG** 를 씁니다. 이모지는 OS마다 그림이 달라서 다크 테마에서 혼자 튀거든요.
 
 ```astro
 ---
 import Icon from '../components/Icon.astro'
 ---
-<span class="title-ico"><Icon name="notebook" size={17} /> All Posts</span>
+<Icon name="lock" size={13} />
 ```
 
 - 이름은 파일명 그대로입니다. 목록은 `src/lib/icon-names.ts` (자동 생성).
 - 없는 이름을 쓰면 **빌드가 깨집니다.** 의도한 것입니다 — 오타를 배포 전에 잡습니다.
 - 원본 SVG 는 색이 `#3C3E44` 로 박혀 있는데 `Icon.astro` 가 `currentColor` 로 바꿔 줍니다. 그래서 **부모의 `color` 를 따라갑니다** — 아이콘에 색을 직접 주지 말고 부모에 의미 토큰을 주세요.
-- 아이콘 + 글자를 한 줄로 놓을 때는 `.title-ico`(global.css)나 `.side-title` 을 씁니다.
 
 지금 쓰는 것들:
 
 | 자리 | 아이콘 | 어디서 |
 |---|---|---|
-| Tags | `label` | limSystem |
-| Live Service | `book-open` | icons-extra |
-| Posts / Devlog | `notebook` | limSystem |
-| Profile | `smile` | icons-extra |
-| Contact | `chat-circle-dots` | icons-extra |
+| 메뉴 닫기 · 검색 | `close` · `search` | limSystem |
 | 테마 토글 | `moon` / `sun` | icons-extra |
-| 웹에서 플레이 | `play-circle` | limSystem |
-| App Store 에서 받기 | `download` | limSystem |
+| 비밀글 | `lock` | limSystem |
+| 조회수 | `eye` | limSystem |
+| 더 보기 | `arrow-right` | limSystem |
+| 받는 곳 버튼 | `play-circle` · `download` · `circle-question` · `link-external` | limSystem |
 
 ### 아이콘이 limSystem 에 없을 때
 
@@ -605,7 +602,9 @@ Editors·Posts·Live Service 가 늘어서 있었는데, 거기에 검색과 테
 만든 것 셋을 보여주는 자리입니다. 홈·서고와 **같은 폭(1280px)·같은 여백**을
 씁니다 (아래 띠는 이제 `BaseLayout` 이 모든 지면에 답니다). 페이지가 셋인데
 (`/projects` · `/projects/<id>` · `/projects/<id>/about`) 서로 오가는 자리라
-껍데기가 다르면 넘어갈 때마다 지면이 튑니다 — **셋을 같이 고치세요.**
+껍데기가 다르면 넘어갈 때마다 지면이 튑니다. 아래 둘은 껍데기(폭·빵부스러기)를
+[`ProjectPage.astro`](src/components/ProjectPage.astro) 하나로 씁니다 —
+⚠ **목록(`/projects`)은 따로라, 폭·여백을 고치면 그쪽도 보세요.**
 
 ```
 /projects            사진 + 이름 + 소개 + 스택 + 데브로그 수  ← 가로 카드 셋
@@ -617,7 +616,7 @@ Editors·Posts·Live Service 가 늘어서 있었는데, 거기에 검색과 테
 - **썸네일은 그 프로젝트 최신 devlog 의 커버입니다.** 프로젝트 대표 사진을 따로 안 들고 있어서인데, 없는 사진을 만들어 두는 것보다 실제로 올린 화면이 나오는 편이 낫다고 봤습니다. 한 장도 없으면 `Cover` 가 프로젝트 색 판으로 채웁니다 (BeepTimer 가 그 경우입니다).
 - ⚠ **카드 안 사진에 `aspect-ratio: auto` 만 주지 마세요.** 사진이 거꾸로 카드 높이를 끌고 갑니다 — 세로로 긴 폰 캡처가 커버인 MineApp 카드가 혼자 593px 이 됐습니다. 틀을 `position: absolute` 로 띄워서 높이를 못 정하게 하고, 칸 높이는 오른쪽 글이 정하게 둡니다.
 - ⚠ **`/projects/<id>` 의 머리는 한 열입니다** (2026-09-08 시안). 이름·소개·스택·버튼이 폭을 다 쓰고, 사진은 그 아래에 **띠처럼** 깔립니다 — 큰 화면에서 `3 / 1` 입니다. 16/10 그대로 두면 1280px 폭에서 높이가 800px 이라 화면 하나를 통째로 먹습니다. ⚠ 그 비율은 `!important` 로 덮습니다 — `Cover` 가 비율을 인라인 style 로 달기 때문입니다.
-- ⚠ **주 버튼("웹에서 바로 플레이" 같은 것)은 프로젝트 색이 아니라 강조색입니다.** 프로젝트 색으로 칠하면 같은 자리의 같은 동작이 지면마다 다른 색이 됩니다. `/projects/<id>/about` 의 「받는 곳」 버튼도 같은 색입니다 — **둘을 같이 고치세요.** 프로젝트 색은 알약과 Service 목록의 점에 그대로 남아 있습니다.
+- ⚠ **주 버튼("웹에서 바로 플레이" 같은 것)은 프로젝트 색이 아니라 강조색입니다.** 프로젝트 색으로 칠하면 같은 자리의 같은 동작이 지면마다 다른 색이 됩니다. 두 지면의 버튼 줄은 [`ProjectLinks.astro`](src/components/ProjectLinks.astro) 하나입니다. 프로젝트 색은 알약과 Service 목록의 점에 그대로 남아 있습니다.
 - ⚠ **숫자 띠는 칸마다 따로 선 카드이고, Devlog 목록도 카드입니다.** 한 판을 1px 로 가르던 모양에서 바꾼 것입니다 — 아래위가 "판 하나 / 카드 여럿" 으로 갈렸습니다.
 - **숫자 띠의 플랫폼과 "최근 업데이트"는 코드가 채웁니다.** 가운데 칸만 `PROJECTS[].stats` 입니다.
 - ⚠ **"최근 업데이트"는 마지막 devlog 날짜지 릴리즈 날짜가 아닙니다.** 정적 사이트라 스토어 배포일을 알 방법이 없어서 셀 수 있는 것만 셉니다 (홈의 번호를 순위로 안 쓰는 것과 같은 이유).
@@ -1688,6 +1687,17 @@ node scripts/import-tistory.mjs --dry    # 티스토리 이관 (한 번 쓰고 �
 ## 8. 고친 것 기록
 
 새 항목은 **위에** 붙입니다. 한 작업에 서너 줄이면 충분합니다 — 자세한 건 커밋에 있습니다.
+
+### 2026-09-14 · 안 쓰는 것 걷어내기 · 프로젝트 두 지면의 껍데기 합치기
+
+ponytail-audit 으로 훑은 것 중 여섯 개를 적용했습니다.
+
+- **`/projects/<id>` 와 `/about` 이 껍데기(폭·빵부스러기)와 버튼 줄을 똑같이 들고 있었습니다.** 스타일 95줄과 `LINK_ICON` 표가 두 벌이라 문서에 "둘을 같이 고치세요" 가 두 번 적혀 있었습니다. `ProjectPage` 와 `ProjectLinks` 로 뺐습니다. ⚠ **머리는 통째로 안 합쳤습니다** — 제목 크기(2.75 / 2.5rem)와 스택 자리가 달라서, 합치면 갈래를 props 로 받아야 합니다.
+- `global.css` 에서 아무 데서도 안 쓰는 `.container`·`.side-title`·`.title-ico`·`.muted` 를 지웠습니다 (사이드바를 걷을 때 남은 것).
+- `icons-extra/` 에서 쓰는 곳이 없어진 `smile`·`chat-circle-dots`·`book-open` 을 지웠습니다. §4 의 아이콘 표도 지금 쓰는 것으로 다시 적었습니다 — Tags·Posts 같은 없는 자리가 남아 있었습니다.
+- `favicon-16x16.png`·`favicon-32x32.png` 를 지웠습니다. `favicon.ico` 안에 16·32·48 이 다 들어 있습니다.
+- `post.sh` 의 "git 저장소가 아닙니다"·"origin 이 없습니다" 분기와 Astro 스타터가 남긴 `.vscode/` 를 지웠습니다.
+- 빌드 149쪽 통과. 두 지면을 폰 폭과 1280px 에서 띄워 여백·버튼 색·빵부스러기가 전과 같은 값인 것을 봤습니다. ⚠ 빌드는 `@astrojs/markdown-remark` 를 `--no-save` 로 잠깐 깔고 돌렸습니다 — 커밋 안 된 mdx 제거 때문에 그대로는 안 섭니다 (위 항목).
 
 ### 2026-09-14 · 형광펜을 노랑으로
 

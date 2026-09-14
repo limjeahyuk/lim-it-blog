@@ -2,17 +2,17 @@
 /**
  * 프로젝트 소개 — 뭘 하는 물건인지, 어디서 받는지.
  *
- * /projects·/projects/<id> 와 같은 껍데기(1280px + 아래 띠)를 씁니다.
- * 셋이 오가는 자리라 폭이나 여백이 다르면 넘어갈 때마다 지면이 튑니다.
+ * 껍데기(폭·빵부스러기)와 받는 곳 버튼은 /projects/<id> 와 같이 씁니다
+ * (ProjectPage · ProjectLinks).
  *
  * 여기 들어가는 문구(summary·features·links)는 전부 consts.ts 에
  * 있습니다. ⚠ 지어내지 말고 저장소 README 나 스토어 설명에서 옮기세요 (§6).
  */
-import BaseLayout from '../../../components/BaseLayout.astro'
 import Icon from '../../../components/Icon.astro'
+import ProjectLinks from '../../../components/ProjectLinks.astro'
+import ProjectPage from '../../../components/ProjectPage.astro'
 import { PROJECTS, type Project } from '../../../consts'
 import { countByProject, getPublishedPosts } from '../../../lib/posts'
-import type { IconName } from '../../../lib/icon-names'
 
 export async function getStaticPaths() {
   const counts = countByProject(await getPublishedPosts())
@@ -26,117 +26,59 @@ type Props = { project: Project; postCount: number }
 
 const { project, postCount } = Astro.props as Props
 
-/** 링크 종류별 아이콘. consts.ts 의 links[].kind 와 짝입니다. */
-const LINK_ICON: Record<string, IconName> = {
-  web: 'play-circle',
-  appstore: 'download',
-  support: 'circle-question',
-}
-
 const storeName = 'storeName' in project ? project.storeName : null
 ---
 
-<BaseLayout title={`${project.name} — 소개`} description={project.summary}>
-  <div class="wrap">
-    <nav class="crumb">
-      <a href="/projects">Service</a>
-      <span class="sep">/</span>
-      <a href={`/projects/${project.id}`}>{project.name}</a>
-      <span class="sep">/</span>
-      <span aria-current="page">소개</span>
-    </nav>
+<ProjectPage
+  title={`${project.name} — 소개`}
+  description={project.summary}
+  project={project}
+  page="소개"
+>
+  <header class="head">
+    <h1>
+      {project.name}
+      {project.active && <span class="live">LIVE</span>}
+    </h1>
+    <p class="tagline">{project.tagline}</p>
+    {
+      storeName && (
+        <p class="storename">App Store 에는 "{storeName}" 로 올라가 있습니다.</p>
+      )
+    }
+    <p class="summary">{project.summary}</p>
 
-    <header class="head">
-      <h1>
-        {project.name}
-        {project.active && <span class="live">LIVE</span>}
-      </h1>
-      <p class="tagline">{project.tagline}</p>
+    <ProjectLinks project={project} />
+  </header>
+
+  <section class="block">
+    <h2>이런 걸 할 수 있습니다</h2>
+    <ul class="features">
+      {project.features.map((feature) => <li>{feature}</li>)}
+    </ul>
+  </section>
+
+  <section class="block">
+    <h2>무엇으로 만들었나</h2>
+    <ul class="stack">
+      <li class="pill">{project.platform}</li>
+      {project.stack.map((tech) => <li class="pill">{tech}</li>)}
+    </ul>
+  </section>
+
+  <a class="devlog" href={`/projects/${project.id}`}>
+    <span>
       {
-        storeName && (
-          <p class="storename">App Store 에는 "{storeName}" 로 올라가 있습니다.</p>
-        )
+        postCount > 0
+          ? `만들면서 남긴 글 ${postCount}개 보기`
+          : '아직 남긴 글은 없습니다'
       }
-      <p class="summary">{project.summary}</p>
-
-      <div class="cta">
-        {
-          project.links.map((link) => (
-            <a
-              class="btn"
-              href={link.href}
-              target="_blank"
-              rel="noopener"
-            >
-              <Icon name={LINK_ICON[link.kind] ?? 'link-external'} size={17} />
-              {link.label}
-            </a>
-          ))
-        }
-      </div>
-    </header>
-
-    <section class="block">
-      <h2>이런 걸 할 수 있습니다</h2>
-      <ul class="features">
-        {project.features.map((feature) => <li>{feature}</li>)}
-      </ul>
-    </section>
-
-    <section class="block">
-      <h2>무엇으로 만들었나</h2>
-      <ul class="stack">
-        <li class="pill">{project.platform}</li>
-        {project.stack.map((tech) => <li class="pill">{tech}</li>)}
-      </ul>
-    </section>
-
-    <a class="devlog" href={`/projects/${project.id}`}>
-      <span>
-        {
-          postCount > 0
-            ? `만들면서 남긴 글 ${postCount}개 보기`
-            : '아직 남긴 글은 없습니다'
-        }
-      </span>
-      <Icon name="arrow-right" size={16} />
-    </a>
-  </div>
-</BaseLayout>
+    </span>
+    <Icon name="arrow-right" size={16} />
+  </a>
+</ProjectPage>
 
 <style>
-  .wrap {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 1.5rem 1.25rem 0;
-  }
-
-  .crumb {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--text-dim);
-  }
-
-  .crumb a {
-    color: var(--text-dim);
-    text-decoration: none;
-  }
-
-  .crumb a:hover {
-    color: var(--text);
-  }
-
-  .crumb [aria-current] {
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .sep {
-    color: var(--text-faint);
-  }
-
   .head {
     margin-top: 1.75rem;
     /* 읽는 글이라 폭을 잡아둡니다 — 1280px 를 다 쓰면 한 줄이 너무 깁니다 */
@@ -171,36 +113,6 @@ const storeName = 'storeName' in project ? project.storeName : null
     font-size: 0.9375rem;
     line-height: 1.85;
     color: var(--text-dim);
-  }
-
-  .cta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-  }
-
-  /*
-    ⚠ 2026-09-08 시안부터 **프로젝트 색이 아니라 강조색**입니다 —
-      프로젝트 지면(`/projects/<id>`)의 주 버튼과 같은 자리라 둘이 갈리면
-      안 됩니다. 왜 프로젝트 색을 안 쓰는지는 그쪽에 적어 뒀습니다.
-  */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.625rem 1.125rem;
-    border-radius: var(--radius-md);
-    font-size: 0.9375rem;
-    font-weight: 700;
-    color: var(--accent-fg);
-    background-color: var(--accent);
-    text-decoration: none;
-    transition: opacity 200ms ease;
-  }
-
-  .btn:hover {
-    opacity: 0.85;
   }
 
   .block {
@@ -267,10 +179,6 @@ const storeName = 'storeName' in project ? project.storeName : null
   }
 
   @media (min-width: 900px) {
-    .wrap {
-      padding: 2.5rem 2rem 0;
-    }
-
     .head {
       margin-top: 2.25rem;
     }
