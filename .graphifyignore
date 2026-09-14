@@ -1,0 +1,17 @@
+# graphify 가 그래프에 넣지 않을 것 (gitignore 문법)
+
+# /admin 번들 — admin-src/ 를 esbuild 로 묶은 것. 넣으면 tiptap 내부
+# 함수(aC()·bf() 같은 것)가 노드 1,200개로 붙어서 그래프를 덮습니다.
+public/admin/editor.js
+
+# 그래프는 코드만 봅니다 (2026-09-14 에 정했습니다). `graphify update` 는
+# 마크다운도 구조로 뽑아서, 안 막으면 글 136편이 노드 800개로 붙습니다.
+*.md
+src/content/
+public/
+
+# ⚠ 막을 수 없는 것 하나: `graphify update` 는 코드를 전부 다시 뽑아서, 이름이
+#   겹친 지역 변수 두 개가 매번 가짜 연결로 돌아옵니다 — index.astro 의 `num`
+#   (번호 칸)이 views.js 의 `num()` 으로, search.astro 의 `q`(검색어)가
+#   sync-authors.mjs 의 `q()` 로. 둘 다 INFERRED 이고, 그래프에서 제일 큰 다리처럼
+#   보이게 만듭니다. 다리를 따질 때는 이 둘을 빼고 보세요.
