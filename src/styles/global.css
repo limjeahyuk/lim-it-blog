@@ -602,10 +602,11 @@ html[data-theme='dark'] {
   --c-orange: var(--lim-orange-400); /* 6.3:1 */
   --c-red: var(--lim-red-400); /* 5.2:1 */
 
-  /* 형광펜. 어두운 배경에 형광색을 그대로 깔면 화면이 타서,
-     반투명하게 깔고 글자는 그대로 둡니다. */
-  --hl-bg: rgba(88, 221, 223, 0.22);
-  --hl-fg: var(--text);
+  /* 형광펜 — 노랑. 두 테마가 같은 값입니다 (2026-09-14).
+     전에는 청록을 다크에서 22% 로 깔았는데 회색으로 읽혔습니다.
+     limSystem 에 노랑이 없어서 여기 직접 적습니다 — 글자는 어두운 색 고정. */
+  --hl-bg: #ffe600;
+  --hl-fg: #16181d;
 }
 
 html[data-theme='light'] {
@@ -614,9 +615,6 @@ html[data-theme='light'] {
   --c-green: var(--lim-green-600); /* 6.1:1 */
   --c-orange: var(--lim-orange-700); /* 5.3:1 */
   --c-red: var(--lim-red-600); /* 5.1:1 */
-
-  --hl-bg: var(--lim-teal-300);
-  --hl-fg: var(--lim-gray-990);
 }
 
 .prose .c-teal {

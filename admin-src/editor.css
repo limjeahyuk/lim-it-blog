@@ -477,9 +477,10 @@
 .lim-md-editor .ProseMirror .c-orange { color: #ff9100; }
 .lim-md-editor .ProseMirror .c-red { color: #fe6d6d; }
 
+/* 형광펜 — 블로그 global.css 의 --hl-* 와 같은 값. 테마 무관. */
 .lim-md-editor .ProseMirror mark {
-  background-color: #2b6f70;
-  color: #eef1f5;
+  background-color: #ffe600;
+  color: #16181d;
   border-radius: 3px;
   padding: 0 2px;
 }
@@ -490,11 +491,6 @@
   .lim-md-editor .ProseMirror .c-green { color: #09721a; }
   .lim-md-editor .ProseMirror .c-orange { color: #b24c00; }
   .lim-md-editor .ProseMirror .c-red { color: #d52525; }
-
-  .lim-md-editor .ProseMirror mark {
-    background-color: #93eaeb;
-    color: #16181d;
-  }
 }
 
 /*
@@ -507,20 +503,12 @@ html[data-theme='light'] .lim-md-editor .ProseMirror .c-blue { color: #123fa5; }
 html[data-theme='light'] .lim-md-editor .ProseMirror .c-green { color: #09721a; }
 html[data-theme='light'] .lim-md-editor .ProseMirror .c-orange { color: #b24c00; }
 html[data-theme='light'] .lim-md-editor .ProseMirror .c-red { color: #d52525; }
-html[data-theme='light'] .lim-md-editor .ProseMirror mark {
-  background-color: #93eaeb;
-  color: #16181d;
-}
 
 html[data-theme='dark'] .lim-md-editor .ProseMirror .c-teal { color: #58dddf; }
 html[data-theme='dark'] .lim-md-editor .ProseMirror .c-blue { color: #429ff5; }
 html[data-theme='dark'] .lim-md-editor .ProseMirror .c-green { color: #5bc25d; }
 html[data-theme='dark'] .lim-md-editor .ProseMirror .c-orange { color: #ff9100; }
 html[data-theme='dark'] .lim-md-editor .ProseMirror .c-red { color: #fe6d6d; }
-html[data-theme='dark'] .lim-md-editor .ProseMirror mark {
-  background-color: #2b6f70;
-  color: #eef1f5;
-}
 
 /* ── 표 손잡이 (노션식) ──────────────────────────────────
    admin-src/table.js 가 그립니다. 문서가 아니라 표 위에 겹쳐 놓는 판이라,
