@@ -25,3 +25,4 @@ pnpm-debug.log*
 
 # graphify 가 만드는 그래프 (로컬에서만 씁니다)
 graphify-out/
+.graphifyignore
