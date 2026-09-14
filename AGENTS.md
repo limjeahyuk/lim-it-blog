@@ -438,14 +438,14 @@ radius 도 마찬가지입니다. `--radius-sm/md/lg/full` 은 limSystem 원본�
 
 | hue | 토큰 | limSystem | 프로젝트 | 다크 대비 |
 |---|---|---|---|---|
-| 0° | `--nj-red` | RED_400 | — (비어 있음) | 6.3:1 |
+| 0° | `--nj-red` | RED_400 | **Shape Spider** | 6.3:1 |
 | 33° | `--nj-amber` | ORANGE_300 | — (비어 있음) | 10.1:1 |
 | 34° | `--nj-orange` | ORANGE_400 | **BeepTimer** | 7.7:1 |
 | 121° | `--nj-green` | GREEN_400 | **MineApp** | 7.8:1 |
 | 181° | `--nj-teal` | TEAL_400 | **GridBrawl** | 10.7:1 |
 | 209° | `--nj-blue` | BLUE_400 | — (비어 있음) | 6.2:1 |
 
-토큰 여섯은 그대로 두되 **지금 쓰는 건 셋뿐입니다.** 프로젝트를 늘리면 빈 칸에서 골라 쓰세요.
+토큰 여섯은 그대로 두되 **지금 쓰는 건 넷뿐입니다.** 프로젝트를 늘리면 빈 칸에서 골라 쓰세요.
 
 **강조색은 파랑입니다** (2026-09-08 시안).
 
@@ -728,12 +728,13 @@ magazine-b·folin)을 보고 정한 것입니다. 상자를 겹겹이 쌓는 것
   ├── GridBrawl/       ← 사이트에 올라가 있음 (진행 중)
   ├── MineApp/         ← 사이트에 올라가 있음 (App Store 출시)
   ├── BeepTimer/       ← 사이트에 올라가 있음 (App Store 출시)
+  ├── ShapeSpider/     ← 사이트에 올라가 있음 (웹 · shape-spider.vercel.app)
   ├── CoupleApp/       ← 안 올림. git 저장소도 아님
   ├── MiniGame_Speeder/  ← 안 올림
   └── TossTreasureHunt/  ← 안 올림
 ```
 
-⚠ **만든 걸 전부 사이트에 올리지 않습니다.** 지금 보여줄 수 있는 셋(GridBrawl · MineApp · BeepTimer)만 `PROJECTS` 에 있습니다. 나머지 저장소의 글을 쓰려면 먼저 프로젝트를 추가해야 합니다 (§6).
+⚠ **만든 걸 전부 사이트에 올리지 않습니다.** 지금 보여줄 수 있는 넷(GridBrawl · MineApp · BeepTimer · Shape Spider)만 `PROJECTS` 에 있습니다. 나머지 저장소의 글을 쓰려면 먼저 프로젝트를 추가해야 합니다 (§6).
 
 글을 쓸 때는 해당 게임 저장소를 세션에 추가합니다.
 
@@ -1691,6 +1692,15 @@ npm run icons     # limSystem 아이콘 다시 긁어오기
 ## 8. 고친 것 기록
 
 새 항목은 **위에** 붙입니다. 한 작업에 서너 줄이면 충분합니다 — 자세한 건 커밋에 있습니다.
+
+### 2026-09-14 · Shape Spider 를 Service 에 넣었습니다
+
+`~/Develop/Claude/ShapeSpider` 를 `PROJECTS` 넷째로 올렸습니다 (§6 대로 `consts.ts` + `config.yml` 두 곳).
+
+- **소개 문구는 그 저장소의 `docs/GAME_RULES.md` 와 `src/core/config.ts` 에서 옮겼습니다.** README 는 Vite 템플릿 그대로라 쓸 것이 없었습니다. 난이도 범위(3~5 · 3~6 · 3~8)와 어려움 55장은 config 값입니다.
+- **색은 `--nj-red`** 입니다 — 남은 셋 중 amber 는 주황과 1° 차이고 blue 는 청록과 28° 라 30° 규칙에 걸립니다. 빨강은 주황과 34°.
+- ⚠ **곁다리로 `@astrojs/markdown-remark` 를 의존성에 넣었습니다.** `d474285`(graphify 적용)에 `@astrojs/mdx` 제거가 딸려 들어가면서 `astro.config.mjs` 의 `rehypePlugins` 가 기대는 패키지가 같이 빠져 **`main` 이 빌드가 안 되고 있었습니다.** 지난 두 항목의 "--no-save 로 잠깐 깔았다" 가 그 이야기입니다. 이제는 그냥 섭니다.
+- 빌드 151쪽(+2) 통과. `/projects` · `/projects/shapespider` · `/about` 셋을 다크에서 띄워 봤습니다.
 
 ### 2026-09-14 · 「저장」을 `skin.js` 에서 `save.js` 로 뗐습니다
 

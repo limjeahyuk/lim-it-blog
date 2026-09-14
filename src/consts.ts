@@ -283,6 +283,37 @@ export const PROJECTS = [
       },
     ],
   },
+  {
+    id: 'shapespider',
+    name: 'Shape Spider',
+    tagline: '폴리오미노로 같은 색 정사각형을 모으는 퍼즐',
+    platform: 'Web',
+    stack: ['TypeScript', 'React', 'Vite'],
+    color: 'var(--nj-red)', // hue 0° · 주황(34°)과 34° 떨어짐
+    active: true,
+    stats: [
+      // features 의 "10×10 판"
+      { value: '10×10', label: '보드' },
+      // features 의 쉬움·보통·어려움
+      { value: '3단계', label: '난이도' },
+    ],
+    summary:
+      '4색 폴리오미노 카드를 10×10 판에 놓고, 같은 색으로 채워진 정사각형을 뽑아 모으는 퍼즐입니다. 색마다 3×3 → 4×4 → 5×5 순서로 커지는 정사각형을 전부 채우면 이깁니다.',
+    features: [
+      '손패 5장 중 원하는 것만 놓고 넘깁니다. 넘긴 카드는 덱이 한 바퀴 돌면 그대로 다시 오고, 덱이 돌 때마다 감점입니다.',
+      '정사각형은 색만 봅니다. 여러 도형에 걸쳐 있어도 되고, 뽑을 크기는 정해져 있어서 고르는 것은 위치뿐입니다.',
+      '뽑은 자리는 빈 칸이 되어 다시 놓을 수 있습니다.',
+      '쉬움(3~5) · 보통(3~6) · 어려움(3~8) 세 난이도. 어려움은 색상당 55장으로 덱이 더 깁니다.',
+      '되돌리기는 직전 한 수만. 폰에서는 세로 레이아웃으로 손가락으로 끌어 놓습니다.',
+    ],
+    links: [
+      {
+        kind: 'web',
+        label: '웹에서 바로 플레이',
+        href: 'https://shape-spider.vercel.app/',
+      },
+    ],
+  },
 ] as const
 
 export type Project = (typeof PROJECTS)[number]
