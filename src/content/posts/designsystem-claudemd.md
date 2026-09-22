@@ -306,7 +306,6 @@ prop은 각 컴포넌트의 TS 타입이 정답이다. 이 문서는 "무엇을 
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog>
-```
 
 - Trigger / Close는 자식 하나에 props를 주입한다(asChild). Fragment 금지.
 - 제어형은 open / onOpenChange. 비동기 액션 후 닫을 때 씀.
@@ -314,9 +313,7 @@ prop은 각 컴포넌트의 TS 타입이 정답이다. 이 문서는 "무엇을 
 
 
 같은 형식으로 `bottom-sheet/`(snapPoints, dismissible, Footer 버튼 `width="100%"`), `dropdown/`(Item closeOnClick), `toast/`(Provider 위치, `toast()` 옵션), `form-field/`(id/aria 자동 주입, 자식 하나만) 정도만 만들면 됩니다. Button, Badge 같은 단순 컴포넌트는 README 없이 타입으로 충분합니다.
-
 ## props JSDoc — 타입이 말 못 하는 함정만
-
 ```ts
 export interface BottomSheetContentProps {
   /** 핸들을 끌어 멈출 높이 목록. 생략하면 내용 높이 하나 */
@@ -325,13 +322,9 @@ export interface BottomSheetContentProps {
 
 ```
 
-```
-
-
-
 **원칙 요약**
 
-- CLAUDE.md = 고르기 + 규칙. prop 안 적음.
+- [CLAUDE.md](http://CLAUDE.md) = 고르기 + 규칙. prop 안 적음.
 - 폴더 README = 조합/제어 흐름처럼 타입이 못 담는 것. 단순 컴포넌트엔 없음.
 - JSDoc = 한 prop의 함정.
 - 세 곳에 같은 내용 두 번 적지 않는다.
