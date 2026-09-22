@@ -3,6 +3,7 @@ author: developer
 title: AI가 인식하는 디자인시스템
 slug: designsystem-claudemd
 description: Claude가 사용할 때 필요한 Component Claudemd 작성.
+heroImage: https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1790067299/fgtjv0nyd99poxivi3wq.jpg
 pubDate: 2026-09-21
 draft: false
 secret: false
