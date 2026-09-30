@@ -322,7 +322,9 @@ const who = author ? getAuthor(author) : undefined
     const r = await fetch('/api/views', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug }),
+      /* ⚠ `ref` 는 **호스트 하나로 줄여서** 저장됩니다 (api/views.js) —
+         주소 전체를 남기면 남의 검색어까지 들고 있게 됩니다. */
+      body: JSON.stringify({ slug, ref: document.referrer }),
       keepalive: true,
     })
     if (r.ok) show((await r.json()).views)

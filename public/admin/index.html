@@ -2173,7 +2173,30 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
+      }
+      /*
+        막대 위의 숫자 (2026-09-30).
+
+        ⚠ **hover(`title`)로만 두지 마세요** — 폰에는 hover 가 없어서 볼
+          길이 없습니다. `title` 은 데스크톱용으로 그대로 남겨 뒀습니다.
+        ⚠ **0 인 날은 빈 칸입니다** (views.js). 열네 칸에 0 이 줄줄이 적혀
+          있으면 정작 있는 날이 안 보입니다.
+        ⚠ 375px 에서 한 칸이 20px 쯤입니다 — 네 자리 수가 옆 칸과 붙지
+          않게 칸을 넘어가도 그냥 두고(`overflow: visible`) 가운데 정렬로
+          겹치게 뒀습니다. 하루에 천 번이 되면 그때 다시 보세요.
+      */
+      .lim-day-n {
+        font-size: 9px;
+        font-weight: 800;
+        line-height: 1;
+        min-height: 10px;
+        color: var(--a-dim);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .lim-day.is-today .lim-day-n {
+        color: var(--a-accent);
       }
       .lim-day-rail {
         width: 100%;
@@ -3056,6 +3079,6 @@
       config.yml 과 같은 이유로 캐시 무효화용입니다 — 고쳤는데 폰에서 안
       바뀌면 숫자를 올리세요.
     -->
-    <script src="/admin/editor.js?v=36"></script>
+    <script src="/admin/editor.js?v=37"></script>
   </body>
 </html>

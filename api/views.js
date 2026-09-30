@@ -17,6 +17,10 @@
 //   전부)와 `total` 을 받습니다. 한 편씩 물어보는 것과 131편을 통째로 받아
 //   가는 것은 다른 이야기입니다.
 //
+// ⚠ **유입 경로도 사이트 전체 합계 하나뿐입니다** (`views:ref` 해시의
+//   호스트 칸). 글 × 경로로 세면 날짜와 같은 이유로 열쇠가 불어납니다 —
+//   알고 싶은 것은 "어디서 들어오나" 한 줄입니다.
+//
 // ⚠ **날짜별 숫자는 사이트 전체 합계 하나뿐입니다** (`views:day` 해시의
 //   `YYYY-MM-DD` 칸). 글 × 날짜로 세면 열쇠가 글 수 × 날짜 수로 불어나는데,
 //   `/admin` 의 대시보드가 그리는 것은 "요즘 얼마나 읽히나" 한 줄이라
@@ -34,6 +38,8 @@ import { timingSafeEqual } from 'node:crypto'
 const HASH = 'views'
 /* 날짜별 합계. 하루에 칸 하나씩 늘어납니다 (한 해에 365개) */
 const DAYS = 'views:day'
+/* 유입 경로 합계. 칸 하나가 호스트 하나입니다 */
+const REFS = 'views:ref'
 
 /* config.yml 의 「주소」 칸과 같은 규칙입니다. 아무 글자나 받으면 해시에
    쓰레기 열쇠가 쌓입니다. */
@@ -135,6 +141,47 @@ function sameToken(given, want) {
   return timingSafeEqual(a, b)
 }
 
+/*
+  들어온 곳 — 호스트 하나로 줄입니다.
+
+  ⚠ **주소 전체를 남기지 않습니다.** 검색어가 붙은 주소(`?q=…`)가 그대로
+    쌓이면 남의 검색어를 들고 있게 되고, 칸도 끝없이 늘어납니다.
+
+  ⚠ **아무 글자나 받지 않습니다.** 이 값은 해시의 **열쇠**가 되므로, 호스트
+    모양이 아니면 버립니다 (`SLUG` 를 거르는 것과 같은 이유). 그래도 남이
+    아무 referrer 나 보내면 칸이 늘어날 수는 있습니다 — 혼자 보는 표라
+    거기까지는 막지 않았습니다.
+
+  - 빈 값(주소창·즐겨찾기·앱) → `(직접)`
+  - 우리 사이트 안에서 넘어온 것 → `(사이트 안)`. 버리지 않습니다 — 버리면
+    바깥에서 온 것의 몫이 실제보다 커 보입니다.
+*/
+const HOST = /^[a-z0-9.-]{1,60}$/
+
+function refOf(req, host) {
+  let body = req.body
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body)
+    } catch {
+      return '(직접)'
+    }
+  }
+  const raw = body && typeof body.ref === 'string' ? body.ref.slice(0, 500) : ''
+  if (!raw) return '(직접)'
+
+  let from
+  try {
+    from = new URL(raw).hostname.toLowerCase().replace(/^www\./, '')
+  } catch {
+    return '(직접)'
+  }
+  if (!HOST.test(from)) return '(직접)'
+  return from === String(host || '').toLowerCase().replace(/^www\./, '')
+    ? '(사이트 안)'
+    : from
+}
+
 function slugOf(req) {
   let body = req.body
   if (typeof body === 'string') {
@@ -166,6 +213,7 @@ export default async function handler(req, res) {
       const [raw] = await pipeline([
         ['HINCRBY', HASH, slug, 1],
         ['HINCRBY', DAYS, today(), 1],
+        ['HINCRBY', REFS, refOf(req, req.headers.host), 1],
       ])
       const views = Number(raw) || 0
       res.setHeader('Cache-Control', 'no-store')
@@ -215,12 +263,13 @@ export default async function handler(req, res) {
 
       if (full) {
         /* 대시보드는 날짜별 합계도 같이 그립니다 — 두 번 부르지 않습니다. */
-        const [rawViews, rawDays] = creds()
+        const [rawViews, rawDays, rawRefs] = creds()
           ? await pipeline([
               ['HGETALL', HASH],
               ['HGETALL', DAYS],
+              ['HGETALL', REFS],
             ])
-          : [null, null]
+          : [null, null, null]
         const counts = toCounts(rawViews)
         const order = Object.keys(counts).sort((a, b) => counts[b] - counts[a])
 
@@ -232,6 +281,9 @@ export default async function handler(req, res) {
           /* `{ 'YYYY-MM-DD': 횟수 }`. 세기 시작한 날부터만 있습니다 —
              받는 쪽이 빈 날을 0 으로 채웁니다. */
           days: toCounts(rawDays),
+          /* `{ '호스트': 횟수 }`. 날짜별과 같이 2026-09-30 부터 쌓입니다 —
+             그전에 센 것은 어디서 왔는지 모릅니다. */
+          refs: toCounts(rawRefs),
           /* ⚠ **"아직 아무도 안 읽었다" 와 "셀 데가 없다" 는 다릅니다.**
              둘 다 빈 표로 오기 때문에, `/admin` 이 그걸 구분해서 말할 수
              있게 저장소가 붙어 있는지를 같이 보냅니다. 열쇠를 넣은

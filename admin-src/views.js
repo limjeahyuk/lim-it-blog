@@ -168,6 +168,7 @@ async function load() {
     posts: posts.length,
     total: data.total || 0,
     days: data.days || {},
+    refs: data.refs || {},
     store: data.store !== false,
   }
 }
@@ -256,6 +257,13 @@ function daysCard(days) {
     /* 0 인 날도 자리는 남깁니다 — 빈 자리가 곧 "그날은 없었다" 입니다 */
     fill.style.height = max ? Math.max((d.n / max) * 100, d.n ? 4 : 0) + '%' : '0'
     rail.appendChild(fill)
+    /* ⚠ **숫자를 막대 위에 적습니다.** hover 로만 보여 주면 폰에서는 볼
+       길이 없습니다 (`title` 은 남겨 뒀습니다 — 데스크톱에서 날짜까지
+       같이 보입니다). 0 인 날은 비웁니다 — 열네 칸에 0 이 줄줄이 적혀
+       있으면 있는 날이 안 보입니다. */
+    /* ⚠ 여기만 `num()`(1,287)을 안 씁니다 — 쉼표 한 글자가 18px 짜리 칸을
+       넘겨서 옆 날짜와 겹칩니다. 날짜는 `title` 에 있습니다. */
+    col.appendChild(el('b', 'lim-day-n', d.n ? String(d.n) : ''))
     col.appendChild(rail)
     col.appendChild(el('span', null, String(Number(d.key.slice(8)))))
     if (d.key === today) col.classList.add('is-today')
@@ -273,16 +281,12 @@ function daysCard(days) {
   return card
 }
 
-/** 저자별 묶음 */
-function whoCard(rows, total) {
-  const sums = new Map()
-  for (const r of rows) {
-    const key = r.gone ? '목록에 없는 주소' : r.who || '저자 없음'
-    sums.set(key, (sums.get(key) || 0) + r.n)
-  }
-  const list = [...sums.entries()].sort((a, b) => b[1] - a[1])
+/** 이름 + 막대 + 「N번 · %」 한 줄씩. 저자별과 유입 경로가 같이 씁니다. */
+function shareCard(title, entries, note) {
+  const list = [...entries].sort((a, b) => b[1] - a[1])
+  const total = list.reduce((sum, e) => sum + e[1], 0)
 
-  const card = section('저자별')
+  const card = section(title)
   for (const [name, n] of list) {
     const row = el('div', 'lim-wrow')
     row.appendChild(el('span', 'lim-wrow-n', name))
@@ -296,7 +300,49 @@ function whoCard(rows, total) {
     )
     card.appendChild(row)
   }
+  if (note) card.appendChild(el('p', 'lim-dnote', note))
   return card
+}
+
+/** 저자별 묶음 */
+function whoCard(rows) {
+  const sums = new Map()
+  for (const r of rows) {
+    const key = r.gone ? '목록에 없는 주소' : r.who || '저자 없음'
+    sums.set(key, (sums.get(key) || 0) + r.n)
+  }
+  return shareCard('저자별', sums)
+}
+
+/**
+ * 어디서 들어왔나.
+ *
+ * ⚠ **날짜별과 같이 2026-09-30 부터 쌓입니다.** 그전에 센 것은 어디서
+ *   왔는지 모릅니다 — 여기 합과 「모두」가 다른 것이 정상입니다.
+ *
+ * ⚠ **`(사이트 안)` 을 빼지 않습니다.** 홈에서 글로 넘어간 것도 한 번인데,
+ *   그걸 버리면 바깥에서 온 것의 몫이 실제보다 커 보입니다.
+ */
+function refsCard(refs) {
+  const card = section('어디서 들어왔나')
+  const entries = Object.entries(refs)
+  if (!entries.length) {
+    card.appendChild(
+      el(
+        'p',
+        'lim-dnote',
+        '아직 하나도 없습니다 — 세기 시작한 날부터 쌓입니다. ' +
+          '그전에 센 것은 어디서 왔는지 모릅니다.',
+      ),
+    )
+    return card
+  }
+  return shareCard(
+    '어디서 들어왔나',
+    entries,
+    '"(직접)" 은 주소창·즐겨찾기·앱에서 바로 온 것이고, ' +
+      '"(사이트 안)" 은 이 사이트의 다른 지면에서 넘어온 것입니다.',
+  )
 }
 
 /** 글별 순위 — 검색과 정렬은 여기서만 씁니다 */
@@ -565,7 +611,8 @@ export function openViewsPage() {
     body.appendChild(stats)
 
     body.appendChild(daysCard(data.days))
-    body.appendChild(whoCard(data.rows, data.total))
+    body.appendChild(refsCard(data.refs))
+    body.appendChild(whoCard(data.rows))
     body.appendChild(listCard(data.rows, top4.n, onGo))
     if (data.unread.length) body.appendChild(unreadCard(data.unread, onGo))
 
