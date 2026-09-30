@@ -332,6 +332,18 @@
   margin: 0;
 }
 
+/*
+  ⚠ **목록만 위아래로 띄웁니다** (2026-09-30). 이 지면은 문단 사이에 여백이
+    없고 줄높이(1.9)로만 숨을 쉽니다 — 한 문장이 한 단락이라 그게 맞습니다.
+    그런데 목록은 덩어리라, 같은 규칙이면 앞뒤 문단에 그대로 들러붙습니다.
+  ⚠ **맨 바깥 목록에만 붙습니다** (`>`). 목록 안에 든 목록까지 띄우면
+    한 덩어리로 안 읽힙니다.
+*/
+.lim-md-editor .ProseMirror > ul,
+.lim-md-editor .ProseMirror > ol {
+  margin-block: 0.9em;
+}
+
 .lim-md-editor .ProseMirror li + li {
   margin-top: 0.4em;
 }

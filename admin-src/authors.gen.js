@@ -13,8 +13,8 @@ export const AUTHOR_NAMES = {
 
 /** 저자별 글 수. 「에디터」의 「글 N편」과 지울 수 있는지 판정에 씁니다. */
 export const AUTHOR_COUNTS = {
-  "developer": 17,
-  "pm": 1,
+  "developer": 20,
+  "pm": 2,
   "student": 118,
 }
 
@@ -34,7 +34,7 @@ export const AUTHOR_LIST = [
     "bio": "임재혁, 개발을 하면서 생기는 것들 기록합니다.",
     "color": "red",
     "initial": "D",
-    "count": 17
+    "count": 20
   },
   {
     "id": "pm",
@@ -42,6 +42,6 @@ export const AUTHOR_LIST = [
     "bio": "임재혁, 새로운 것을 만들기 위한 기획을 정리 해보도록 할께요!",
     "color": "green",
     "initial": "P",
-    "count": 1
+    "count": 2
   }
 ]

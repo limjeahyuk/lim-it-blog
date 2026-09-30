@@ -307,8 +307,34 @@ export function makeEditor(element, markdown, handlers = {}) {
     extensions: makeExtensions({ pickImage, pickLink, upload }),
     content: markdown || '',
     contentType: 'markdown',
+    /*
+      스크롤이 커서를 따라오게 합니다 (2026-09-30).
+
+      기본값(0)이면 ProseMirror 는 커서를 스크롤 판 **가장자리에 딱 붙여**
+      놓습니다 — 마지막 줄이 판 맨 아래에 걸려서, 지금 쓰는 줄이 안 보입니다
+      (재서 확인: 커서 794~812, 판 바닥 812). 폰에서는 그 자리가 키보드 뒤라
+      더 심합니다. 위쪽은 붙어 있는 도구 띠(`.lim-md-head` · §6-2)에 가립니다.
+
+      ⚠ **두 값을 같이 줘야 합니다.** `scrollThreshold` 는 "언제 움직일까",
+        `scrollMargin` 은 "얼마나 띄울까" 입니다. threshold 가 없으면
+        가장자리에 닿을 때까지 안 움직이고, margin 이 없으면 닿은 뒤 도로
+        붙입니다.
+
+      ⚠ **한 번 재고 맙니다.** tiptap 은 `editorProps` 를 Editor 를 만들 때
+        한 번 펼쳐(spread) 넣어서, getter 로 둬도 그 자리에서 값으로 굳습니다
+        (플러그인 props 도 `bindProps` 가 같은 일을 합니다). 도구 띠 높이는
+        화면 폭으로 정해지고 폭은 쓰는 도중에 거의 안 바뀌니 그대로 둡니다 —
+        「사진 크기」 줄이 뜨면 44px 만큼 어긋납니다.
+    */
+    editorProps: { scrollThreshold: scrollGap(element), scrollMargin: scrollGap(element) },
     ...rest,
   })
+}
+
+/** 커서와 스크롤 판 가장자리 사이에 남겨 둘 자리. 도구 띠가 없으면(왕복 검사) 0 입니다. */
+function scrollGap(element) {
+  const head = element?.closest?.('.lim-md')?.querySelector('.lim-md-head')
+  return { top: (head?.offsetHeight || 0) + 16, bottom: 140, left: 0, right: 0 }
 }
 
 /**
