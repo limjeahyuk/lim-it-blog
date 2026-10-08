@@ -250,6 +250,11 @@ export const PROJECTS = [
         label: 'App Store 에서 받기',
         href: 'https://apps.apple.com/kr/app/id6780933427',
       },
+      {
+        kind: 'support',
+        label: '지원 · 문의',
+        href: '/projects/mineapp/support',
+      },
     ],
   },
   {

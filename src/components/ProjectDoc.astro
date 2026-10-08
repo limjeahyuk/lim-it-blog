@@ -1,0 +1,186 @@
+---
+/**
+ * 프로젝트 아래 붙는 안내 지면(지원·개인정보처리방침·계정 삭제)의 껍데기.
+ *
+ * 스토어 심사와 사용자가 읽는 글이라 소개 페이지(about)와 같은 폭(42rem)·글자로
+ * 맞춥니다. 본문은 <section class="block"> 에 h2 하나씩 — 스타일은 아래 :global 이
+ * 잡아 주니 페이지마다 CSS 를 다시 쓰지 마세요.
+ */
+import ProjectPage from './ProjectPage.astro'
+import type { Project } from '../consts'
+
+interface Props {
+  project: Project
+  /** 빵부스러기와 <title> 에 쓰는 지면 이름 (예: "지원") */
+  page: string
+  heading: string
+  description: string
+  /** 제목 아래 흐린 한 줄 (시행일 같은 것) */
+  meta?: string
+}
+
+const { project, page, heading, description, meta } = Astro.props
+const storeName = 'storeName' in project ? project.storeName : project.name
+---
+
+<ProjectPage
+  title={`${storeName} — ${page}`}
+  description={description}
+  project={project}
+  page={page}
+>
+  <article class="doc">
+    <header class="head">
+      <h1>{heading}</h1>
+      {meta && <p class="meta">{meta}</p>}
+      <p class="summary"><slot name="summary" /></p>
+    </header>
+    <slot />
+  </article>
+</ProjectPage>
+
+<style>
+  .doc {
+    /* 읽는 글이라 폭을 잡아둡니다 — 소개 페이지와 같은 값 */
+    max-width: 42rem;
+    padding-bottom: 4rem;
+  }
+
+  .head {
+    margin-top: 1.75rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .meta {
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+  }
+
+  .summary {
+    margin: 1.25rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.85;
+    color: var(--text-dim);
+  }
+
+  .doc :global(.block) {
+    margin-top: 3rem;
+  }
+
+  .doc :global(.block h2) {
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.125rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .doc :global(.block h3) {
+    margin: 1.5rem 0 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .doc :global(.block p) {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.85;
+    color: var(--text-dim);
+  }
+
+  .doc :global(.block p + p) {
+    margin-top: 0.75rem;
+  }
+
+  .doc :global(.block ul),
+  .doc :global(.block ol) {
+    margin: 0;
+    padding-left: 1.15rem;
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+
+  .doc :global(.block p + ul),
+  .doc :global(.block ul + p) {
+    margin-top: 0.75rem;
+  }
+
+  .doc :global(.block li + li) {
+    margin-top: 0.625rem;
+  }
+
+  .doc :global(.block li::marker) {
+    color: var(--text-faint);
+  }
+
+  .doc :global(.block strong) {
+    color: var(--text);
+  }
+
+  .doc :global(.note) {
+    margin-top: 1rem !important;
+    font-size: 0.875rem !important;
+    color: var(--text-faint) !important;
+  }
+
+  /* 이름-값 판 (받는 사람·제목 같은 것) */
+  .doc :global(.facts) {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.625rem 1.25rem;
+    margin: 1.25rem 0 0;
+    padding: 1.125rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--card);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+
+  .doc :global(.facts dt) {
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .doc :global(.facts dd) {
+    margin: 0;
+    color: var(--text-dim);
+    overflow-wrap: anywhere;
+  }
+
+  .doc :global(a) {
+    color: var(--accent-text);
+  }
+
+  /* 폰에서는 이름과 값을 위아래로 — 두 칸이면 값 칸이 너무 좁아집니다 */
+  @media (max-width: 520px) {
+    .doc :global(.facts) {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+
+    .doc :global(.facts dd + dt) {
+      margin-top: 0.75rem;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .head {
+      margin-top: 2.25rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+    }
+  }
+</style>
