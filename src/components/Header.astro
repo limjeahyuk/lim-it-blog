@@ -87,6 +87,10 @@ const counts = countByAuthor(posts)
           </li>
         ))
       }
+      {/* 바깥 사이트로 바로 갑니다 — `PROJECTS` 에 안 넣어서 소개 지면이 안 생깁니다 */}
+      <li class="ext">
+        <a href="https://admirable-conkies-a5387d.netlify.app/" target="_blank" rel="noopener">메산기</a>
+      </li>
     </ul>
   </nav>
 
@@ -324,6 +328,11 @@ const counts = countByAuthor(posts)
     font-size: 0.9375rem;
     color: var(--text-dim);
     text-decoration: none;
+  }
+
+  .big li.ext a {
+    font-size: 0.8125rem;
+    color: var(--text-faint);
   }
 
   .n {
