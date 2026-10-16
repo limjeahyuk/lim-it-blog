@@ -41,7 +41,7 @@ secret: false
 
 
 
-[https://admirable-conkies-a5387d.netlify.app/](https://admirable-conkies-a5387d.netlify.app/)
+[https://maplecraftcalc.netlify.app/](https://maplecraftcalc.netlify.app/)
 
 
 
