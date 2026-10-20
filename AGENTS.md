@@ -1717,6 +1717,18 @@ npm run icons     # limSystem 아이콘 다시 긁어오기
 
 새 항목은 **위에** 붙입니다. 한 작업에 서너 줄이면 충분합니다 — 자세한 건 커밋에 있습니다.
 
+### 2026-10-20 · 메산기 아래에 "메이머" 링크
+
+재획 타이머(메이머)로 바로 가는 줄을 메산기 바로 아래에 달았습니다 (`Header.astro`). 메산기와 같은 방식이라 `PROJECTS` 에 안 넣었고 모양도 같습니다.
+
+- 주소는 `maplehunttimer.netlify.app` 입니다. 원본은 `~/Develop/Claude/MapleHuntTimer` (GitHub `limjeahyuk/MapleHuntTimer`, 비공개).
+
+### 2026-10-20 · 메산기 아래에 "메이머" 링크
+
+재획 타이머(메이머)로 바로 가는 줄을 메산기 바로 아래에 달았습니다 (`Header.astro`). 메산기와 같은 방식이라 `PROJECTS` 에 안 넣었고 모양도 같습니다.
+
+- 주소는 `maplehunttimer.netlify.app` 입니다. 원본은 `~/Develop/Claude/MapleHuntTimer` (GitHub `limjeahyuk/MapleHuntTimer`, 비공개).
+
 ### 2026-10-15 · 메뉴 판 SERVICE 맨 아래에 "메산기" 링크
 
 Netlify 에 올라가 있는 메산기로 바로 가는 줄을 하나 달았습니다 (`Header.astro`).
