@@ -322,7 +322,7 @@ export const PROJECTS = [
   },
   {
     id: 'uridul',
-    name: '우리둘',
+    name: '우리둘ෆ',
     tagline: '둘이 같이 쓰는 커플 기록장',
     platform: 'Web (PWA)',
     stack: ['React', 'Vite', 'Supabase', 'Vercel'],
