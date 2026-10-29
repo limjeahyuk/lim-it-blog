@@ -201,6 +201,7 @@ collections:
           - { label: MineApp, value: mineapp }
           - { label: BeepTimer, value: beeptimer }
           - { label: Shape Spider, value: shapespider }
+          - { label: 우리둘, value: uridul }
 
       # ⚠ required: false 가 꼭 있어야 합니다. Decap 의 boolean 은 값이 없으면
       #   (= frontmatter 에 키가 아예 없으면) "필수인데 안 채웠다"로 봅니다.
