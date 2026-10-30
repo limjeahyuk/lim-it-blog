@@ -774,6 +774,56 @@ magazine-b·folin)을 보고 정한 것입니다. 상자를 겹겹이 쌓는 것
 
 ---
 
+## 5-3. 우리둘 데브로그 초안 (써 달라고 할 때만)
+
+우리둘(`~/Develop/Claude/uridul`)에 기능을 만들면, **가끔** 블로그 초안을 써 달라고 하십니다.
+
+⚠ **써 달라고 할 때만 씁니다.** 기능이 끝날 때마다 "블로그 초안 써 드릴까요?" 하고 묻지 마세요.
+
+지금까지 `uridul-*` 7편이 이렇게 나왔고, 마음에 들어 하셨습니다. 기준 샘플은 `uridul-sketch-quiz.md` 입니다.
+
+### 무엇을 쓰는가
+
+- **실제로 만든 것과, 기획으로 말씀하신 것만** 씁니다. 출처는 uridul 의 커밋 · 코드 · 마이그레이션 주석, 그리고 그 기능을 만들 때 대화에서 하신 말입니다.
+- 기획에서 정한 규칙(숫자 포함)은 그대로 옮깁니다 — "60초 안이면 3번, 80초 안이면 4번".
+- **바꾼 것은 처음 → 바꾼 이유 → 지금** 순서로 씁니다. 이유는 하신 말에서만 가져옵니다 ("이러면 무조건 맞힐 수밖에 없었습니다").
+- 동기 · 소감 · 써 본 느낌은 지어내지 않고 **`(여기에: … — 직접 채워 주세요)`** 로 비워 둡니다. 대괄호 `[ ]` 가 아니라 소괄호입니다 (직접 고치실 때 소괄호로 바꾸셨습니다).
+- **적당히** 씁니다. 자세한 건 직접 쓰십니다 — 실제로 낙서장 글에는 버그 수정 · 고민한 이야기를 손으로 길게 더하셨습니다. 초안은 뼈대와 사진이면 됩니다.
+- 끝에 `남은 것:` 한 줄. 코드의 `ponytail:` 주석이나 알려진 한계에서 가져옵니다.
+
+### 모양
+
+- `src/content/posts/uridul-<기능>.md`, frontmatter 는 `author: developer` · `project: uridul` · **`draft: true`** · `secret: false`. 제목은 `우리둘 <기능 이름>`.
+- 소제목(`##`)과 `---` 로 덩어리를 나누고, 한 문장 한 단락 (§2).
+- 사진은 `<img src="/images/uridul-<기능>/<이름>.jpg" alt="…" width="320">` — 폰 화면이라 320 으로 줄입니다.
+
+### 사진 찍는 법
+
+`scripts/uridul-shot.mjs` 가 로컬 앱에 테스트 계정으로 로그인해서 폰 크기로 찍습니다.
+
+1. uridul 의 로컬 Supabase(`supabase start`)와 dev 서버(`127.0.0.1:5173`)가 떠 있어야 합니다. 테스트 커플은 `icon@uridul.test`(테스트) · `partner@uridul.test`(지우), 비밀번호 `test1234` (uridul `README.md`).
+2. 보여 줄 장면을 **로컬 DB 에** 만듭니다. 앱의 RPC 를 그 계정 토큰으로 부르거나(`/rest/v1/rpc/...`), `psql postgresql://postgres:postgres@127.0.0.1:54322/postgres` 로 직접 넣습니다. 스케치 퀴즈 때는 판을 시작하고 고양이 선을 SQL 로 넣은 뒤, 상대 계정으로 힌트 · 오답 · 정답을 차례로 불러 장면마다 찍었습니다.
+3. 찍습니다. 원본 PNG 는 스크래치에 두고, 블로그에는 jpg 로 줄여 넣습니다.
+   ```bash
+   node scripts/uridul-shot.mjs <스크래치>/shots lobby='#quiz' album='#quiz@560'
+   WHO=partner@uridul.test node scripts/uridul-shot.mjs <스크래치>/shots 'guess=#quizguess?id=<판 id>'
+   sips -s format jpeg -s formatOptions 82 -Z 1600 <스크래치>/shots/lobby.png --out public/images/uridul-<기능>/lobby.jpg
+   ```
+4. **찍은 사진은 꼭 열어 봅니다.** 토스트가 가리거나, 애니메이션 중간이거나, 빈 화면일 수 있습니다.
+5. 위쪽만 쓰려면 `ffmpeg -i in.png -vf "crop=1170:<높이>:0:0" out.png` — ⚠ `sips -c` 는 `--cropOffset` 을 무시하고 가운데를 자릅니다.
+
+- 사진에 실제 커플 데이터를 쓰지 않습니다. 로컬 테스트 데이터만 씁니다.
+- 테스트용으로 넣은 데이터는 로컬에만 있으니 그대로 둬도 됩니다.
+
+### 올리기
+
+빌드(`npm run build`)가 통과하면 커밋하고 `main` 에 push 합니다. `draft: true` 라 사이트에는 안 나오고 `/admin` 에서 보입니다.
+
+- 빌드가 `admin-src/authors.gen.js` · `public/admin/editor.js` 의 저자별 글 수를 바꿉니다. 같이 커밋합니다.
+- `/admin` 에서 고치신 커밋이 원격에 먼저 있을 때가 많습니다. 밀리면 `git pull --rebase` 하고 다시 push 합니다.
+
+---
+
 ## 6. 프로젝트 추가
 
 **고칠 곳은 두 군데입니다.**
