@@ -5,7 +5,7 @@ slug: uridul-start
 description: 커플이 같이 쓰는 기록 웹앱을 하루 만에 올린 이야기
 pubDate: 2026-10-28T10:00:00+09:00
 project: uridul
-draft: true
+draft: false
 secret: false
 ---
 ## 우리둘 웹
