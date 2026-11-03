@@ -20,7 +20,7 @@ secret: false
 
 모아보기에 탭을 하나 새로 만들었습니다.
 
-<img src="/images/uridul-sketch-quiz/lobby.jpg" alt="스케치 퀴즈 대기실 — 점수, 내가 문제 내기, 우리 그림 앨범" width="320">
+<img src="https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1793680910/rj9c3nctvdbe7bpowh6k.jpg" alt="스케치 퀴즈 대기실 — 점수, 내가 문제 내기, 우리 그림 앨범" width="320">
 
 ---
 
@@ -41,7 +41,7 @@ secret: false
 
 ## 그리기
 
-<img src="/images/uridul-sketch-quiz/draw.jpg" alt="그리기 화면 — 제시어 고양이, 남은 시간 33초, 지금 보내면 기회 4번" width="320">
+<img src="https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1793680907/zrc3vcglrlejo9qyoejj.jpg" alt="그리기 화면 — 제시어 고양이, 남은 시간 33초, 지금 보내면 기회 4번" width="320">
 
 제시어는 그리는 사람에게만 보입니다.
 
@@ -88,7 +88,7 @@ secret: false
 
 ## 맞히기 — 힌트를 바꿨습니다
 
-<img src="/images/uridul-sketch-quiz/guess.jpg" alt="맞히기 화면 — 초성 ㄱ 힌트를 쓰고 강아지를 틀린 상태" width="320">
+<img src="https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1793680908/ljevdfqi7y7i9gumpsyh.jpg" alt="맞히기 화면 — 초성 ㄱ 힌트를 쓰고 강아지를 틀린 상태" width="320">
 
 처음에는 맞히는 사람이 **초성 전체**와 **첫 글자**를 공짜로 볼 수 있었습니다.
 
@@ -112,7 +112,7 @@ secret: false
 
 ## 결과와 앨범
 
-<img src="/images/uridul-sketch-quiz/result.jpg" alt="결과 화면 — 정답이에요, 고양이, 81초 동안 그림, 힌트 1개, 쓴 답 기록" width="320">
+<img src="https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1793680912/tp9azmj6ijhtmqvmivqg.jpg" alt="결과 화면 — 정답이에요, 고양이, 81초 동안 그림, 힌트 1개, 쓴 답 기록" width="320">
 
 결과 화면에는 그린 시간, 쓴 힌트 수, 쓴 답 기록, 지금까지의 점수가 나옵니다.
 
@@ -130,7 +130,7 @@ secret: false
 
 ## 알림과 위젯
 
-<img src="/images/uridul-sketch-quiz/widget.jpg" alt="홈 화면의 스케치 퀴즈 위젯 — 테스트의 그림이 도착했어요, 맞히러 가기" width="320">
+<img src="https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1793680913/lewyecuevnvwdndpqozl.jpg" alt="홈 화면의 스케치 퀴즈 위젯 — 테스트의 그림이 도착했어요, 맞히러 가기" width="320">
 
 알림은 세 가지입니다. 설정에서 하나씩 끌 수 있습니다.
 

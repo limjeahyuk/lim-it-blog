@@ -14,7 +14,7 @@ secret: false
 
 단어를 적으면 정답과 뜻이 얼마나 가까운지(유사도)가 나오고, 정답과 가까운 1000개 안에 들면 순위도 나옵니다.
 
-<img src="/images/uridul-word/play.jpg" alt="오늘의 단어 화면 — 해안 80.97 3위, 내가 적은 단어 목록, 지우는 5번 만에 정답" width="320">
+<img src="https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1793680915/lhupayjnoehznfrirj3m.jpg" alt="오늘의 단어 화면 — 해안 80.97 3위, 내가 적은 단어 목록, 지우는 5번 만에 정답" width="320">
 
 ---
 
@@ -47,7 +47,7 @@ secret: false
 
 ## 결과
 
-<img src="/images/uridul-word/result.jpg" alt="결과 화면 — 정답 바다, 테스트 10번 · 지우 5번, 정답까지 다가간 길 그래프" width="320">
+<img src="https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1793680916/b819omxahulilrz1zlwm.jpg" alt="결과 화면 — 정답 바다, 테스트 10번 · 지우 5번, 정답까지 다가간 길 그래프" width="320">
 
 맞히면 둘의 시도 수와, 단어마다 유사도가 어떻게 올라갔는지 **정답까지 다가간 길** 그래프가 나옵니다.
 
@@ -103,7 +103,7 @@ secret: false
 
 ## 홈 위젯
 
-<img src="/images/uridul-word/widget.jpg" alt="홈 화면의 오늘의 단어 위젯 — 지우가 벌써 맞혔어요, 내 최고 유사도 80.97" width="320">
+<img src="https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/v1793680918/ooeg3cmvjys38oiixnpl.jpg" alt="홈 화면의 오늘의 단어 위젯 — 지우가 벌써 맞혔어요, 내 최고 유사도 80.97" width="320">
 
 위젯은 두 가지 크기입니다. 둘이 어디까지 찾았는지와 내 최고 유사도를 보여 줍니다.
 

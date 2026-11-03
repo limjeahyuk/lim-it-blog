@@ -795,7 +795,8 @@ magazine-b·folin)을 보고 정한 것입니다. 상자를 겹겹이 쌓는 것
 
 - `src/content/posts/uridul-<기능>.md`, frontmatter 는 `author: developer` · `project: uridul` · **`draft: true`** · `secret: false`. 제목은 `우리둘 <기능 이름>`.
 - 소제목(`##`)과 `---` 로 덩어리를 나누고, 한 문장 한 단락 (§2).
-- 사진은 `<img src="/images/uridul-<기능>/<이름>.jpg" alt="…" width="320">` — 폰 화면이라 320 으로 줄입니다.
+- 사진은 **Cloudinary 주소**로 `<img src="https://res.cloudinary.com/m1zcmsux/image/upload/c_limit,f_auto,q_auto,w_1600/…" alt="…" width="320">` — 폰 화면이라 320 으로 줄입니다. `/admin` 에서 올린 사진과 같은 모양입니다 (§6-5).
+- ⚠ **`public/images/` 에 넣지 않습니다.** 처음 두 편(스케치 퀴즈 · 오늘의 단어)을 그렇게 넣었다가 "왜 사진이 저장소로 올라가냐" 고 하셔서 Cloudinary 로 옮겼습니다 (2026-11-03). `uridul-start` 등 그 전 6편은 저장소 사진 그대로 둡니다.
 
 ### 사진 찍는 법
 
@@ -803,12 +804,14 @@ magazine-b·folin)을 보고 정한 것입니다. 상자를 겹겹이 쌓는 것
 
 1. uridul 의 로컬 Supabase(`supabase start`)와 dev 서버(`127.0.0.1:5173`)가 떠 있어야 합니다. 테스트 커플은 `icon@uridul.test`(테스트) · `partner@uridul.test`(지우), 비밀번호 `test1234` (uridul `README.md`).
 2. 보여 줄 장면을 **로컬 DB 에** 만듭니다. 앱의 RPC 를 그 계정 토큰으로 부르거나(`/rest/v1/rpc/...`), `psql postgresql://postgres:postgres@127.0.0.1:54322/postgres` 로 직접 넣습니다. 스케치 퀴즈 때는 판을 시작하고 고양이 선을 SQL 로 넣은 뒤, 상대 계정으로 힌트 · 오답 · 정답을 차례로 불러 장면마다 찍었습니다.
-3. 찍습니다. 원본 PNG 는 스크래치에 두고, 블로그에는 jpg 로 줄여 넣습니다.
+3. 찍고, jpg 로 줄여서 **Cloudinary 에 올립니다.** 원본도 jpg 도 스크래치에만 둡니다. 올리는 건 `/admin` 의 떨어뜨리기와 같은 unsigned 프리셋(`config.yml` 의 `upload_preset`)이라 로그인이 필요 없습니다.
    ```bash
    node scripts/uridul-shot.mjs <스크래치>/shots lobby='#quiz' album='#quiz@560'
    WHO=partner@uridul.test node scripts/uridul-shot.mjs <스크래치>/shots 'guess=#quizguess?id=<판 id>'
-   sips -s format jpeg -s formatOptions 82 -Z 1600 <스크래치>/shots/lobby.png --out public/images/uridul-<기능>/lobby.jpg
+   sips -s format jpeg -s formatOptions 82 -Z 1600 <스크래치>/shots/lobby.png --out <스크래치>/shots/lobby.jpg
+   curl -s https://api.cloudinary.com/v1_1/m1zcmsux/image/upload -F file=@<스크래치>/shots/lobby.jpg -F upload_preset=lim-it-blog
    ```
+   돌려받은 `secure_url` 의 `/image/upload/` 뒤에 `c_limit,f_auto,q_auto,w_1600/` 를 끼워서 본문에 씁니다. 넣은 뒤 주소가 200 으로 열리는지 확인합니다.
 4. **찍은 사진은 꼭 열어 봅니다.** 토스트가 가리거나, 애니메이션 중간이거나, 빈 화면일 수 있습니다.
 5. 위쪽만 쓰려면 `ffmpeg -i in.png -vf "crop=1170:<높이>:0:0" out.png` — ⚠ `sips -c` 는 `--cropOffset` 을 무시하고 가운데를 자릅니다.
 
