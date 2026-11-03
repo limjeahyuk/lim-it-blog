@@ -11,11 +11,18 @@
 
     node scripts/check-md-roundtrip.mjs           # 요약
     node scripts/check-md-roundtrip.mjs --diff    # 달라진 줄까지
+    node scripts/check-md-roundtrip.mjs --fix uridul-word.md   # 그 글을 편집기 모양으로 다시 씁니다
+
+  --fix 는 손으로 쓴 초안이 /admin 에서 원문 모드(사진이 <img> 글자로
+  보이는 화면)로 열리는 것을 막을 때 씁니다. 표 칸 사이 공백처럼 모양만
+  다른 것을 편집기가 내보내는 모양으로 맞춥니다.
+  ⚠ 글자가 하나라도 바뀌면 안 씁니다 — 그건 모양이 아니라 내용 문제라
+    손으로 봐야 합니다.
 
   ⚠ 편집기와 **같은 확장 묶음**을 씁니다. 여기서만 다른 것을 쓰면 검사는
     통과인데 폰에서는 원문으로 열리는 일이 생깁니다.
 */
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { JSDOM } from 'jsdom'
 
@@ -37,6 +44,8 @@ const { EXTENSIONS, normalizeMarkdown } = await import('../admin-src/editor.js')
 
 const DIR = 'src/content/posts'
 const showDiff = process.argv.includes('--diff')
+const fixIdx = process.argv.indexOf('--fix')
+const fixList = fixIdx < 0 ? [] : process.argv.slice(fixIdx + 1)
 
 const editor = new Editor({
   element: document.createElement('div'),
@@ -69,6 +78,28 @@ function letters(s) {
   괜찮다고 나오고 폰에서는 원문으로 열리는 일이 생깁니다.
 */
 const normalize = normalizeMarkdown
+
+if (fixList.length) {
+  for (const file of fixList) {
+    const path = join(DIR, file.replace(/^.*\//, ''))
+    const raw = readFileSync(path, 'utf8')
+    const body = bodyOf(raw)
+    editor.commands.setContent(body, { contentType: 'markdown' })
+    const out = editor.getMarkdown()
+    if (letters(body) !== letters(out)) {
+      console.log(`  ✗ ${file} — 글자가 달라져서 안 썼습니다 (--diff 로 보세요)`)
+      continue
+    }
+    if (normalize(body) === normalize(out)) {
+      console.log(`  = ${file} — 이미 편집기 모양입니다`)
+      continue
+    }
+    writeFileSync(path, raw.slice(0, raw.length - body.length) + out.trimEnd() + '\n')
+    console.log(`  ✓ ${file} — 편집기 모양으로 다시 썼습니다`)
+  }
+  editor.destroy()
+  process.exit(0)
+}
 
 const files = readdirSync(DIR).filter((f) => f.endsWith('.md'))
 const changed = []
