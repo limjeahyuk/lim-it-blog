@@ -347,7 +347,7 @@ export const PROJECTS = [
       {
         kind: 'web',
         label: '웹에서 열기',
-        href: 'https://uridul.vercel.app',
+        href: 'https://uridul.app',
       },
     ],
   },
